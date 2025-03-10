@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, ChangeEvent } from 'react'
+import { useState, useRef, ChangeEvent, useEffect } from 'react'
 import { DocumentArrowUpIcon, LanguageIcon, SparklesIcon, CommandLineIcon } from '@heroicons/react/24/outline'
 import { LOCAL_AI_MODELS, OPENROUTER_MODELS } from '../lib/api-config'
 
@@ -27,9 +27,74 @@ const ALL_AI_MODELS = [
 export default function TranslationForm({ onTranslate, isLoading }: TranslationFormProps) {
   const [text, setText] = useState('')
   const [targetLanguage, setTargetLanguage] = useState('vi')
-  const [preserveContext, setPreserveContext] = useState(true)
+  const [preserveContext, setPreserveContext] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('preserveContext') === 'true'
+    }
+    return true
+  })
   const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isClient, setIsClient] = useState(false)
+
+  // Set isClient to true when component mounts
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // Load preferences from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedLanguage = localStorage.getItem('preferredLanguage')
+      const savedModel = localStorage.getItem('preferredModel')
+      const savedPreserveContext = localStorage.getItem('preserveContext')
+      
+      console.log('Loading saved preferences:', { savedLanguage, savedModel, savedPreserveContext })
+      
+      if (savedLanguage) {
+        setTargetLanguage(savedLanguage)
+      }
+      if (savedModel) {
+        setSelectedModel(savedModel)
+      }
+      if (savedPreserveContext !== null) {
+        setPreserveContext(savedPreserveContext === 'true')
+      }
+    } catch (error) {
+      console.error('Error loading preferences:', error)
+    }
+  }, [])
+
+  // Save preferences to localStorage when they change
+  useEffect(() => {
+    if (!isClient) return // Don't save during SSR
+    try {
+      localStorage.setItem('preferredLanguage', targetLanguage)
+      console.log('Saved language:', targetLanguage)
+    } catch (error) {
+      console.error('Error saving language:', error)
+    }
+  }, [targetLanguage, isClient])
+
+  useEffect(() => {
+    if (!isClient) return // Don't save during SSR
+    try {
+      localStorage.setItem('preferredModel', selectedModel)
+      console.log('Saved model:', selectedModel)
+    } catch (error) {
+      console.error('Error saving model:', error)
+    }
+  }, [selectedModel, isClient])
+
+  useEffect(() => {
+    if (!isClient) return // Don't save during SSR
+    try {
+      localStorage.setItem('preserveContext', preserveContext.toString())
+      console.log('Saved preserveContext:', preserveContext)
+    } catch (error) {
+      console.error('Error saving preserveContext:', error)
+    }
+  }, [preserveContext, isClient])
 
   const handleTextChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value)
