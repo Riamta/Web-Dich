@@ -2,22 +2,31 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { MdTranslate, MdBook } from 'react-icons/md';
+import { MdTranslate, MdSummarize, MdChat } from 'react-icons/md';
 
 export default function Sidebar() {
   const pathname = usePathname();
 
   const menuItems = [
+    {
+      name: 'Chat với AI',
+      path: 'https://chat.amri2k.com/',
+      icon: <MdChat className="w-6 h-6" />,
+      isExternal: true
+    },
     { 
       name: 'Dịch văn bản', 
       path: '/', 
-      icon: <MdTranslate className="w-6 h-6" />
+      icon: <MdTranslate className="w-6 h-6" />,
+      isExternal: false
     },
     { 
-      name: 'Từ điển thay thế', 
-      path: '/dictionary', 
-      icon: <MdBook className="w-6 h-6" />
-    },
+      name: 'Tóm tắt văn bản', 
+      path: '/summarize', 
+      icon: <MdSummarize className="w-6 h-6" />,
+      isExternal: false
+    }
+
   ];
 
   return (
@@ -26,19 +35,33 @@ export default function Sidebar() {
         <ul className="space-y-4 px-3">
           {menuItems.map((item) => (
             <li key={item.path}>
-              <Link
-                href={item.path}
-                className={`flex flex-col items-center p-3 rounded-full border-2 transition-all duration-200 relative group ${
-                  pathname === item.path
-                    ? 'bg-blue-500 border-blue-500 text-white shadow-lg'
-                    : 'border-gray-200 text-gray-600 hover:border-blue-500 hover:text-blue-500'
-                }`}
-              >
-                {item.icon}
-                <span className="absolute left-full ml-3 px-3 py-2 bg-gray-800 text-white text-sm rounded-full opacity-0 invisible group-hover:opacity-100 group-hover:visible whitespace-nowrap transition-all duration-200 shadow-lg">
-                  {item.name}
-                </span>
-              </Link>
+              {item.isExternal ? (
+                <a
+                  href={item.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center p-3 rounded-full border-2 border-gray-200 text-gray-600 hover:border-blue-500 hover:text-blue-500 transition-all duration-200 relative group"
+                >
+                  {item.icon}
+                  <span className="absolute left-full ml-3 px-3 py-2 bg-gray-800 text-white text-sm rounded-full opacity-0 invisible group-hover:opacity-100 group-hover:visible whitespace-nowrap transition-all duration-200 shadow-lg">
+                    {item.name}
+                  </span>
+                </a>
+              ) : (
+                <Link
+                  href={item.path}
+                  className={`flex flex-col items-center p-3 rounded-full border-2 transition-all duration-200 relative group ${
+                    pathname === item.path
+                      ? 'bg-blue-500 border-blue-500 text-white shadow-lg'
+                      : 'border-gray-200 text-gray-600 hover:border-blue-500 hover:text-blue-500'
+                  }`}
+                >
+                  {item.icon}
+                  <span className="absolute left-full ml-3 px-3 py-2 bg-gray-800 text-white text-sm rounded-full opacity-0 invisible group-hover:opacity-100 group-hover:visible whitespace-nowrap transition-all duration-200 shadow-lg">
+                    {item.name}
+                  </span>
+                </Link>
+              )}
             </li>
           ))}
         </ul>

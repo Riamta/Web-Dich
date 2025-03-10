@@ -2,12 +2,13 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Sidebar from '@/components/Sidebar'
+import Menubar from '@/components/Menubar'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Translator App',
-  description: 'A powerful translation tool with dictionary management',
+  title: 'Story Translation App',
+  description: 'AI-powered story translation and summarization',
 }
 
 export default function RootLayout({
@@ -19,9 +20,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Sidebar />
-        <div className="ml-20">
+        <Menubar />
+        <main className="pl-20 pt-14">
           {children}
-        </div>
+        </main>
       </body>
     </html>
   )
