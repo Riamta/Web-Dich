@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useRef, ChangeEvent } from 'react'
-import { DocumentArrowUpIcon, LanguageIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { DocumentArrowUpIcon, LanguageIcon, SparklesIcon, CommandLineIcon } from '@heroicons/react/24/outline'
+import { LOCAL_AI_MODELS, OPENROUTER_MODELS } from '../lib/api-config'
 
 interface TranslationFormProps {
-  onTranslate: (text: string, targetLanguage: string, preserveContext: boolean) => void
+  onTranslate: (text: string, targetLanguage: string, preserveContext: boolean, model: string) => void
   isLoading: boolean
 }
 
@@ -16,10 +17,18 @@ const SUPPORTED_LANGUAGES = [
   { code: 'ko', name: 'Korean' },
 ]
 
+// Combine all AI models
+const ALL_AI_MODELS = [
+  ...LOCAL_AI_MODELS,
+  { id: 'separator', name: '──────────', description: '' },
+  ...OPENROUTER_MODELS,
+]
+
 export default function TranslationForm({ onTranslate, isLoading }: TranslationFormProps) {
   const [text, setText] = useState('')
   const [targetLanguage, setTargetLanguage] = useState('vi')
   const [preserveContext, setPreserveContext] = useState(true)
+  const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleTextChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -45,12 +54,12 @@ export default function TranslationForm({ onTranslate, isLoading }: TranslationF
       alert('Please enter some text to translate')
       return
     }
-    onTranslate(text, targetLanguage, preserveContext)
+    onTranslate(text, targetLanguage, preserveContext, selectedModel)
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-gray-100" suppressHydrationWarning>
-      <div className="space-y-2">
+      <div className="space-y-2" suppressHydrationWarning>
         <label htmlFor="text" className="block text-sm font-medium text-gray-700 flex items-center gap-2">
           <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
           Source Text
@@ -61,10 +70,42 @@ export default function TranslationForm({ onTranslate, isLoading }: TranslationF
           onChange={handleTextChange}
           className="w-full h-[400px] p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none text-gray-800 placeholder-gray-400 bg-gray-50/50"
           placeholder="Enter or paste your text here..."
+          suppressHydrationWarning
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6" suppressHydrationWarning>
+        <div className="space-y-2">
+          <label htmlFor="model" className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+            <CommandLineIcon className="h-5 w-5 text-gray-400" />
+            AI Model
+          </label>
+          <div className="relative">
+            <select
+              id="model"
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className="w-full p-3 pr-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50 text-gray-800"
+            >
+              {ALL_AI_MODELS.map((model) => (
+                <option 
+                  key={model.id} 
+                  value={model.id} 
+                  disabled={model.id === 'separator'}
+                  className={`py-2 ${model.id === 'separator' ? 'text-gray-400 font-bold' : ''}`}
+                >
+                  {model.name}
+                </option>
+              ))}
+            </select>
+            {selectedModel && (
+              <p className="mt-1 text-xs text-gray-500">
+                {ALL_AI_MODELS.find(m => m.id === selectedModel)?.description}
+              </p>
+            )}
+          </div>
+        </div>
+
         <div className="space-y-2">
           <label htmlFor="language" className="block text-sm font-medium text-gray-700 flex items-center gap-2">
             <LanguageIcon className="h-5 w-5 text-gray-400" />
@@ -83,12 +124,23 @@ export default function TranslationForm({ onTranslate, isLoading }: TranslationF
                 </option>
               ))}
             </select>
-            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </div>
-          </div>
+           </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6" suppressHydrationWarning>
+        <div className="flex items-center gap-2 bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+          <input
+            type="checkbox"
+            id="preserveContext"
+            checked={preserveContext}
+            onChange={(e) => setPreserveContext(e.target.checked)}
+            className="h-4 w-4 text-primary focus:ring-primary/20 border-gray-300 rounded transition-all duration-200"
+          />
+          <label htmlFor="preserveContext" className="text-sm text-gray-700 flex items-center gap-2">
+            <SparklesIcon className="h-5 w-5 text-gray-400" />
+            Preserve literary context and style
+          </label>
         </div>
 
         <div className="space-y-2">
@@ -105,20 +157,6 @@ export default function TranslationForm({ onTranslate, isLoading }: TranslationF
             className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
           />
         </div>
-      </div>
-
-      <div className="flex items-center gap-2 bg-gray-50/50 p-4 rounded-lg border border-gray-100">
-        <input
-          type="checkbox"
-          id="preserveContext"
-          checked={preserveContext}
-          onChange={(e) => setPreserveContext(e.target.checked)}
-          className="h-4 w-4 text-primary focus:ring-primary/20 border-gray-300 rounded transition-all duration-200"
-        />
-        <label htmlFor="preserveContext" className="text-sm text-gray-700 flex items-center gap-2">
-          <SparklesIcon className="h-5 w-5 text-gray-400" />
-          Preserve literary context and style
-        </label>
       </div>
 
       <button

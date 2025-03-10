@@ -43,7 +43,7 @@ export default function TranslatedOutput({ text, isLoading }: TranslatedOutputPr
         </label>
       </div>
       <div className="relative">
-        <div className="min-h-[400px] p-4 border border-gray-200 rounded-lg bg-gray-50/50">
+        <div className="min-h-[800px] p-4 border border-gray-200 rounded-lg bg-gray-50/50">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <div className="flex flex-col items-center gap-3">
