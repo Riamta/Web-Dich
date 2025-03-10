@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { MdTranslate, MdSummarize, MdChat, MdAutoFixHigh, MdPerson, MdCode, MdSubtitles } from 'react-icons/md';
+import { MdTranslate, MdSummarize, MdChat, MdAutoFixHigh, MdPerson, MdCode, MdSubtitles, MdQuiz, MdSchool } from 'react-icons/md';
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -30,6 +30,18 @@ export default function Sidebar() {
       name: 'Tóm tắt văn bản',
       path: '/summarize',
       icon: <MdSummarize className="w-6 h-6" />,
+      isExternal: false
+    },
+    {
+      name: 'Tạo câu hỏi',
+      path: '/quiz',
+      icon: <MdQuiz className="w-6 h-6" />,
+      isExternal: false
+    },
+    {
+      name: 'Học từ vựng',
+      path: '/vocabulary',
+      icon: <MdSchool className="w-6 h-6" />,
       isExternal: false
     }
   ];

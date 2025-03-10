@@ -267,6 +267,17 @@ Yêu cầu:
             throw new Error('Failed to translate SRT file');
         }
     }
+
+    async generateQuiz(systemPrompt: string, userPrompt: string): Promise<string> {
+        try {
+            const prompt = `${systemPrompt}\n\nYêu cầu: ${userPrompt}`;
+            const result = await this.processWithAI(prompt);
+            return result;
+        } catch (error) {
+            console.error('AI error:', error);
+            throw new Error('Lỗi khi tạo câu hỏi');
+        }
+    }
 }
 
 export const aiService = new AIService(); 
