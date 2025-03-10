@@ -11,10 +11,10 @@ interface TranslationFormProps {
 
 const SUPPORTED_LANGUAGES = [
   { code: 'vi', name: 'Tiếng Việt' },
-  { code: 'en', name: 'Tiếng Trung' },
-  { code: 'zh', name: 'Chinese' },
-  { code: 'ja', name: 'Japanese' },
-  { code: 'ko', name: 'Korean' },
+  { code: 'en', name: 'Tiếng Anh' },
+  { code: 'zh', name: 'Tiếng Trung' },
+  { code: 'ja', name: 'Tiếng Nhật' },
+  { code: 'ko', name: 'Tiếng Hàn' },
 ]
 
 // Combine all AI models

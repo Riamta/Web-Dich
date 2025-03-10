@@ -75,7 +75,7 @@ async function translateWithLocalModel({ text, targetLanguage, preserveContext, 
   })
 
   const prompt = `Bạn là một dịch giả, hãy dịch nội dung tôi gửi sang ${targetLanguage}.Lưu ý: Chỉ trả về phần dịch ko nói gì thêm\n${text}`
-  if (model === 'gemini-pro') {
+  if (model === 'gemini-2.0-flash') {
     // Gemini API
     const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
     if (!geminiKey) {
@@ -85,7 +85,7 @@ async function translateWithLocalModel({ text, targetLanguage, preserveContext, 
     try {
       console.log('📤 Sending request to Gemini...')
       const genAI = new GoogleGenerativeAI(geminiKey)
-      const geminiModel = genAI.getGenerativeModel({ model: 'gemini-pro' })
+      const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
       const generationConfig = {
         temperature: 1,
         topP: 0.95,
@@ -103,7 +103,7 @@ async function translateWithLocalModel({ text, targetLanguage, preserveContext, 
 
       console.log('📥 Received response from Gemini:', {
         status: 'success',
-        model: 'gemini-pro',
+        model: 'gemini-2.0-flash',
         responseLength: translatedText.length
       })
 
