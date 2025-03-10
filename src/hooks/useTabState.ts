@@ -6,8 +6,10 @@ export function useTabState<T>(key: string, initialValue: T): [T, (value: T) => 
     if (typeof window === 'undefined') return initialValue;
     
     try {
-      // Check if page was refreshed
-      if (window.performance && window.performance.navigation.type === window.performance.navigation.TYPE_RELOAD) {
+      // Check if page was refreshed using document.referrer
+      const wasRefreshed = !document.referrer || document.referrer.includes(window.location.origin);
+      if (wasRefreshed && performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+        localStorage.removeItem(key);
         return initialValue;
       }
       
@@ -24,7 +26,7 @@ export function useTabState<T>(key: string, initialValue: T): [T, (value: T) => 
     if (typeof window === 'undefined') return;
     
     try {
-      if (state === initialValue && window.performance?.navigation.type === window.performance.navigation.TYPE_RELOAD) {
+      if (state === initialValue && performance.navigation.type === performance.navigation.TYPE_RELOAD) {
         localStorage.removeItem(key);
       } else {
         localStorage.setItem(key, JSON.stringify(state));

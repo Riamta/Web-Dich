@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { aiService } from '@/lib/ai-service';
 
 export async function POST(request: Request) {
   try {
@@ -12,40 +12,19 @@ export async function POST(request: Request) {
       );
     }
 
-    const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!geminiKey) {
-      throw new Error('Gemini API key is not configured');
-    }
-
     try {
-      console.log('📤 Sending request to Gemini...');
-      const genAI = new GoogleGenerativeAI(geminiKey);
-      const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-      const generationConfig = {
-        temperature: 0.7,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 8192
-      };
+      console.log('📤 Sending text for summarization...');
+      const summary = await aiService.summarize(text);
 
-      const chatSession = geminiModel.startChat({
-        generationConfig,
-        history: []
-      });
-
-      const prompt = "Bạn là một trợ lý AI chuyên nghiệp trong việc tóm tắt văn bản. Hãy tóm tắt văn bản sau. Sau đó nêu ra các ý chính của văn bản.\n\n" + text;
-      const result = await chatSession.sendMessage(prompt);
-      const summary = result.response.text();
-
-      console.log('📥 Received response from Gemini:', {
+      console.log('📥 Received summarization:', {
         status: 'success',
-        model: 'gemini-2.0-flash',
+        model: aiService.getModel(),
         responseLength: summary.length
       });
 
       return NextResponse.json({ summary });
     } catch (error) {
-      console.error('❌ Gemini summarization error:', {
+      console.error('❌ Summarization error:', {
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString()
       });
