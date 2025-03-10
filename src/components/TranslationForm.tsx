@@ -10,8 +10,8 @@ interface TranslationFormProps {
 }
 
 const SUPPORTED_LANGUAGES = [
-  { code: 'vi', name: 'Vietnamese' },
-  { code: 'en', name: 'English' },
+  { code: 'vi', name: 'Tiếng Việt' },
+  { code: 'en', name: 'Tiếng Trung' },
   { code: 'zh', name: 'Chinese' },
   { code: 'ja', name: 'Japanese' },
   { code: 'ko', name: 'Korean' },

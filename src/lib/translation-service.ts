@@ -38,7 +38,7 @@ async function translateWithOpenRouter({ text, targetLanguage, preserveContext, 
 
   const client = createOpenRouterClient(openRouterKey)
   
-  const prompt = `Dịch đoạn sau sang tiếng ${targetLanguage}.Lưu ý: Chỉ trả về phần dịch ko nói gì thêm\n${text}`
+  const prompt = `Bạn là một dịch giả, hãy dịch nội dung tôi gửi sang tiếng việt ${targetLanguage}.Lưu ý: Chỉ trả về phần dịch ko nói gì thêm\n${text}`
   
   try {
     console.log('📤 Sending request to OpenRouter...')
@@ -72,7 +72,7 @@ async function translateWithLocalModel({ text, targetLanguage, preserveContext, 
     preserveContext
   })
 
-  const prompt = `Dịch đoạn sau sang tiếng ${targetLanguage}.Lưu ý: Chỉ trả về phần dịch ko nói gì thêm\n${text}`
+  const prompt = `Bạn là một dịch giả, hãy dịch nội dung tôi gửi sang ${targetLanguage}.Lưu ý: Chỉ trả về phần dịch ko nói gì thêm\n${text}`
   if (model === 'gemini-2.0-flash') {
     // Gemini API
     const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
