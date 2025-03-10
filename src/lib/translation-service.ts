@@ -1,6 +1,7 @@
 import { createOpenRouterClient, isOpenRouterModel } from './api-config'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import OpenAI from 'openai'
+import { dictionaryService } from './dictionary-service'
 
 interface TranslationRequest {
   text: string
@@ -54,7 +55,8 @@ async function translateWithOpenRouter({ text, targetLanguage, preserveContext, 
       responseLength: completion.choices[0].message.content?.length || 0
     })
 
-    return completion.choices[0].message.content || ''
+    const translatedText = completion.choices[0].message.content || ''
+    return dictionaryService.applyDictionary(translatedText)
   } catch (error) {
     console.error('❌ OpenRouter translation error:', {
       model,
@@ -73,7 +75,7 @@ async function translateWithLocalModel({ text, targetLanguage, preserveContext, 
   })
 
   const prompt = `Bạn là một dịch giả, hãy dịch nội dung tôi gửi sang ${targetLanguage}.Lưu ý: Chỉ trả về phần dịch ko nói gì thêm\n${text}`
-  if (model === 'gemini-2.0-flash') {
+  if (model === 'gemini-pro') {
     // Gemini API
     const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
     if (!geminiKey) {
@@ -83,13 +85,12 @@ async function translateWithLocalModel({ text, targetLanguage, preserveContext, 
     try {
       console.log('📤 Sending request to Gemini...')
       const genAI = new GoogleGenerativeAI(geminiKey)
-      const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+      const geminiModel = genAI.getGenerativeModel({ model: 'gemini-pro' })
       const generationConfig = {
         temperature: 1,
         topP: 0.95,
         topK: 40,
-        maxOutputTokens: 8192,
-        responseMimeType: "text/plain",
+        maxOutputTokens: 8192
       };
 
       const chatSession = geminiModel.startChat({
@@ -102,11 +103,11 @@ async function translateWithLocalModel({ text, targetLanguage, preserveContext, 
 
       console.log('📥 Received response from Gemini:', {
         status: 'success',
-        model: 'gemini-2.0-flash',
+        model: 'gemini-pro',
         responseLength: translatedText.length
       })
 
-      return translatedText
+      return dictionaryService.applyDictionary(translatedText)
     } catch (error) {
       console.error('❌ Gemini translation error:', {
         model,
@@ -146,7 +147,7 @@ async function translateWithLocalModel({ text, targetLanguage, preserveContext, 
         responseLength: translatedText.length
       })
 
-      return translatedText
+      return dictionaryService.applyDictionary(translatedText)
     } catch (error) {
       console.error('❌ OpenAI translation error:', {
         model,
