@@ -7,6 +7,12 @@ interface AIServiceConfig {
     model: string;
 }
 
+interface SRTEntry {
+    id: number;
+    timecode: string;
+    text: string;
+}
+
 class AIService {
     private config: AIServiceConfig = {
         model: 'gemini-2.0-flash'
@@ -163,6 +169,103 @@ Văn bản cần tóm tắt:
 ${text}`;
 
         return this.processWithAI(prompt);
+    }
+
+    // Parse SRT content
+    private parseSRT(content: string): SRTEntry[] {
+        // Normalize line endings and split into blocks
+        const normalizedContent = content.replace(/\r\n/g, '\n');
+        const blocks = normalizedContent.trim().split('\n\n').filter(block => block.trim());
+        
+        return blocks.map(block => {
+            const lines = block.split('\n').filter(line => line.trim());
+            if (lines.length < 3) {
+                console.warn('Invalid SRT block:', block);
+                return null;
+            }
+            
+            const id = parseInt(lines[0]);
+            const timecode = lines[1];
+            const text = lines.slice(2).join(' '); // Join multiple lines of text
+            
+            if (isNaN(id)) {
+                console.warn('Invalid SRT ID:', lines[0]);
+                return null;
+            }
+            
+            return { id, timecode, text };
+        }).filter((entry): entry is SRTEntry => entry !== null);
+    }
+
+    // Format SRT content
+    private formatSRT(entries: SRTEntry[]): string {
+        return entries.map(entry => {
+            return `${entry.id}\n${entry.timecode}\n${entry.text}`;
+        }).join('\n\n') + '\n';
+    }
+
+    // SRT translation method
+    async translateSRT(content: string, targetLanguage: string): Promise<string> {
+        try {
+            // Parse SRT file
+            const entries = this.parseSRT(content);
+            
+            if (entries.length === 0) {
+                throw new Error('No valid SRT entries found');
+            }
+            
+            // Extract only text content for translation
+            const textsToTranslate = entries.map(entry => entry.text);
+            
+            // Create prompt for translation
+            const prompt = `Dịch các câu sau sang ${targetLanguage}. Chỉ trả về các câu đã dịch, mỗi câu một dòng:
+
+${textsToTranslate.join('\n')}
+
+Yêu cầu:
+- Chỉ trả về các câu đã dịch
+- Mỗi câu một dòng
+- Không thêm số thứ tự
+- Không thêm bất kỳ chú thích nào khác
+- Không thêm dấu gạch đầu dòng`;
+
+            // Get translations
+            let translatedText = await this.processWithAI(prompt);
+            
+            // Clean up the response
+            translatedText = translatedText
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line && !line.startsWith('-') && !line.startsWith('['))
+                .join('\n');
+
+            // Apply dictionary to the entire translated text
+            translatedText = await dictionaryService.applyDictionary(translatedText);
+            
+            // Split into lines after dictionary application
+            const translatedLines = translatedText.split('\n');
+
+            // Ensure we have translations for all entries
+            if (translatedLines.length !== entries.length) {
+                console.warn(`Translation mismatch: expected ${entries.length} entries but got ${translatedLines.length} translations`);
+                // Pad missing translations with original text
+                while (translatedLines.length < entries.length) {
+                    translatedLines.push(entries[translatedLines.length].text);
+                }
+            }
+
+            // Reconstruct SRT with translated text
+            const translatedEntries = entries.map((entry, index) => ({
+                ...entry,
+                text: translatedLines[index] || entry.text
+            }));
+
+            // Format back to SRT
+            return this.formatSRT(translatedEntries);
+        } catch (error) {
+            console.error('❌ SRT translation error:', error);
+            throw new Error('Failed to translate SRT file');
+        }
     }
 }
 

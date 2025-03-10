@@ -2,7 +2,7 @@
 
 import { useRef, ChangeEvent, useEffect } from 'react'
 import { DocumentArrowUpIcon, LanguageIcon, SparklesIcon } from '@heroicons/react/24/outline'
-import { MdAdd, MdClose } from 'react-icons/md'
+import { MdAdd, MdBook, MdClose } from 'react-icons/md'
 import { dictionaryService } from '@/lib/dictionary-service'
 import { useTabState } from '@/hooks/useTabState'
 
@@ -95,7 +95,7 @@ export default function TranslationForm({ onTranslate, isLoading }: TranslationF
               onClick={() => setShowDictionaryModal(true)}
               className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors duration-200"
             >
-              <MdAdd className="h-5 w-5" />
+              <MdBook className="h-5 w-5" />
               <span>Từ điển</span>
             </button>
           </div>
