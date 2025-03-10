@@ -4,6 +4,7 @@ import { OpenAI } from 'openai'
 export const OPENROUTER_MODELS = [
     { id: 'qwen/qwq-32b', name: 'Qwen 32B', description: 'High performance multilingual model' },
     { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', description: 'Advanced language understanding' },
+    { id: 'deepseek/deepseek-chat', name: 'DeepSeek Chat', description: 'High performance multilingual model' },
 ] as const
 
 // Local AI models
