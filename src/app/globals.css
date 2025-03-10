@@ -28,3 +28,10 @@ body {
   margin-top: calc(1rem* calc(0.5 - var(--tw-space-y-reverse)));
   margin-bottom: calc(1rem* var(--tw-space-y-reverse));
 }
+.px-3 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+ul.space-y-4.px-3 {
+  padding-top: 1.75rem;
+}
