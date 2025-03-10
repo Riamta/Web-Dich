@@ -33,19 +33,40 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
       
       // Parse SRT content
       const parseSRT = (content: string) => {
-        const blocks = content.trim().split('\n\n');
-        return blocks.map(block => {
-          const lines = block.split('\n');
-          return {
-            id: lines[0],
-            timecode: lines[1],
-            text: lines.slice(2).join('\n')
-          };
+        const entries: SRTEntry[] = [];
+        const blocks = content.trim().split(/\n\s*\n/); // Split by empty lines, handling multiple newlines
+        
+        blocks.forEach(block => {
+          const lines = block.trim().split('\n');
+          if (lines.length >= 2) { // Ensure we have at least ID and timecode
+            const id = lines[0].trim();
+            const timecode = lines[1].trim();
+            const text = lines.slice(2).join('\n').trim(); // Join remaining lines preserving line breaks
+            
+            if (id && timecode) { // Only add if we have valid id and timecode
+              entries.push({ id, timecode, text });
+            }
+          }
         });
+        
+        return entries;
       };
 
-      setEntries(parseSRT(originalText));
-      setTranslatedEntries(parseSRT(translatedText));
+      const originalEntries = parseSRT(originalText);
+      const translatedEntries = parseSRT(translatedText);
+      
+      // Ensure translated entries array matches original length
+      while (translatedEntries.length < originalEntries.length) {
+        const index = translatedEntries.length;
+        translatedEntries.push({
+          id: originalEntries[index].id,
+          timecode: originalEntries[index].timecode,
+          text: ''
+        });
+      }
+
+      setEntries(originalEntries);
+      setTranslatedEntries(translatedEntries);
     }
   }, [isOpen, originalText, translatedText]);
 
@@ -53,7 +74,10 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
 
   const handleTranslationChange = (index: number, value: string) => {
     const newEntries = [...translatedEntries];
-    newEntries[index] = { ...newEntries[index], text: value };
+    newEntries[index] = { 
+      ...newEntries[index],
+      text: value
+    };
     setTranslatedEntries(newEntries);
 
     // Reconstruct the full SRT text
