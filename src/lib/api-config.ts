@@ -10,7 +10,6 @@ export const OPENROUTER_MODELS = [
 // Local AI models
 export const LOCAL_AI_MODELS = [
     { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Powerful and fast translation' },
-    { id: 'gpt-4o', name: 'GPT-4o', description: 'High accuracy, context-aware' },
     { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'Lightweight and efficient' },
 ] as const
 

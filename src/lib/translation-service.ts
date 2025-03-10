@@ -38,9 +38,7 @@ async function translateWithOpenRouter({ text, targetLanguage, preserveContext, 
 
   const client = createOpenRouterClient(openRouterKey)
   
-  const prompt = `Translate the following text to ${targetLanguage}. ${
-                preserveContext ? 'Please maintain the literary context, style, and formatting.' : ''
-                }\n\nText to translate:\n${text}`
+  const prompt = `Dịch đoạn sau sang tiếng ${targetLanguage}.Lưu ý: Chỉ trả về phần dịch ko nói gì thêm\n${text}`
   
   try {
     console.log('📤 Sending request to OpenRouter...')
@@ -74,10 +72,7 @@ async function translateWithLocalModel({ text, targetLanguage, preserveContext, 
     preserveContext
   })
 
-  const prompt = `Translate the following text to ${targetLanguage}. ${
-    preserveContext ? 'Please maintain the literary context, style, and formatting.' : ''
-  }\n\nText to translate:\n${text}`
-
+  const prompt = `Dịch đoạn sau sang tiếng ${targetLanguage}.Lưu ý: Chỉ trả về phần dịch ko nói gì thêm\n${text}`
   if (model === 'gemini-2.0-flash') {
     // Gemini API
     const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
@@ -128,7 +123,7 @@ async function translateWithLocalModel({ text, targetLanguage, preserveContext, 
       const completion = await openai.chat.completions.create({
         model: modelName,
         messages: [
-          { role: 'system', content: 'You are a professional translator.' },
+          { role: 'system', content: 'Bạn là một dịch giả chuyên nghiệp, chuyên dịch truyện trung quốc theo kiểu hán việt. Lưu ý: Chỉ trả về phần dịch ko nói gì thêm' },
           { role: 'user', content: prompt }
         ]
       })
