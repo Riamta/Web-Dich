@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { LOCAL_AI_MODELS, OPENROUTER_MODELS } from '@/lib/api-config';
 import { aiService } from '@/lib/ai-service';
-import { CommandLineIcon } from '@heroicons/react/24/outline';
+import { CommandLineIcon, Bars3Icon } from '@heroicons/react/24/outline';
+import { useSidebar } from '@/contexts/SidebarContext';
 
 export default function Menubar() {
   const [selectedModel, setSelectedModel] = useState(aiService.getModel());
+  const { toggle } = useSidebar();
 
   useEffect(() => {
     aiService.loadSavedModel();
@@ -26,8 +28,15 @@ export default function Menubar() {
   ];
 
   return (
-    <div className="top-0 left-40 right-0 h-14 bg-white border-b border-gray-200 px-4 flex items-center z-40">
+    <div className="h-14 bg-white border-b border-gray-200 px-4 flex items-center justify-between z-40">
       <div className="flex items-center gap-6">
+        <button
+          onClick={toggle}
+          className="p-2 -ml-2 text-gray-500 hover:text-gray-700 md:hidden"
+        >
+          <Bars3Icon className="w-6 h-6" />
+        </button>
+
         <div className="flex items-center gap-2">
           <CommandLineIcon className="h-5 w-5 text-gray-400" />
           <label htmlFor="ai-model" className="text-sm font-medium text-gray-700">
@@ -53,7 +62,7 @@ export default function Menubar() {
         </div>
 
         {selectedModel && (
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 hidden md:block">
             {ALL_AI_MODELS.find((m) => m.id === selectedModel)?.description}
           </p>
         )}

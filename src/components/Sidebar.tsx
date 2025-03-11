@@ -4,9 +4,11 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { MdTranslate, MdSubtitles, MdQuiz, MdSchool, MdChat } from 'react-icons/md';
 import Image from 'next/image';
+import { useSidebar } from '@/contexts/SidebarContext';
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { isOpen } = useSidebar();
 
   const menuItems = [
     {
@@ -45,10 +47,12 @@ export default function Sidebar() {
   return (
     <>
       {/* Sidebar placeholder to maintain layout */}
-      <div className="w-[240px] shrink-0" />
+      <div className={`${isOpen ? 'w-[240px]' : 'w-0'} shrink-0 transition-all duration-300 md:w-[240px]`} />
       
       {/* Fixed sidebar */}
-      <div className="fixed left-0 top-0 w-[240px] h-screen bg-[#1E1F25] text-white flex flex-col z-30">
+      <div className={`fixed left-0 top-0 h-screen bg-[#1E1F25] text-white flex flex-col z-30 transition-all duration-300 ${
+        isOpen ? 'w-[240px]' : 'w-0 -translate-x-full'
+      } md:w-[240px] md:translate-x-0`}>
         {/* Logo section */}
         <div className="h-14 flex items-center px-4 border-b border-gray-700">
           <div className="flex items-center gap-2">
