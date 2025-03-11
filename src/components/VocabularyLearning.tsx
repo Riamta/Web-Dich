@@ -173,9 +173,9 @@ export default function VocabularyLearning() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 space-y-6">
-        <div className="flex justify-between items-center mb-6">
+    <div className="space-y-4 max-w-4xl">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+        <div className="flex justify-between items-center mb-8">
           <div className="grid grid-cols-2 gap-4 flex-1">
             {MODES.map((m) => (
               <button
@@ -466,9 +466,9 @@ export default function VocabularyLearning() {
       {/* Modal hiển thị danh sách từ vựng đã lưu */}
       {showBookmarkModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] flex flex-col">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-900">Danh sách từ vựng đã lưu</h2>
+          <div className="bg-white rounded-xl shadow-xl w-full mx-4 max-h-[80vh] flex flex-col">
+            <div className="p-8 border-b border-gray-100 flex justify-between items-center">
+              <h2 className="text-2xl font-semibold text-gray-900">Danh sách từ vựng đã lưu</h2>
               <button
                 onClick={() => setShowBookmarkModal(false)}
                 className="text-gray-400 hover:text-gray-500"
