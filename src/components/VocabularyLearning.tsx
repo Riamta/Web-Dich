@@ -35,8 +35,8 @@ const LEARNING_MODES = [
 
 export default function VocabularyLearning() {
   const [targetLanguage, setTargetLanguage] = useState('en')
-  const [selectedTopic, setSelectedTopic] = useState('')
-  const [customTopic, setCustomTopic] = useState('')
+  const [selectedTopic, setSelectedTopic] = useState('custom')
+  const [customTopic, setCustomTopic] = useState('Hãy cho tôi chủ đề bất kỳ mà bạn nghĩ sẽ thú vị')
   const [learningMode, setLearningMode] = useState('review')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -53,6 +53,14 @@ export default function VocabularyLearning() {
     setShowAnswers({})
     
     try {
+      // Determine the topic to send
+      const topicToSend = selectedTopic === 'custom' ? customTopic : selectedTopic
+
+      // Validate custom topic if selected
+      if (selectedTopic === 'custom' && !customTopic.trim()) {
+        throw new Error('Vui lòng nhập chủ đề tùy chỉnh')
+      }
+
       const response = await fetch('/api/generate-vocabulary', {
         method: 'POST',
         headers: {
@@ -60,7 +68,7 @@ export default function VocabularyLearning() {
         },
         body: JSON.stringify({
           targetLanguage,
-          topic: selectedTopic || customTopic || 'random',
+          topic: topicToSend || 'random',
         }),
       })
 
@@ -135,17 +143,21 @@ export default function VocabularyLearning() {
               value={selectedTopic}
               onChange={(e) => {
                 setSelectedTopic(e.target.value)
-                setCustomTopic('')
+                if (e.target.value !== 'custom') {
+                  setCustomTopic('')
+                } else {
+                  setCustomTopic('Hãy cho tôi chủ đề bất kỳ mà bạn nghĩ sẽ thú vị')
+                }
               }}
               className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
             >
+              <option value="custom">Chủ đề khác...</option>
               <option value="">Để AI chọn chủ đề ngẫu nhiên</option>
               {COMMON_TOPICS.map((topic) => (
                 <option key={topic.id} value={topic.id}>
                   {topic.name}
                 </option>
               ))}
-              <option value="custom">Chủ đề khác...</option>
             </select>
           </div>
         </div>
@@ -162,7 +174,13 @@ export default function VocabularyLearning() {
               onChange={(e) => setCustomTopic(e.target.value)}
               placeholder="Ví dụ: Thể thao, Âm nhạc, ..."
               className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 bg-gray-50/50"
+              required={selectedTopic === 'custom'}
             />
+            {selectedTopic === 'custom' && !customTopic.trim() && (
+              <p className="text-sm text-red-500 mt-1">
+                Vui lòng nhập chủ đề bạn muốn học
+              </p>
+            )}
           </div>
         )}
 

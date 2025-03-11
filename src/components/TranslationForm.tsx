@@ -103,7 +103,7 @@ export default function TranslationForm({ onTranslate, isLoading }: TranslationF
             id="text"
             value={text}
             onChange={handleTextChange}
-            className="w-full h-[800px] p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none text-gray-800 placeholder-gray-400 bg-gray-50/50"
+            className="w-full h-[400px] p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none text-gray-800 placeholder-gray-400 bg-gray-50/50"
             placeholder="Enter or paste your text here..."
             suppressHydrationWarning
           />
