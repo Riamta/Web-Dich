@@ -186,7 +186,7 @@ export default function SRTTranslation() {
   const [fileName, setFileName] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
-  const [batchSize, setBatchSize] = useState(30);
+  const [batchSize, setBatchSize] = useState(50);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -406,7 +406,7 @@ export default function SRTTranslation() {
               <input
                 type="number"
                 value={batchSize}
-                onChange={(e) => setBatchSize(Math.max(1, Math.min(100, parseInt(e.target.value) || 30)))}
+                onChange={(e) => setBatchSize(Math.max(1, Math.min(100, parseInt(e.target.value) || 50)))}
                 min="1"
                 max="100"
                 className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"

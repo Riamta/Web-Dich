@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { MdTranslate, MdSubtitles, MdQuiz, MdSchool, MdChat } from 'react-icons/md';
+import { MdTranslate, MdSubtitles, MdQuiz, MdSchool, MdChat, MdShortText } from 'react-icons/md';
 import Image from 'next/image';
 import { useSidebar } from '@/contexts/SidebarContext';
 
@@ -15,6 +15,12 @@ export default function Sidebar() {
       name: 'Dịch văn bản',
       path: '/',
       icon: <MdTranslate className="w-5 h-5" />,
+      isExternal: false
+    },
+    {
+      name: 'Tóm tắt văn bản',
+      path: '/summarize',
+      icon: <MdShortText className="w-5 h-5" />,
       isExternal: false
     },
     {

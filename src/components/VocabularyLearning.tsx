@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DocumentArrowUpIcon, LanguageIcon, TagIcon } from '@heroicons/react/24/outline'
-import { MdVolumeUp, MdCheck, MdClose } from 'react-icons/md'
+import { MdVolumeUp, MdCheck, MdClose, MdBookmark, MdBookmarkBorder, MdRefresh } from 'react-icons/md'
 
 interface VocabularyItem {
   word: string
@@ -8,6 +8,8 @@ interface VocabularyItem {
   pronunciation: string
   example: string
   translation: string
+  language?: string
+  topic?: string
 }
 
 const SUPPORTED_LANGUAGES = [
@@ -33,16 +35,46 @@ const LEARNING_MODES = [
   { id: 'quiz', name: 'Kiểm tra từ vựng' },
 ]
 
+const MODES = [
+  { id: 'learn', name: 'Học từ mới' },
+  { id: 'review', name: 'Ôn tập từ đã lưu' }
+]
+
 export default function VocabularyLearning() {
+  const [mode, setMode] = useState('learn')
   const [targetLanguage, setTargetLanguage] = useState('en')
   const [selectedTopic, setSelectedTopic] = useState('custom')
   const [customTopic, setCustomTopic] = useState('Hãy cho tôi chủ đề bất kỳ mà bạn nghĩ sẽ thú vị')
+  const [wordCount, setWordCount] = useState(10)
   const [learningMode, setLearningMode] = useState('review')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [vocabularyList, setVocabularyList] = useState<VocabularyItem[]>([])
   const [userAnswers, setUserAnswers] = useState<{[key: number]: string}>({})
   const [showAnswers, setShowAnswers] = useState<{[key: number]: boolean}>({})
+  const [bookmarkedWords, setBookmarkedWords] = useState<VocabularyItem[]>([])
+  const [showBookmarkModal, setShowBookmarkModal] = useState(false)
+
+  // Load bookmarked words from localStorage on component mount
+  useEffect(() => {
+    const savedWords = localStorage.getItem('bookmarkedWords')
+    if (savedWords) {
+      setBookmarkedWords(JSON.parse(savedWords))
+    }
+  }, [])
+
+  const toggleBookmark = (word: VocabularyItem) => {
+    const newBookmarkedWords = bookmarkedWords.some(w => w.word === word.word)
+      ? bookmarkedWords.filter(w => w.word !== word.word)
+      : [...bookmarkedWords, { ...word, language: targetLanguage, topic: selectedTopic === 'custom' ? customTopic : selectedTopic }]
+    
+    setBookmarkedWords(newBookmarkedWords)
+    localStorage.setItem('bookmarkedWords', JSON.stringify(newBookmarkedWords))
+  }
+
+  const isBookmarked = (word: string) => {
+    return bookmarkedWords.some(w => w.word === word)
+  }
 
   const handleGenerateVocabulary = async () => {
     if (!targetLanguage) return
@@ -53,10 +85,21 @@ export default function VocabularyLearning() {
     setShowAnswers({})
     
     try {
-      // Determine the topic to send
+      if (mode === 'review') {
+        // Filter bookmarked words by selected language if in review mode
+        const filteredWords = bookmarkedWords.filter(word => word.language === targetLanguage)
+        if (filteredWords.length === 0) {
+          throw new Error(`Không có từ vựng ${SUPPORTED_LANGUAGES.find(lang => lang.code === targetLanguage)?.name} nào được lưu`)
+        }
+        // Randomly select words if we have more than wordCount
+        const shuffled = [...filteredWords].sort(() => Math.random() - 0.5)
+        setVocabularyList(shuffled.slice(0, Math.min(wordCount, shuffled.length)))
+        return
+      }
+
+      // Normal vocabulary generation for learn mode
       const topicToSend = selectedTopic === 'custom' ? customTopic : selectedTopic
 
-      // Validate custom topic if selected
       if (selectedTopic === 'custom' && !customTopic.trim()) {
         throw new Error('Vui lòng nhập chủ đề tùy chỉnh')
       }
@@ -69,6 +112,7 @@ export default function VocabularyLearning() {
         body: JSON.stringify({
           targetLanguage,
           topic: topicToSend || 'random',
+          wordCount: wordCount
         }),
       })
 
@@ -112,14 +156,59 @@ export default function VocabularyLearning() {
     return answer === correctAnswer
   }
 
+  const removeBookmark = (word: VocabularyItem) => {
+    const newBookmarkedWords = bookmarkedWords.filter(w => w.word !== word.word)
+    setBookmarkedWords(newBookmarkedWords)
+    localStorage.setItem('bookmarkedWords', JSON.stringify(newBookmarkedWords))
+  }
+
+  const getLanguageName = (code: string) => {
+    return SUPPORTED_LANGUAGES.find(lang => lang.code === code)?.name || code
+  }
+
+  const getTopicName = (topicId: string) => {
+    if (topicId === '') return 'Chủ đề ngẫu nhiên'
+    const commonTopic = COMMON_TOPICS.find(topic => topic.id === topicId)
+    return commonTopic ? commonTopic.name : topicId
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-8">
+      <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 space-y-6">
+        <div className="flex justify-between items-center mb-6">
+          <div className="grid grid-cols-2 gap-4 flex-1">
+            {MODES.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => {
+                  setMode(m.id)
+                  setVocabularyList([])
+                  setError(null)
+                }}
+                className={`p-3 rounded-lg border transition-all duration-200 ${
+                  mode === m.id
+                    ? 'bg-primary text-white border-primary'
+                    : 'border-gray-200 text-gray-700 hover:border-primary hover:text-primary'
+                }`}
+              >
+                {m.name}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setShowBookmarkModal(true)}
+            className="ml-4 px-4 py-3 rounded-lg border border-primary text-primary hover:bg-primary hover:text-white transition-all duration-200 flex items-center gap-2"
+          >
+            <MdBookmark className="h-5 w-5" />
+            Từ vựng đã lưu
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
               <LanguageIcon className="h-5 w-5 text-gray-400" />
-              Ngôn ngữ cần học
+              {mode === 'learn' ? 'Ngôn ngữ cần học' : 'Chọn ngôn ngữ ôn tập'}
             </label>
             <select
               value={targetLanguage}
@@ -134,35 +223,37 @@ export default function VocabularyLearning() {
             </select>
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-              <TagIcon className="h-5 w-5 text-gray-400" />
-              Chủ đề
-            </label>
-            <select
-              value={selectedTopic}
-              onChange={(e) => {
-                setSelectedTopic(e.target.value)
-                if (e.target.value !== 'custom') {
-                  setCustomTopic('')
-                } else {
-                  setCustomTopic('Hãy cho tôi chủ đề bất kỳ mà bạn nghĩ sẽ thú vị')
-                }
-              }}
-              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
-            >
-              <option value="custom">Chủ đề khác...</option>
-              <option value="">Để AI chọn chủ đề ngẫu nhiên</option>
-              {COMMON_TOPICS.map((topic) => (
-                <option key={topic.id} value={topic.id}>
-                  {topic.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {mode === 'learn' && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                <TagIcon className="h-5 w-5 text-gray-400" />
+                Chủ đề
+              </label>
+              <select
+                value={selectedTopic}
+                onChange={(e) => {
+                  setSelectedTopic(e.target.value)
+                  if (e.target.value !== 'custom') {
+                    setCustomTopic('')
+                  } else {
+                    setCustomTopic('Hãy cho tôi chủ đề bất kỳ mà bạn nghĩ sẽ thú vị')
+                  }
+                }}
+                className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
+              >
+                <option value="custom">Chủ đề khác...</option>
+                <option value="">Để AI chọn chủ đề ngẫu nhiên</option>
+                {COMMON_TOPICS.map((topic) => (
+                  <option key={topic.id} value={topic.id}>
+                    {topic.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
-        {selectedTopic === 'custom' && (
+        {mode === 'learn' && selectedTopic === 'custom' && (
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
               <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
@@ -184,25 +275,58 @@ export default function VocabularyLearning() {
           </div>
         )}
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-            <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
-            Chế độ học
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            {LEARNING_MODES.map((mode) => (
-              <button
-                key={mode.id}
-                onClick={() => setLearningMode(mode.id)}
-                className={`p-3 rounded-lg border transition-all duration-200 ${
-                  learningMode === mode.id
-                    ? 'bg-primary text-white border-primary'
-                    : 'border-gray-200 text-gray-700 hover:border-primary hover:text-primary'
-                }`}
-              >
-                {mode.name}
-              </button>
-            ))}
+        <div className="grid grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+              <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
+              {mode === 'learn' ? 'Số từ vựng' : 'Số từ ôn tập'}
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={wordCount}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value) || 10
+                  if (e.target.value === '') {
+                    setWordCount(10)
+                  } else if (value < 1) {
+                    setWordCount(1)
+                  } else if (value > 20) {
+                    setWordCount(20)
+                  } else {
+                    setWordCount(value)
+                  }
+                }}
+                min="1"
+                max="20"
+                className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
+              />
+              <div className="text-sm text-gray-500 whitespace-nowrap">
+                (1-20 từ)
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+              <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
+              Chế độ học
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {LEARNING_MODES.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => setLearningMode(m.id)}
+                  className={`p-3 rounded-lg border transition-all duration-200 ${
+                    learningMode === m.id
+                      ? 'bg-primary text-white border-primary'
+                      : 'border-gray-200 text-gray-700 hover:border-primary hover:text-primary'
+                  }`}
+                >
+                  {m.name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -233,10 +357,10 @@ export default function VocabularyLearning() {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              Đang tạo danh sách từ vựng...
+              {mode === 'learn' ? 'Đang tạo danh sách từ vựng...' : 'Đang tải từ vựng đã lưu...'}
             </span>
           ) : (
-            'Tạo danh sách từ vựng'
+            mode === 'learn' ? 'Tạo danh sách từ vựng' : 'Ôn tập từ vựng đã lưu'
           )}
         </button>
       </div>
@@ -248,15 +372,27 @@ export default function VocabularyLearning() {
       )}
 
       {vocabularyList.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {vocabularyList.map((item, index) => (
             <div
               key={index}
-              className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-3"
+              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4"
             >
               <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">{item.word}</h3>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-lg font-medium text-gray-900">{item.word}</h3>
+                    <button
+                      onClick={() => toggleBookmark(item)}
+                      className="text-primary hover:text-primary/80 transition-colors"
+                    >
+                      {isBookmarked(item.word) ? (
+                        <MdBookmark className="h-6 w-6" />
+                      ) : (
+                        <MdBookmarkBorder className="h-6 w-6" />
+                      )}
+                    </button>
+                  </div>
                   <p className="text-sm text-gray-500">{item.pronunciation}</p>
                 </div>
                 <button
@@ -268,27 +404,27 @@ export default function VocabularyLearning() {
               </div>
 
               {learningMode === 'quiz' ? (
-                <div className="space-y-3">
-                  <div className="flex gap-2">
+                <div className="space-y-4">
+                  <div className="flex gap-3">
                     <input
                       type="text"
                       placeholder="Nhập nghĩa của từ..."
                       value={userAnswers[index] || ''}
                       onChange={(e) => handleAnswerSubmit(index, e.target.value)}
                       disabled={showAnswers[index]}
-                      className="flex-1 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      className="flex-1 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
                     <button
                       onClick={() => checkAnswer(index)}
                       disabled={!userAnswers[index] || showAnswers[index]}
-                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:bg-gray-300"
+                      className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:bg-gray-300"
                     >
                       Kiểm tra
                     </button>
                   </div>
 
                   {showAnswers[index] && (
-                    <div className={`p-3 rounded-lg ${
+                    <div className={`p-4 rounded-lg ${
                       isAnswerCorrect(index)
                         ? 'bg-green-50 border border-green-200'
                         : 'bg-red-50 border border-red-200'
@@ -305,7 +441,7 @@ export default function VocabularyLearning() {
                             : `Đáp án đúng là: ${item.meaning}`}
                         </p>
                       </div>
-                      <div className="mt-2 text-sm text-gray-600">
+                      <div className="mt-3 text-sm text-gray-600">
                         <p className="font-medium">Ví dụ:</p>
                         <p>{item.example}</p>
                         <p className="text-gray-500">{item.translation}</p>
@@ -316,7 +452,7 @@ export default function VocabularyLearning() {
               ) : (
                 <>
                   <p className="text-gray-700">{item.meaning}</p>
-                  <div className="bg-gray-50 p-3 rounded-lg space-y-1">
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                     <p className="text-sm text-gray-600">{item.example}</p>
                     <p className="text-sm text-gray-500">{item.translation}</p>
                   </div>
@@ -324,6 +460,82 @@ export default function VocabularyLearning() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal hiển thị danh sách từ vựng đã lưu */}
+      {showBookmarkModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] flex flex-col">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-gray-900">Danh sách từ vựng đã lưu</h2>
+              <button
+                onClick={() => setShowBookmarkModal(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              {bookmarkedWords.length === 0 ? (
+                <div className="text-center text-gray-500 py-8">
+                  Chưa có từ vựng nào được lưu
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {bookmarkedWords.map((word, index) => (
+                    <div key={index} className="bg-gray-50 p-4 rounded-lg space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-lg font-medium text-gray-900">{word.word}</h3>
+                            <span className="text-sm text-gray-500">({getLanguageName(word.language || '')})</span>
+                          </div>
+                          <p className="text-sm text-gray-500">{word.pronunciation}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => playPronunciation(word.word, word.language || 'en')}
+                            className="p-2 text-gray-400 hover:text-primary transition-colors"
+                          >
+                            <MdVolumeUp className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => removeBookmark(word)}
+                            className="p-2 text-red-400 hover:text-red-500 transition-colors"
+                          >
+                            <MdClose className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-gray-700">{word.meaning}</p>
+                      {word.topic && (
+                        <p className="text-sm text-gray-500">
+                          Chủ đề: {getTopicName(word.topic)}
+                        </p>
+                      )}
+                      <div className="bg-white p-3 rounded border border-gray-100 space-y-1">
+                        <p className="text-sm text-gray-600">{word.example}</p>
+                        <p className="text-sm text-gray-500">{word.translation}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="p-6 border-t border-gray-100">
+              <button
+                onClick={() => setShowBookmarkModal(false)}
+                className="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
