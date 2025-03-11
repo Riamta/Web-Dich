@@ -12,8 +12,17 @@ interface DictionaryEntry {
 }
 
 interface TranslationFormProps {
-  onTranslate: (text: string, targetLanguage: string, preserveContext: boolean) => void
+  onTranslate: (
+    text: string, 
+    targetLanguage: string, 
+    preserveContext: boolean,
+    onProgress: (current: number, total: number) => void
+  ) => Promise<void>
   isLoading: boolean
+  progress?: {
+    current: number
+    total: number
+  }
 }
 
 const SUPPORTED_LANGUAGES = [
@@ -24,7 +33,7 @@ const SUPPORTED_LANGUAGES = [
   { code: 'ko', name: 'Tiếng Hàn' },
 ]
 
-export default function TranslationForm({ onTranslate, isLoading }: TranslationFormProps) {
+export default function TranslationForm({ onTranslate, isLoading, progress }: TranslationFormProps) {
   const [text, setText] = useTabState('translateText', '')
   const [targetLanguage, setTargetLanguage] = useTabState('targetLanguage', 'vi')
   const [preserveContext, setPreserveContext] = useTabState('preserveContext', true)
@@ -72,13 +81,20 @@ export default function TranslationForm({ onTranslate, isLoading }: TranslationF
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!text.trim()) {
       alert('Please enter some text to translate')
       return
     }
-    onTranslate(text, targetLanguage, preserveContext)
+    await onTranslate(
+      text, 
+      targetLanguage, 
+      preserveContext,
+      (current, total) => {
+        console.log(`Translation progress: ${current}/${total}`);
+      }
+    )
   }
 
   return (

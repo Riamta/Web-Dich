@@ -147,10 +147,195 @@ class AIService {
     }
 
     // Translation specific method
-    async translate(text: string, targetLanguage: string, preserveContext: boolean): Promise<string> {
-        const prompt = `Bạn là một dịch giả, hãy dịch nội dung tôi gửi sang ${targetLanguage}.Lưu ý: Chỉ trả về phần dịch ko nói gì thêm\n${text}`;
-        const result = await this.processWithAI(prompt);
-        return dictionaryService.applyDictionary(result);
+    async translate(
+        text: string, 
+        targetLanguage: string, 
+        preserveContext: boolean,
+        onProgress?: (current: number, total: number) => void
+    ): Promise<string> {
+        const MAX_CHUNK_LENGTH = 5000; // Characters per chunk
+        console.log('Original text length:', text.length);
+
+        // Split text into paragraphs first
+        const paragraphs = text.split(/\n\s*\n/); // Split on empty lines
+        console.log('Number of paragraphs:', paragraphs.length);
+        
+        const chunks: string[] = [];
+        let currentChunk = '';
+        let currentLength = 0;
+
+        // Helper function to calculate effective length considering Chinese characters
+        const getEffectiveLength = (text: string): number => {
+            let length = 0;
+            for (let i = 0; i < text.length; i++) {
+                if (/[\u4e00-\u9fff]/.test(text[i])) {
+                    length += 2; // Chinese character counts as 2 characters
+                } else {
+                    length += 1;
+                }
+            }
+            return length;
+        };
+
+        // Group paragraphs into chunks
+        for (const paragraph of paragraphs) {
+            const paragraphLength = getEffectiveLength(paragraph);
+            console.log('Paragraph length:', paragraphLength, 'Current total length:', currentLength);
+            
+            // If adding this paragraph would exceed maxLength and we have content
+            if ((currentLength + paragraphLength > MAX_CHUNK_LENGTH) && currentChunk) {
+                console.log('Creating new chunk, current chunk length:', currentLength);
+                chunks.push(currentChunk.trim());
+                currentChunk = paragraph;
+                currentLength = paragraphLength;
+            } else {
+                if (currentChunk) {
+                    currentChunk += '\n\n' + paragraph;
+                } else {
+                    currentChunk = paragraph;
+                }
+                currentLength += paragraphLength;
+            }
+        }
+
+        // Add the last chunk if not empty
+        if (currentChunk) {
+            chunks.push(currentChunk.trim());
+        }
+
+        console.log('Number of chunks created:', chunks.length);
+        chunks.forEach((chunk, i) => {
+            console.log(`Chunk ${i + 1} length:`, chunk.length);
+        });
+
+        // IMPORTANT: Check if we need to force chunk splitting for very long texts
+        if (chunks.length === 1 && text.length > MAX_CHUNK_LENGTH) {
+            console.log('Forcing chunk split for long text');
+            // Split the single chunk into smaller pieces
+            const forcedChunks: string[] = [];
+            const lines = chunks[0].split('\n');
+            currentChunk = '';
+            currentLength = 0;
+
+            for (const line of lines) {
+                const lineLength = getEffectiveLength(line);
+                if (currentLength + lineLength > MAX_CHUNK_LENGTH && currentChunk) {
+                    forcedChunks.push(currentChunk.trim());
+                    currentChunk = line;
+                    currentLength = lineLength;
+                } else {
+                    if (currentChunk) {
+                        currentChunk += '\n' + line;
+                    } else {
+                        currentChunk = line;
+                    }
+                    currentLength += lineLength;
+                }
+            }
+
+            if (currentChunk) {
+                forcedChunks.push(currentChunk.trim());
+            }
+
+            if (forcedChunks.length > 1) {
+                console.log('Forced splitting created', forcedChunks.length, 'chunks');
+                chunks.length = 0; // Clear original chunks
+                chunks.push(...forcedChunks);
+            }
+        }
+
+        // If text is still in one chunk and small enough, process normally
+        if (chunks.length === 1 && text.length <= MAX_CHUNK_LENGTH) {
+            onProgress?.(1, 1);
+            const prompt = `Bạn là một dịch giả, hãy dịch nội dung tôi gửi sang ${targetLanguage}. Lưu ý: Chỉ trả về phần dịch ko nói gì thêm\n${text}`;
+            const result = await this.processWithAI(prompt);
+            return dictionaryService.applyDictionary(result);
+        }
+
+        // Translate each chunk
+        const translatedChunks = [];
+        for (let i = 0; i < chunks.length; i++) {
+            onProgress?.(i + 1, chunks.length);
+            
+            const chunk = chunks[i];
+            console.log(`Translating chunk ${i + 1}/${chunks.length}, length:`, chunk.length);
+            
+            const prompt = `Bạn là một dịch giả, hãy dịch nội dung tôi gửi sang ${targetLanguage}. Đây là phần ${i + 1}/${chunks.length} của văn bản. Lưu ý:
+- Chỉ trả về phần dịch không nói gì thêm
+- Giữ nguyên format đoạn văn
+- Dịch theo ngữ cảnh văn học
+- Đảm bảo tính liên tục của câu chuyện
+
+Nội dung cần dịch:
+${chunk}`;
+
+            const result = await this.processWithAI(prompt);
+            const processedResult = await dictionaryService.applyDictionary(result);
+            translatedChunks.push(processedResult);
+            
+            // Log translation progress
+            console.log(`✓ Completed chunk ${i + 1}/${chunks.length}`);
+        }
+
+        // Log final combination
+        console.log('Combining', translatedChunks.length, 'translated chunks');
+        
+        // Combine translated chunks with proper spacing
+        const finalResult = translatedChunks.join('\n\n');
+        console.log('Final translation length:', finalResult.length);
+        
+        return finalResult;
+    }
+
+    private splitTextIntoChunks(text: string, maxLength: number): string[] {
+        const chunks: string[] = [];
+        let currentChunk = '';
+        let currentLength = 0;
+
+        // Helper function to calculate effective length considering Chinese characters
+        const getEffectiveLength = (text: string): number => {
+            let length = 0;
+            for (let i = 0; i < text.length; i++) {
+                // Check if character is Chinese (CJK Unified Ideographs range)
+                if (/[\u4e00-\u9fff]/.test(text[i])) {
+                    length += 4; // Chinese character counts as 4 characters
+                } else {
+                    length += 1;
+                }
+            }
+            return length;
+        };
+
+        // Split text into sentences
+        const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+
+        for (const sentence of sentences) {
+            const sentenceEffectiveLength = getEffectiveLength(sentence);
+            
+            // If current chunk is empty, always add the sentence regardless of length
+            if (currentChunk === '') {
+                currentChunk = sentence;
+                currentLength = sentenceEffectiveLength;
+                continue;
+            }
+
+            // If adding this sentence would exceed maxLength
+            if (currentLength + sentenceEffectiveLength > maxLength) {
+                chunks.push(currentChunk.trim());
+                currentChunk = sentence;
+                currentLength = sentenceEffectiveLength;
+            } else {
+                currentChunk += sentence;
+                currentLength += sentenceEffectiveLength;
+            }
+        }
+
+        // Add the last chunk if it's not empty
+        if (currentChunk.trim().length > 0) {
+            chunks.push(currentChunk.trim());
+        }
+
+        return chunks;
     }
 
     // Summarization specific method
@@ -205,7 +390,11 @@ ${text}`;
     }
 
     // SRT translation method
-    async translateSRT(content: string, targetLanguage: string): Promise<string> {
+    async translateSRT(
+        content: string, 
+        targetLanguage: string,
+        onProgress?: (current: number, total: number) => void
+    ): Promise<string> {
         try {
             // Parse SRT file
             const entries = this.parseSRT(content);
@@ -217,20 +406,22 @@ ${text}`;
             // Extract only text content for translation
             const textsToTranslate = entries.map(entry => entry.text);
             
-            // Create prompt for translation
-            const prompt = `Dịch các câu sau sang ${targetLanguage}. Chỉ trả về các câu đã dịch, mỗi câu một dòng:
-
-${textsToTranslate.join('\n')}
-
-Yêu cầu:
-- Chỉ trả về các câu đã dịch
-- Mỗi câu một dòng
-- Không thêm số thứ tự
-- Không thêm bất kỳ chú thích nào khác
-- Không thêm dấu gạch đầu dòng`;
-
-            // Get translations
-            let translatedText = await this.processWithAI(prompt);
+            // Calculate chunks based on total text length
+            const allText = textsToTranslate.join('\n');
+            const chunks = this.splitTextIntoChunks(allText, 5000);
+            
+            // Translate in chunks
+            let translatedText = '';
+            for (let i = 0; i < chunks.length; i++) {
+                // Report progress
+                onProgress?.(i + 1, chunks.length);
+                
+                const chunk = chunks[i];
+                const prompt = `Dịch các câu sau sang ${targetLanguage}. Đây là phần ${i + 1}/${chunks.length}. Chỉ trả về các câu đã dịch, mỗi câu một dòng:\n\n${chunk}\n\nYêu cầu:\n- Chỉ trả về các câu đã dịch\n- Mỗi câu một dòng\n- Không thêm số thứ tự\n- Không thêm bất kỳ chú thích nào khác\n- Không thêm dấu gạch đầu dòng`;
+                
+                const result = await this.processWithAI(prompt);
+                translatedText += (i > 0 ? '\n' : '') + result;
+            }
             
             // Clean up the response
             translatedText = translatedText

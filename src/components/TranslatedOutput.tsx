@@ -7,10 +7,14 @@ import { MdEdit, MdClose } from 'react-icons/md'
 interface TranslatedOutputProps {
   text: string
   isLoading: boolean
+  progress?: {
+    current: number
+    total: number
+  }
   onTextChange?: (text: string) => void
 }
 
-export default function TranslatedOutput({ text, isLoading, onTextChange }: TranslatedOutputProps) {
+export default function TranslatedOutput({ text, isLoading, progress, onTextChange }: TranslatedOutputProps) {
   const [mounted, setMounted] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -100,9 +104,28 @@ export default function TranslatedOutput({ text, isLoading, onTextChange }: Tran
           <div className="min-h-[800px] p-4 border border-gray-200 rounded-lg bg-gray-50/50">
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-                  <p className="text-sm text-gray-500">Translating your text...</p>
+                <div className="flex flex-col items-center gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                  <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent" />
+                  <div className="flex flex-col items-center gap-2">
+                    <p className="text-sm font-medium text-gray-700">
+                      {progress 
+                        ? `Đang dịch phần ${progress.current}/${progress.total}`
+                        : 'Đang dịch văn bản...'}
+                    </p>
+                    {progress && (
+                      <>
+                        <div className="w-80 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-primary h-2 rounded-full transition-all duration-300" 
+                            style={{ width: `${(progress.current / progress.total) * 100}%` }}
+                          />
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          {Math.round((progress.current / progress.total) * 100)}% hoàn thành
+                        </p>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : text ? (

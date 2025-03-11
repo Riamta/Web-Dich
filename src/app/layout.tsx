@@ -6,7 +6,7 @@ import Menubar from '@/components/Menubar'
 import { SidebarProvider } from '@/contexts/SidebarContext'
 
 const inter = Inter({ subsets: ['latin'] })
-
+import { Analytics } from "@vercel/analytics/react"
 export const metadata: Metadata = {
   title: 'AI Tool',
   description: 'AI Tool By Amri',
