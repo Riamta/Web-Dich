@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { ClipboardDocumentIcon, ArrowDownTrayIcon, DocumentArrowUpIcon } from '@heroicons/react/24/outline'
-import { MdEdit, MdClose } from 'react-icons/md'
+import { MdEdit, MdClose, MdTextFields } from 'react-icons/md'
+import ReactMarkdown from 'react-markdown'
 
 interface TranslatedOutputProps {
   text: string
@@ -12,13 +13,15 @@ interface TranslatedOutputProps {
     total: number
   }
   onTextChange?: (text: string) => void
+  isMarkdown?: boolean
 }
 
-export default function TranslatedOutput({ text, isLoading, progress, onTextChange }: TranslatedOutputProps) {
+export default function TranslatedOutput({ text, isLoading, progress, onTextChange, isMarkdown = false }: TranslatedOutputProps) {
   const [mounted, setMounted] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editedText, setEditedText] = useState('')
+  const [useMarkdown, setUseMarkdown] = useState(isMarkdown)
 
   useEffect(() => {
     setMounted(true)
@@ -68,10 +71,24 @@ export default function TranslatedOutput({ text, isLoading, progress, onTextChan
     <>
       <div className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-gray-100" suppressHydrationWarning>
         <div className="flex items-center justify-between">
-          <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-            <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
-            Translated Text
-          </label>
+          <div className="flex items-center gap-4">
+            <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+              <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
+              Translated Text
+            </label>
+            <button
+              onClick={() => setUseMarkdown(!useMarkdown)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                useMarkdown 
+                  ? 'bg-primary/10 text-primary' 
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              title="Toggle Markdown rendering"
+            >
+              <MdTextFields className="h-4 w-4" />
+              Markdown
+            </button>
+          </div>
           {text && !isLoading && (
             <div className="flex items-center gap-2">
               <button
@@ -129,7 +146,13 @@ export default function TranslatedOutput({ text, isLoading, progress, onTextChan
                 </div>
               </div>
             ) : text ? (
-              <div className="whitespace-pre-wrap text-gray-800">{text}</div>
+              <div className="prose prose-sm max-w-none text-gray-800">
+                {useMarkdown ? (
+                  <ReactMarkdown>{text}</ReactMarkdown>
+                ) : (
+                  <div className="whitespace-pre-wrap">{text}</div>
+                )}
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-2">
                 <svg className="h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">

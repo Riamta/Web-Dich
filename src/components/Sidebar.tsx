@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { MdTranslate, MdSubtitles, MdQuiz, MdSchool, MdChat, MdShortText } from 'react-icons/md';
+import { MdTranslate, MdSubtitles, MdQuiz, MdSchool, MdChat, MdShortText, MdEdit } from 'react-icons/md';
 import Image from 'next/image';
 import { useSidebar } from '@/contexts/SidebarContext';
 

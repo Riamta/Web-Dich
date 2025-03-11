@@ -29,7 +29,7 @@ const DIFFICULTY_LEVELS = [
 
 export default function QuizGenerator() {
   const [prompt, setPrompt] = useState('')
-  const [numQuestions, setNumQuestions] = useState<string>('1')
+  const [numQuestions, setNumQuestions] = useState<string>('3')
   const [explanationLanguage, setExplanationLanguage] = useState('vi')
   const [difficulty, setDifficulty] = useState('medium')
   const [isLoading, setIsLoading] = useState(false)

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { DocumentArrowUpIcon } from '@heroicons/react/24/outline';
-import { MdContentCopy, MdEdit, MdClose } from 'react-icons/md';
+import { MdContentCopy, MdEdit, MdClose, MdDelete, MdArrowDownward } from 'react-icons/md';
 import ReactMarkdown from 'react-markdown';
 import { useTabState } from '../hooks/useTabState';
+import { Tooltip } from 'react-tooltip';
 
 export default function TextSummarization() {
     const [mounted, setMounted] = useState(false);
@@ -14,20 +15,35 @@ export default function TextSummarization() {
     const [error, setError] = useState<string | null>(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editedSummary, setEditedSummary] = useState('');
+    const resultRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setMounted(true);
-        // Clear states on mount (page load/refresh)
         if (window.performance && window.performance.navigation.type === window.performance.navigation.TYPE_RELOAD) {
             setInputText('');
             setSummary('');
         }
     }, []);
 
-    // Don't render content until mounted (client-side)
     if (!mounted) {
         return <div className="min-h-screen"></div>;
     }
+
+    const getWordCount = (text: string) => {
+        return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+    };
+
+    const getCharacterCount = (text: string) => {
+        return text.length;
+    };
+
+    const scrollToResults = () => {
+        resultRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    const handleClearText = () => {
+        setInputText('');
+    };
 
     const handleSummarize = async () => {
         if (!inputText.trim()) return;
@@ -52,6 +68,7 @@ export default function TextSummarization() {
             const data = await response.json();
             setSummary(data.summary);
             console.log('✅ Text summarized successfully');
+            scrollToResults();
         } catch (error) {
             console.error('❌ Error summarizing text:', error);
             setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi tóm tắt văn bản');
@@ -98,25 +115,59 @@ export default function TextSummarization() {
             {/* Input Form */}
             <div className="space-y-4">
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-                    <label htmlFor="text" className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                        <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
-                        Văn bản cần tóm tắt
-                    </label>
-                    <textarea
-                        value={inputText}
-                        onChange={(e) => setInputText(e.target.value)}
-                        placeholder="Nhập hoặc dán văn bản cần tóm tắt vào đây..."
-                        className="w-full h-[800px] p-4 text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none bg-gray-50/50"
-                        disabled={isLoading}
-                    />
+                    <div className="flex items-center justify-between">
+                        <label htmlFor="text" className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
+                            Văn bản cần tóm tắt
+                        </label>
+                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                            <span>{getCharacterCount(inputText)} ký tự</span>
+                            <span>|</span>
+                            <span>{getWordCount(inputText)} từ</span>
+                            {inputText && (
+                                <button
+                                    onClick={handleClearText}
+                                    className="ml-2 p-2 hover:bg-red-50 rounded-full transition-colors duration-200"
+                                    data-tooltip-id="clear-tooltip"
+                                    data-tooltip-content="Xóa nội dung"
+                                >
+                                    <MdDelete className="h-5 w-5 text-red-500" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="relative">
+                        <textarea
+                            value={inputText}
+                            onChange={(e) => setInputText(e.target.value)}
+                            placeholder="Nhập hoặc dán văn bản cần tóm tắt vào đây..."
+                            className="w-full h-[400px] p-4 text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none bg-gray-50/50"
+                            disabled={isLoading}
+                        />
+                        {isLoading && (
+                            <div className="absolute inset-0 bg-gray-50/80 flex items-center justify-center">
+                                <div className="flex flex-col items-center gap-3">
+                                    <div className="relative">
+                                        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <div className="w-6 h-6 border-2 border-primary/30 border-t-transparent rounded-full animate-spin"></div>
+                                        </div>
+                                    </div>
+                                    <span className="text-primary font-medium">Đang xử lý...</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     <button
                         onClick={handleSummarize}
                         disabled={isLoading || !inputText.trim()}
-                        className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center justify-center gap-2 ${isLoading || !inputText.trim()
+                        className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                            isLoading || !inputText.trim()
                                 ? 'bg-gray-400 cursor-not-allowed'
                                 : 'bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md'
-                            }`}
+                        }`}
                     >
                         {isLoading ? (
                             <span className="flex items-center gap-2">
@@ -131,40 +182,52 @@ export default function TextSummarization() {
                                 Đang xử lý...
                             </span>
                         ) : (
-                            'Tóm tắt văn bản'
+                            <>
+                                Tóm tắt văn bản
+                                <MdArrowDownward className="h-5 w-5" />
+                            </>
                         )}
                     </button>
                 </div>
             </div>
 
             {/* Output */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+            <div ref={resultRef} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
                 <div className="flex items-center justify-between">
                     <label htmlFor="text" className="block text-sm font-medium text-gray-700 flex items-center gap-2">
                         <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
                         Kết quả tóm tắt
+                        {summary && (
+                            <span className="text-xs text-gray-500">
+                                ({getWordCount(summary)} từ)
+                            </span>
+                        )}
                     </label>
                     {summary && (
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={handleOpenEditModal}
                                 className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors duration-200"
+                                data-tooltip-id="edit-tooltip"
+                                data-tooltip-content="Chỉnh sửa kết quả"
                             >
                                 <MdEdit className="h-5 w-5" />
-                                <span>Chỉnh sửa</span>
+                                <span className="hidden sm:inline">Chỉnh sửa</span>
                             </button>
                             <button
                                 onClick={() => copyToClipboard(summary)}
                                 className="flex items-center gap-2 text-primary hover:text-primary/90 transition-colors duration-200"
+                                data-tooltip-id="copy-tooltip"
+                                data-tooltip-content="Sao chép vào clipboard"
                             >
                                 <MdContentCopy className="h-5 w-5" />
-                                <span>Sao chép</span>
+                                <span className="hidden sm:inline">Sao chép</span>
                             </button>
                         </div>
                     )}
                 </div>
 
-                <div className="min-h-[800px] bg-gray-50/50 rounded-lg p-4">
+                <div className="min-h-[400px] bg-gray-50/50 rounded-lg p-4">
                     {error ? (
                         <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
                             {error}
@@ -187,6 +250,11 @@ export default function TextSummarization() {
                 </div>
             </div>
 
+            {/* Tooltips */}
+            <Tooltip id="clear-tooltip" />
+            <Tooltip id="edit-tooltip" />
+            <Tooltip id="copy-tooltip" />
+
             {/* Edit Modal */}
             {showEditModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -205,7 +273,7 @@ export default function TextSummarization() {
                             <textarea
                                 value={editedSummary}
                                 onChange={(e) => setEditedSummary(e.target.value)}
-                                className="w-full h-[800px] p-4 text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none"
+                                className="w-full h-[400px] p-4 text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none"
                                 placeholder="Chỉnh sửa nội dung tóm tắt..."
                             />
                         </div>

@@ -5,6 +5,8 @@ import { DocumentArrowUpIcon, LanguageIcon } from '@heroicons/react/24/outline';
 import { MdBook, MdContentCopy, MdDownload, MdEdit, MdOutlineMenuBook, MdTranslate } from 'react-icons/md';
 import Dictionary from '@/components/Dictionary';
 import { dictionaryService } from '@/lib/dictionary-service';
+import { aiService } from '@/lib/ai-service';
+import { useToast, ToastContainer } from '@/utils/toast';
 
 interface ComparisonModalProps {
   isOpen: boolean;
@@ -16,8 +18,10 @@ interface ComparisonModalProps {
 
 interface SRTEntry {
   id: string;
-  timecode: string;
+  from: string;
+  to: string;
   text: string;
+  translation: string;
 }
 
 const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave }: ComparisonModalProps) => {
@@ -34,17 +38,17 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
       // Parse SRT content
       const parseSRT = (content: string) => {
         const entries: SRTEntry[] = [];
-        const blocks = content.trim().split(/\n\s*\n/); // Split by empty lines, handling multiple newlines
+        const blocks = content.trim().split(/\n\s*\n/); // Split by empty lines
         
         blocks.forEach(block => {
           const lines = block.trim().split('\n');
-          if (lines.length >= 2) { // Ensure we have at least ID and timecode
+          if (lines.length >= 2) {
             const id = lines[0].trim();
             const timecode = lines[1].trim();
-            const text = lines.slice(2).join('\n').trim(); // Join remaining lines preserving line breaks
+            const text = lines.slice(2).join('\n').trim();
             
-            if (id && timecode) { // Only add if we have valid id and timecode
-              entries.push({ id, timecode, text });
+            if (id && timecode) {
+              entries.push({ id, from: timecode.split(' --> ')[0], to: timecode.split(' --> ')[1], text, translation: '' });
             }
           }
         });
@@ -55,13 +59,14 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
       const originalEntries = parseSRT(originalText);
       const translatedEntries = parseSRT(translatedText);
       
-      // Ensure translated entries array matches original length
       while (translatedEntries.length < originalEntries.length) {
         const index = translatedEntries.length;
         translatedEntries.push({
           id: originalEntries[index].id,
-          timecode: originalEntries[index].timecode,
-          text: ''
+          from: originalEntries[index].from,
+          to: originalEntries[index].to,
+          text: '',
+          translation: ''
         });
       }
 
@@ -82,7 +87,7 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
 
     // Reconstruct the full SRT text
     const newText = newEntries.map(entry => 
-      `${entry.id}\n${entry.timecode}\n${entry.text}`
+      `${entry.id}\n${entry.from} --> ${entry.to}\n${entry.text}`
     ).join('\n\n');
     setEditedText(newText);
   };
@@ -117,9 +122,11 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
           <table className="w-full border-collapse">
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
-                <th className="p-3 text-left text-sm font-medium text-gray-700 w-[60px]">ID</th>
-                <th className="p-3 text-left text-sm font-medium text-gray-700 w-[30%]">Văn bản gốc</th>
-                <th className="p-3 text-left text-sm font-medium text-gray-700 w-[70%]">Bản dịch</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-700 w-16">No.</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-700 w-36">From</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-700 w-36">To</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-700">Original Text</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-700">Translated Text</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -127,18 +134,11 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
                 const translatedEntry = translatedEntries[index] || { text: '' };
                 return (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="p-3 text-sm text-gray-500 font-mono align-top">{entry.id}</td>
-                    <td className="p-3 text-sm text-gray-900 font-mono align-top">
-                      <div className="bg-gray-50 p-2 rounded whitespace-pre-wrap">{entry.text}</div>
-                    </td>
-                    <td className="p-3 align-top">
-                      <textarea
-                        value={translatedEntry.text}
-                        onChange={(e) => handleTranslationChange(index, e.target.value)}
-                        className="w-full p-2 text-sm font-mono border border-gray-200 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary min-h-[60px] resize-none"
-                        placeholder="Nhập bản dịch..."
-                      />
-                    </td>
+                    <td className="p-3 text-sm text-gray-500 font-mono">{entry.id}</td>
+                    <td className="p-3 text-sm text-gray-500 font-mono">{entry.from}</td>
+                    <td className="p-3 text-sm text-gray-500 font-mono">{entry.to}</td>
+                    <td className="p-3 text-sm text-gray-900 font-mono whitespace-pre-wrap">{entry.text}</td>
+                    <td className="p-3 text-sm text-gray-900 font-mono whitespace-pre-wrap">{translatedEntry.text}</td>
                   </tr>
                 );
               })}
@@ -161,6 +161,7 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
           </button>
         </div>
       </div>
+
       <Dictionary
         isOpen={isDictionaryOpen}
         onClose={() => setIsDictionaryOpen(false)}
@@ -179,14 +180,15 @@ const SUPPORTED_LANGUAGES = [
 
 export default function SRTTranslation() {
   const [srtContent, setSrtContent] = useState('');
+  const [entries, setEntries] = useState<Array<SRTEntry>>([]);
   const [targetLanguage, setTargetLanguage] = useState('vi');
-  const [translation, setTranslation] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
   const [batchSize, setBatchSize] = useState(50);
+  const { notify, removeToast } = useToast();
+  const [progressToastId, setProgressToastId] = useState<number | null>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -201,6 +203,30 @@ export default function SRTTranslation() {
       const text = await file.text();
       setSrtContent(text);
       setFileName(file.name);
+
+      // Parse SRT content
+      const blocks = text.trim().split(/\n\s*\n/);
+      const parsedEntries: Array<SRTEntry> = [];
+      
+      blocks.forEach((block, index) => {
+        const lines = block.trim().split('\n');
+        if (lines.length >= 3) {
+          const id = lines[0].trim();
+          const timecode = lines[1].trim();
+          const [from, to] = timecode.split(' --> ').map(t => t.trim());
+          const text = lines.slice(2).join('\n').trim();
+          
+          parsedEntries.push({
+            id,
+            from,
+            to,
+            text,
+            translation: text // Copy original text to translation when importing
+          });
+        }
+      });
+
+      setEntries(parsedEntries);
       setError(null);
     } catch (error) {
       console.error('Error reading file:', error);
@@ -209,111 +235,115 @@ export default function SRTTranslation() {
   };
 
   const handleTranslate = async () => {
-    if (!srtContent.trim()) return;
+    if (!entries.length) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      // Split content into chunks based on batchSize
-      const chunks = srtContent.trim().split(/\n\s*\n/).reduce((acc: string[][], block, index) => {
-        const chunkIndex = Math.floor(index / batchSize);
-        if (!acc[chunkIndex]) {
-          acc[chunkIndex] = [];
+      const totalBatches = Math.ceil(entries.length / batchSize);
+      const updatedEntries = [...entries];
+      
+      for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+        const start = batchIndex * batchSize;
+        const end = Math.min(start + batchSize, entries.length);
+        const batchEntries = entries.slice(start, end);
+        
+        const textsToTranslate = batchEntries.map(entry => entry.text);
+        const batchText = textsToTranslate.join('\n');
+
+        // Update progress
+        const progress = Math.round(((batchIndex + 1) / totalBatches) * 100);
+        if (progressToastId !== null) {
+          removeToast(progressToastId);
+          const newToastId = notify({
+            message: `Đang xử lý... ${progress}%`,
+            type: 'loading',
+            position: 'bottom-right'
+          });
+          setProgressToastId(newToastId);
         }
-        acc[chunkIndex].push(block);
-        return acc;
-      }, []).map(chunk => chunk.join('\n\n'));
 
-      const translatedChunks: string[] = [];
-      const maxRetries = 3;
+        const prompt = `Dịch các câu sau sang ${targetLanguage}. Đây là phần ${batchIndex + 1}/${totalBatches}. 
+Yêu cầu:
+- Chỉ trả về các câu đã dịch
+- Mỗi câu một dòng
+- Không thêm số thứ tự
+- Không thêm bất kỳ chú thích nào khác
+- Không thêm dấu gạch đầu dòng
+- Giữ nguyên format và ký tự đặc biệt
+- Dịch theo ngữ cảnh tự nhiên
 
-      for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
-        let currentTry = 0;
-        let success = false;
+Nội dung cần dịch:
+${batchText}`;
 
-        while (currentTry < maxRetries && !success) {
-          try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        const result = await aiService.processWithAI(prompt);
+        
+        // Split result into lines and apply dictionary
+        const translatedLines = result
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line && !line.startsWith('-') && !line.startsWith('['));
 
-            const response = await fetch('/api/translate-srt', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                content: chunks[chunkIndex],
-                targetLanguage,
-              }),
-              signal: controller.signal
-            });
+        const processedLines = await Promise.all(
+          translatedLines.map(line => dictionaryService.applyDictionary(line))
+        );
 
-            clearTimeout(timeoutId);
-
-            if (!response.ok) {
-              const errorData = await response.json().catch(() => ({}));
-              throw new Error(errorData.error || `Error translating chunk ${chunkIndex + 1}`);
-            }
-
-            const data = await response.json();
-            if (!data.translation) {
-              throw new Error(`No translation received for chunk ${chunkIndex + 1}`);
-            }
-
-            translatedChunks[chunkIndex] = data.translation;
-            success = true;
-
-            // Update progress
-            const progress = Math.round(((chunkIndex + 1) / chunks.length) * 100);
-            setError(`Đang xử lý... ${progress}%`);
-
-          } catch (error: any) {
-            currentTry++;
-            console.error(`Chunk ${chunkIndex + 1}, attempt ${currentTry} failed:`, error);
-
-            if (error.name === 'AbortError') {
-              if (currentTry === maxRetries) {
-                throw new Error(`Timeout translating chunk ${chunkIndex + 1}`);
-              }
-              continue;
-            }
-
-            if (currentTry === maxRetries) {
-              throw error;
-            }
-
-            // Wait before retrying (exponential backoff)
-            await new Promise(resolve => setTimeout(resolve, Math.pow(2, currentTry) * 1000));
+        // Update translations for current batch
+        for (let i = 0; i < batchEntries.length; i++) {
+          if (processedLines[i]) {
+            updatedEntries[start + i] = {
+              ...updatedEntries[start + i],
+              translation: processedLines[i]
+            };
           }
         }
 
-        // Add small delay between chunks to avoid rate limiting
-        if (chunkIndex < chunks.length - 1) {
+        // Add delay between batches
+        if (batchIndex < totalBatches - 1) {
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
 
-      // Combine all translated chunks
-      const completeTranslation = translatedChunks.join('\n\n');
+      setEntries(updatedEntries);
       
-      // Apply dictionary replacements to the complete translation
-      const processedTranslation = dictionaryService.applyDictionary(completeTranslation);
-      setTranslation(processedTranslation);
-      setError(null);
-
+      // Show success toast and remove progress toast
+      if (progressToastId !== null) {
+        removeToast(progressToastId);
+      }
+      notify({
+        message: 'Dịch hoàn tất!',
+        type: 'success',
+        duration: 3000,
+        position: 'bottom-right'
+      });
+      
     } catch (error: any) {
       console.error('Translation error:', error);
-      setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch phụ đề. Vui lòng thử lại sau.');
+      // Show error toast and remove progress toast
+      if (progressToastId !== null) {
+        removeToast(progressToastId);
+      }
+      notify({
+        message: error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch phụ đề. Vui lòng thử lại sau.',
+        type: 'error',
+        duration: 5000,
+        position: 'bottom-right'
+      });
     } finally {
       setIsLoading(false);
+      setProgressToastId(null);
     }
   };
 
   const handleDownload = () => {
-    if (!translation) return;
+    if (!entries.length) return;
 
-    const blob = new Blob([translation], { type: 'text/plain' });
+    const content = entries.map(entry => 
+      `${entry.id}\n${entry.from} --> ${entry.to}\n${entry.translation || entry.text}`
+    ).join('\n\n') + '\n';
+
+    const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -325,69 +355,80 @@ export default function SRTTranslation() {
     URL.revokeObjectURL(url);
   };
 
-  const copyToClipboard = async (text: string) => {
+  const handleTranslationChange = (index: number, value: string) => {
+    const newEntries = [...entries];
+    newEntries[index] = {
+      ...newEntries[index],
+      translation: value
+    };
+    setEntries(newEntries);
+  };
+
+  const handleTranslateRow = async (index: number) => {
+    if (isLoading) return;
+
     try {
-      await navigator.clipboard.writeText(text);
-      const notification = document.createElement('div');
-      notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-      notification.textContent = 'Đã sao chép vào clipboard!';
-      document.body.appendChild(notification);
-      setTimeout(() => {
-        notification.remove();
-      }, 2000);
-    } catch (err) {
-      console.error('Failed to copy text:', err);
-      alert('Failed to copy text to clipboard');
+      const entry = entries[index];
+      const toastId = notify({
+        message: `Đang dịch dòng ${index + 1}...`,
+        type: 'loading',
+        position: 'bottom-right'
+      });
+
+      const prompt = `Dịch câu sau sang ${targetLanguage}. 
+Yêu cầu:
+- Chỉ trả về câu đã dịch
+- Không thêm chú thích
+- Giữ nguyên format và ký tự đặc biệt
+- Dịch theo ngữ cảnh tự nhiên
+
+Nội dung cần dịch:
+${entry.text}`;
+
+      const result = await aiService.processWithAI(prompt);
+      const processedResult = await dictionaryService.applyDictionary(result.trim());
+
+      const newEntries = [...entries];
+      newEntries[index] = {
+        ...entry,
+        translation: processedResult
+      };
+      setEntries(newEntries);
+      setError(null);
+
+      removeToast(toastId);
+      notify({
+        message: `Đã dịch xong dòng ${index + 1}`,
+        type: 'success',
+        duration: 3000,
+        position: 'bottom-right'
+      });
+    } catch (error: any) {
+      console.error('Translation error:', error);
+      notify({
+        message: `Lỗi khi dịch dòng ${index + 1}`,
+        type: 'error',
+        duration: 5000,
+        position: 'bottom-right'
+      });
     }
   };
 
-  const handleSaveEdit = (editedText: string) => {
-    // Apply dictionary replacements to the edited text
-    const processedText = dictionaryService.applyDictionary(editedText);
-    setTranslation(processedText);
-  };
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div className="space-y-4">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-          <div className="flex items-center justify-between">
-            <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-              <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
-              Upload SRT File
-            </label>
-            <button
-              onClick={() => setIsDictionaryOpen(true)}
-              className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors duration-200"
-            >
-              <MdBook className="h-5 w-5" />
-              <span>Từ điển</span>
-            </button>
-          </div>
-
-          <input
-            type="file"
-            onChange={handleFileUpload}
-            accept=".srt"
-            className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
-          />
-
-          <textarea
-            value={srtContent}
-            onChange={(e) => setSrtContent(e.target.value)}
-            placeholder="Or paste SRT content here..."
-            className="w-full h-[400px] p-4 font-mono text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none bg-gray-50/50"
-          />
-
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-              <LanguageIcon className="h-5 w-5 text-gray-400" />
-              Target Language
-            </label>
+    <div className="space-y-4">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <input
+              type="file"
+              onChange={handleFileUpload}
+              accept=".srt"
+              className="w-64 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+            />
             <select
               value={targetLanguage}
               onChange={(e) => setTargetLanguage(e.target.value)}
-              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
+              className="p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
             >
               {SUPPORTED_LANGUAGES.map((lang) => (
                 <option key={lang.code} value={lang.code}>
@@ -395,13 +436,6 @@ export default function SRTTranslation() {
                 </option>
               ))}
             </select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-              <MdOutlineMenuBook className="h-5 w-5 text-gray-400" />
-              Số câu mỗi lần xử lý
-            </label>
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -409,121 +443,116 @@ export default function SRTTranslation() {
                 onChange={(e) => setBatchSize(Math.max(1, Math.min(100, parseInt(e.target.value) || 50)))}
                 min="1"
                 max="100"
-                className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
+                className="w-20 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                title="Số câu mỗi lần xử lý (1-100)"
               />
-              <div className="text-sm text-gray-500">
-                (1-100)
-              </div>
+              <span className="text-sm text-gray-500">câu/lần</span>
             </div>
-            <p className="text-sm text-gray-500">
-              Giá trị càng nhỏ xử lý càng chậm nhưng ổn định hơn. Giá trị càng lớn xử lý càng nhanh nhưng có thể gặp lỗi.
-            </p>
-          </div>
-
-          <button
-            onClick={handleTranslate}
-            disabled={isLoading || !srtContent.trim()}
-            className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-              isLoading || !srtContent.trim()
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md'
-            }`}
-          >
-            {isLoading ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                Đang xử lý...
-              </span>
-            ) : (
-              'Dịch phụ đề'
-            )}
-          </button>
-        </div>
-      </div>
-
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-        <div className="flex items-center justify-between">
-          <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-            <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
-            Kết quả dịch
-          </label>
-          {translation && (
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => copyToClipboard(translation)}
-                className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors duration-200"
-              >
-                <MdContentCopy className="h-5 w-5" />
-                <span>Sao chép</span>
-              </button>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors duration-200"
-              >
-                <MdEdit className="h-5 w-5" />
-                <span>Chỉnh sửa</span>
-              </button>
+            <button
+              onClick={handleTranslate}
+              disabled={isLoading || !entries.length}
+              className={`py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center gap-2 ${
+                isLoading || !entries.length
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-primary hover:bg-primary/90'
+              }`}
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Đang xử lý...
+                </span>
+              ) : (
+                'Dịch phụ đề'
+              )}
+            </button>
+            {entries.length > 0 && (
               <button
                 onClick={handleDownload}
-                className="flex items-center gap-2 text-primary hover:text-primary/90 transition-colors duration-200"
+                className="py-2 px-4 rounded-lg text-primary border border-primary hover:bg-primary/10 transition-all duration-200 flex items-center gap-2"
               >
                 <MdDownload className="h-5 w-5" />
-                <span>Tải xuống</span>
+                Tải xuống
               </button>
-            </div>
-          )}
+            )}
+          </div>
+          <button
+            onClick={() => setIsDictionaryOpen(true)}
+            className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors duration-200"
+          >
+            <MdBook className="h-5 w-5" />
+            <span>Từ điển</span>
+          </button>
         </div>
 
-        <div className="min-h-[400px] bg-gray-50/50 rounded-lg p-4">
-          {error ? (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
-              {error}
-            </div>
-          ) : translation ? (
-            <pre className="whitespace-pre-wrap font-mono text-sm text-gray-800">
-              {translation}
-            </pre>
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center p-4">
-              <div className="w-16 h-16 mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                <DocumentArrowUpIcon className="w-8 h-8 text-primary" />
-              </div>
-              <p className="text-gray-500 mb-1">Chưa có kết quả dịch</p>
-              <p className="text-sm text-gray-400">
-                Tải lên file SRT hoặc dán nội dung và nhấn nút "Dịch phụ đề" để bắt đầu
-              </p>
-            </div>
-          )}
+        {error && (
+          <div className={`p-4 rounded-lg ${error.startsWith('Đang xử lý') ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'}`}>
+            {error}
+          </div>
+        )}
+
+        <div className="overflow-auto max-h-[calc(100vh-300px)]">
+          <table className="w-full border-collapse">
+            <thead className="bg-gray-50 sticky top-0 z-10">
+              <tr>
+                <th className="p-3 text-left text-sm font-medium text-gray-700 w-16">No.</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-700 w-36">From</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-700 w-36">To</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-700">Original Text</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-700">Translated Text</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {entries.map((entry, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="p-3 text-sm text-gray-500 font-mono">{entry.id}</td>
+                  <td className="p-3 text-sm text-gray-500 font-mono">{entry.from}</td>
+                  <td className="p-3 text-sm text-gray-500 font-mono">{entry.to}</td>
+                  <td className="p-3 text-sm text-gray-900 font-mono whitespace-pre-wrap">{entry.text}</td>
+                  <td className="p-3 text-sm text-gray-900 font-mono">
+                    <div className="flex gap-2">
+                      <textarea
+                        value={entry.translation}
+                        onChange={(e) => handleTranslationChange(index, e.target.value)}
+                        className="flex-1 p-2 text-sm font-mono border border-gray-200 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary min-h-[60px] resize-none whitespace-pre-wrap"
+                      />
+                      <button
+                        onClick={() => handleTranslateRow(index)}
+                        disabled={isLoading}
+                        className="self-start p-2 text-gray-500 hover:text-primary hover:bg-primary/10 rounded transition-colors"
+                        title="Dịch dòng này"
+                      >
+                        <MdTranslate className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-
-      <ComparisonModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        originalText={srtContent}
-        translatedText={translation}
-        onSave={handleSaveEdit}
-      />
 
       <Dictionary
         isOpen={isDictionaryOpen}
         onClose={() => setIsDictionaryOpen(false)}
       />
+      <ToastContainer />
     </div>
   );
 } 
