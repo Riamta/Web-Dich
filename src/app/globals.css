@@ -17,7 +17,12 @@
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
-} 
+}
+
+/* Override text color for specific elements that need white text */
+.text-white {
+  color: white !important;
+}
 .space-y-6 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
   margin-top: calc(0.5rem* calc(1 - var(--tw-space-y-reverse)));
@@ -34,4 +39,16 @@ body {
 }
 ul.space-y-4.px-3 {
   padding-top: 1.75rem;
+}
+option {
+  color: black;
+}
+select#ai-model {
+  color: black;
+}
+select.w-full.p-3.border.border-gray-200.rounded-lg.focus\:ring-2.focus\:ring-primary\/20.focus\:border-primary.transition-all.duration-200.appearance-none.bg-gray-50\/50 {
+  color: black;
+}
+input.w-full.p-3.border.border-gray-200.rounded-lg.focus\:ring-2.focus\:ring-primary\/20.focus\:border-primary.transition-all.duration-200.bg-gray-50\/50 {
+  color: black;
 }
