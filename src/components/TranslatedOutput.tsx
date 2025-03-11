@@ -207,4 +207,4 @@ export default function TranslatedOutput({ text, isLoading, progress, onTextChan
       )}
     </>
   )
-} 
+}
