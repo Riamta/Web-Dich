@@ -187,7 +187,7 @@ export default function SRTTranslation() {
   const [fileName, setFileName] = useState('');
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
   const [batchSize, setBatchSize] = useState(50);
-  const { notify, removeToast } = useToast();
+  const { loading, success, removeToast } = useToast();
   const [progressToastId, setProgressToastId] = useState<number | null>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -256,11 +256,7 @@ export default function SRTTranslation() {
         const progress = Math.round(((batchIndex + 1) / totalBatches) * 100);
         if (progressToastId !== null) {
           removeToast(progressToastId);
-          const newToastId = notify({
-            message: `Đang xử lý... ${progress}%`,
-            type: 'loading',
-            position: 'bottom-right'
-          });
+          const newToastId = loading(`Đang xử lý... ${progress}%`);
           setProgressToastId(newToastId);
         }
 
@@ -311,12 +307,7 @@ ${batchText}`;
       if (progressToastId !== null) {
         removeToast(progressToastId);
       }
-      notify({
-        message: 'Dịch hoàn tất!',
-        type: 'success',
-        duration: 3000,
-        position: 'bottom-right'
-      });
+      success('Dịch hoàn tất!');
       
     } catch (error: any) {
       console.error('Translation error:', error);
@@ -324,12 +315,7 @@ ${batchText}`;
       if (progressToastId !== null) {
         removeToast(progressToastId);
       }
-      notify({
-        message: error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch phụ đề. Vui lòng thử lại sau.',
-        type: 'error',
-        duration: 5000,
-        position: 'bottom-right'
-      });
+      error(error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch phụ đề. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
       setProgressToastId(null);
@@ -355,6 +341,21 @@ ${batchText}`;
     URL.revokeObjectURL(url);
   };
 
+  const handleCopy = async () => {
+    if (!entries.length) return;
+
+    const content = entries.map(entry => 
+      `${entry.id}\n${entry.from} --> ${entry.to}\n${entry.translation || entry.text}`
+    ).join('\n\n') + '\n';
+
+    try {
+      await navigator.clipboard.writeText(content);
+      success('Đã sao chép bản dịch vào clipboard!');
+    } catch (err) {
+      setError('Không thể sao chép bản dịch. Vui lòng thử lại.');
+    }
+  };
+
   const handleTranslationChange = (index: number, value: string) => {
     const newEntries = [...entries];
     newEntries[index] = {
@@ -369,11 +370,7 @@ ${batchText}`;
 
     try {
       const entry = entries[index];
-      const toastId = notify({
-        message: `Đang dịch dòng ${index + 1}...`,
-        type: 'loading',
-        position: 'bottom-right'
-      });
+      const toastId = loading(`Đang dịch dòng ${index + 1}...`);
 
       const prompt = `Dịch câu sau sang ${targetLanguage}. 
 Yêu cầu:
@@ -397,20 +394,10 @@ ${entry.text}`;
       setError(null);
 
       removeToast(toastId);
-      notify({
-        message: `Đã dịch xong dòng ${index + 1}`,
-        type: 'success',
-        duration: 3000,
-        position: 'bottom-right'
-      });
+      success(`Đã dịch xong dòng ${index + 1}`);
     } catch (error: any) {
       console.error('Translation error:', error);
-      notify({
-        message: `Lỗi khi dịch dòng ${index + 1}`,
-        type: 'error',
-        duration: 5000,
-        position: 'bottom-right'
-      });
+      error(`Lỗi khi dịch dòng ${index + 1}`);
     }
   };
 
@@ -482,13 +469,22 @@ ${entry.text}`;
               )}
             </button>
             {entries.length > 0 && (
-              <button
-                onClick={handleDownload}
-                className="py-2 px-4 rounded-lg text-primary border border-primary hover:bg-primary/10 transition-all duration-200 flex items-center gap-2"
-              >
-                <MdDownload className="h-5 w-5" />
-                Tải xuống
-              </button>
+              <>
+                <button
+                  onClick={handleDownload}
+                  className="py-2 px-4 rounded-lg text-primary border border-primary hover:bg-primary/10 transition-all duration-200 flex items-center gap-2"
+                >
+                  <MdDownload className="h-5 w-5" />
+                  Tải xuống
+                </button>
+                <button
+                  onClick={handleCopy}
+                  className="py-2 px-4 rounded-lg text-primary border border-primary hover:bg-primary/10 transition-all duration-200 flex items-center gap-2"
+                >
+                  <MdContentCopy className="h-5 w-5" />
+                  Sao chép
+                </button>
+              </>
             )}
           </div>
           <button

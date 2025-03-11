@@ -6,6 +6,7 @@ interface SidebarContextType {
   isOpen: boolean
   toggle: () => void
   close: () => void
+  setIsOpen: (isOpen: boolean) => void
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined)
@@ -28,11 +29,25 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  // Control body overflow when sidebar is open on mobile
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (isOpen && window.innerWidth < 768) {
+        document.body.style.overflow = 'hidden'
+      } else {
+        document.body.style.overflow = ''
+      }
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
+
   const toggle = () => setIsOpen(prev => !prev)
   const close = () => setIsOpen(false)
 
   return (
-    <SidebarContext.Provider value={{ isOpen, toggle, close }}>
+    <SidebarContext.Provider value={{ isOpen, toggle, close, setIsOpen }}>
       {children}
     </SidebarContext.Provider>
   )

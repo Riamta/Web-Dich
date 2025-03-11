@@ -13,6 +13,22 @@ interface SRTEntry {
     text: string;
 }
 
+interface GrammarError {
+    text: string
+    suggestion: string
+    explanation: string
+    type: 'grammar' | 'spelling' | 'style'
+    startIndex: number
+    endIndex: number
+}
+
+interface EnhancementOptions {
+    improveStyle: boolean
+    formalLevel: 'casual' | 'neutral' | 'formal'
+    tone: 'friendly' | 'professional' | 'academic'
+    preserveContext: boolean
+}
+
 class AIService {
     private config: AIServiceConfig = {
         model: 'gemini-2.0-flash'
@@ -247,15 +263,15 @@ class AIService {
         // If text is still in one chunk and small enough, process normally
         if (chunks.length === 1 && text.length <= MAX_CHUNK_LENGTH) {
             onProgress?.(1, 1);
-            const prompt = `Bạn là một dịch giả chuyên nghiệp. Nhiệm vụ của bạn là dịch chính xác nội dung sau sang ${targetLanguage}.
+            const prompt = `You are a professional translator. Your task is to accurately translate the following content to ${targetLanguage}.
 
-NGUYÊN TẮC DỊCH THUẬT:
-1. TUYỆT ĐỐI CHỈ TRẢ VỀ BẢN DỊCH, KHÔNG ĐƯỢC THÊM BẤT KỲ CHÚ THÍCH HAY GIẢI THÍCH NÀO
-2. PHẢI GIỮ NGUYÊN ĐỊNH DẠNG VĂN BẢN GỐC (khoảng cách dòng, xuống dòng, v.v.)
-3. KHÔNG ĐƯỢC THÊM DẤU ĐÁNH SỐ, DẤU GẠCH ĐẦU DÒNG HAY BẤT KỲ KÝ TỰ NÀO KHÔNG CÓ TRONG BẢN GỐC
-4. KHÔNG ĐƯỢC TRẢ LỜI "ĐƯỢC" HAY XÁC NHẬN HIỂU YÊU CẦU
+TRANSLATION PRINCIPLES:
+1. ABSOLUTELY ONLY RETURN THE TRANSLATION, DO NOT ADD ANY NOTES OR EXPLANATIONS
+2. MUST MAINTAIN THE ORIGINAL TEXT FORMAT (line spacing, line breaks, etc.)
+3. DO NOT ADD NUMBERING, BULLET POINTS OR ANY CHARACTERS NOT IN THE ORIGINAL
+4. DO NOT REPLY "OK" OR CONFIRM UNDERSTANDING
 
-NỘI DUNG CẦN DỊCH:
+CONTENT TO TRANSLATE:
 ${text}`;
             const result = await this.processWithAI(prompt);
             return dictionaryService.applyDictionary(result);
@@ -269,16 +285,16 @@ ${text}`;
             const chunk = chunks[i];
             console.log(`Translating chunk ${i + 1}/${chunks.length}, length:`, chunk.length);
 
-            const prompt = `Bạn là một dịch giả chuyên nghiệp. Nhiệm vụ của bạn là dịch chính xác nội dung sau sang ${targetLanguage}. Đây là phần ${i + 1}/${chunks.length} của văn bản.
+            const prompt = `You are a professional translator. Your task is to accurately translate the following content to ${targetLanguage}. This is part ${i + 1}/${chunks.length} of the text.
 
-NGUYÊN TẮC DỊCH THUẬT:
-1. TUYỆT ĐỐI CHỈ TRẢ VỀ BẢN DỊCH, KHÔNG ĐƯỢC THÊM BẤT KỲ CHÚ THÍCH HAY GIẢI THÍCH NÀO
-2. PHẢI GIỮ NGUYÊN ĐỊNH DẠNG VĂN BẢN GỐC (khoảng cách dòng, xuống dòng, v.v.)
-3. KHÔNG ĐƯỢC THÊM DẤU ĐÁNH SỐ, DẤU GẠCH ĐẦU DÒNG HAY BẤT KỲ KÝ TỰ NÀO KHÔNG CÓ TRONG BẢN GỐC
-4. KHÔNG ĐƯỢC TRẢ LỜI "ĐƯỢC" HAY XÁC NHẬN HIỂU YÊU CẦU
-5. ĐẢM BẢO TÍNH LIÊN TỤC VỚI CÁC PHẦN TRƯỚC (nếu có)
+TRANSLATION PRINCIPLES:
+1. ABSOLUTELY ONLY RETURN THE TRANSLATION, DO NOT ADD ANY NOTES OR EXPLANATIONS
+2. MUST MAINTAIN THE ORIGINAL TEXT FORMAT (line spacing, line breaks, etc.)
+3. DO NOT ADD NUMBERING, BULLET POINTS OR ANY CHARACTERS NOT IN THE ORIGINAL
+4. DO NOT REPLY "OK" OR CONFIRM UNDERSTANDING
+5. ENSURE CONTINUITY WITH PREVIOUS PARTS (if any)
 
-NỘI DUNG CẦN DỊCH:
+CONTENT TO TRANSLATE:
 ${chunk}`;
 
             const result = await this.processWithAI(prompt);
@@ -482,7 +498,26 @@ ${text}`;
         }
     }
 
-    
+    async enhanceText(text: string): Promise<string> {
+        const prompt = `Please enhance the following text according to these requirements:
+            REQUIREMENTS:
+            - Maintain the original language of the text (Do not translate to other languages)
+            - Check grammar, spelling and writing style
+            - Improve the writing style if possible
+            - Only return the enhanced text
+            - Do not add any comments or explanations
+            - Preserve text formatting (line breaks, spacing)
+            - Keep the original language (do not translate to other languages)
+Text to enhance:
+${text}`;
+
+        try {
+            return await this.processWithAI(prompt);
+        } catch (error) {
+            console.error('Text enhancement error:', error);
+            throw new Error('Failed to enhance text');
+        }
+    }
 }
 
 export const aiService = new AIService(); 
