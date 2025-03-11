@@ -7,8 +7,8 @@ import Menubar from '@/components/Menubar'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Story Translation App',
-  description: 'AI-powered story translation and summarization',
+  title: 'AI Tool',
+  description: 'AI Tool',
 }
 
 export default function RootLayout({
@@ -19,11 +19,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Sidebar />
-        <Menubar />
-        <main className="pl-20 pt-14">
-          {children}
-        </main>
+        <div className="flex h-screen overflow-hidden bg-gray-100">
+          <Sidebar />
+          <div className="flex-1 flex flex-col">
+            <Menubar />
+            <main className="flex-1 overflow-y-auto">
+              <div className="container mx-auto px-4 py-8">
+                {children}
+              </div>
+            </main>
+          </div>
+        </div>
       </body>
     </html>
   )

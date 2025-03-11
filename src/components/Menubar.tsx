@@ -26,7 +26,7 @@ export default function Menubar() {
   ];
 
   return (
-    <div className="fixed top-0 left-20 right-0 h-14 bg-white border-b border-gray-200 px-4 flex items-center z-40">
+    <div className="top-0 left-40 right-0 h-14 bg-white border-b border-gray-200 px-4 flex items-center z-40">
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
           <CommandLineIcon className="h-5 w-5 text-gray-400" />
