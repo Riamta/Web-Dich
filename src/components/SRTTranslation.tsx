@@ -224,18 +224,24 @@ export default function SRTTranslation() {
         }),
       });
 
+      const data = await response.json().catch(() => {
+        throw new Error('Invalid response from server');
+      });
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to translate SRT');
+        throw new Error(data.error || 'Failed to translate SRT');
       }
 
-      const data = await response.json();
+      if (!data.translation) {
+        throw new Error('No translation received from server');
+      }
+
       // Apply dictionary replacements to the translation
       const processedTranslation = dictionaryService.applyDictionary(data.translation);
       setTranslation(processedTranslation);
     } catch (error) {
       console.error('Translation error:', error);
-      setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch phụ đề');
+      setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch phụ đề. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
     }
