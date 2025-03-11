@@ -186,6 +186,7 @@ export default function SRTTranslation() {
   const [fileName, setFileName] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
+  const [batchSize, setBatchSize] = useState(30);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -212,34 +213,96 @@ export default function SRTTranslation() {
 
     setIsLoading(true);
     setError(null);
+
     try {
-      const response = await fetch('/api/translate-srt', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: srtContent,
-          targetLanguage,
-        }),
-      });
+      // Split content into chunks based on batchSize
+      const chunks = srtContent.trim().split(/\n\s*\n/).reduce((acc: string[][], block, index) => {
+        const chunkIndex = Math.floor(index / batchSize);
+        if (!acc[chunkIndex]) {
+          acc[chunkIndex] = [];
+        }
+        acc[chunkIndex].push(block);
+        return acc;
+      }, []).map(chunk => chunk.join('\n\n'));
 
-      const data = await response.json().catch(() => {
-        throw new Error('Invalid response from server');
-      });
+      const translatedChunks: string[] = [];
+      const maxRetries = 3;
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to translate SRT');
+      for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+        let currentTry = 0;
+        let success = false;
+
+        while (currentTry < maxRetries && !success) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+            const response = await fetch('/api/translate-srt', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                content: chunks[chunkIndex],
+                targetLanguage,
+              }),
+              signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              throw new Error(errorData.error || `Error translating chunk ${chunkIndex + 1}`);
+            }
+
+            const data = await response.json();
+            if (!data.translation) {
+              throw new Error(`No translation received for chunk ${chunkIndex + 1}`);
+            }
+
+            translatedChunks[chunkIndex] = data.translation;
+            success = true;
+
+            // Update progress
+            const progress = Math.round(((chunkIndex + 1) / chunks.length) * 100);
+            setError(`Đang xử lý... ${progress}%`);
+
+          } catch (error: any) {
+            currentTry++;
+            console.error(`Chunk ${chunkIndex + 1}, attempt ${currentTry} failed:`, error);
+
+            if (error.name === 'AbortError') {
+              if (currentTry === maxRetries) {
+                throw new Error(`Timeout translating chunk ${chunkIndex + 1}`);
+              }
+              continue;
+            }
+
+            if (currentTry === maxRetries) {
+              throw error;
+            }
+
+            // Wait before retrying (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, currentTry) * 1000));
+          }
+        }
+
+        // Add small delay between chunks to avoid rate limiting
+        if (chunkIndex < chunks.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
 
-      if (!data.translation) {
-        throw new Error('No translation received from server');
-      }
-
-      // Apply dictionary replacements to the translation
-      const processedTranslation = dictionaryService.applyDictionary(data.translation);
+      // Combine all translated chunks
+      const completeTranslation = translatedChunks.join('\n\n');
+      
+      // Apply dictionary replacements to the complete translation
+      const processedTranslation = dictionaryService.applyDictionary(completeTranslation);
       setTranslation(processedTranslation);
-    } catch (error) {
+      setError(null);
+
+    } catch (error: any) {
       console.error('Translation error:', error);
       setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch phụ đề. Vui lòng thử lại sau.');
     } finally {
@@ -332,6 +395,29 @@ export default function SRTTranslation() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+              <MdOutlineMenuBook className="h-5 w-5 text-gray-400" />
+              Số câu mỗi lần xử lý
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={batchSize}
+                onChange={(e) => setBatchSize(Math.max(1, Math.min(100, parseInt(e.target.value) || 30)))}
+                min="1"
+                max="100"
+                className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
+              />
+              <div className="text-sm text-gray-500">
+                (1-100)
+              </div>
+            </div>
+            <p className="text-sm text-gray-500">
+              Giá trị càng nhỏ xử lý càng chậm nhưng ổn định hơn. Giá trị càng lớn xử lý càng nhanh nhưng có thể gặp lỗi.
+            </p>
           </div>
 
           <button
