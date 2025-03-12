@@ -6,12 +6,14 @@ import { MdContentCopy, MdEdit, MdClose, MdDelete, MdArrowDownward } from 'react
 import ReactMarkdown from 'react-markdown';
 import { useTabState } from '../hooks/useTabState';
 import { Tooltip } from 'react-tooltip';
+import { SUPPORTED_LANGUAGES } from '@/constants/languages';
 
 export default function TextSummarization() {
     const [mounted, setMounted] = useState(false);
     const [inputText, setInputText] = useTabState('summarizeText', '');
     const [summary, setSummary] = useTabState('summarizeResult', '');
     const [selectedLanguage, setSelectedLanguage] = useTabState('summarizeLanguage', 'vi');
+    const [summaryType, setSummaryType] = useTabState('summarizeType', 'concise');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -58,7 +60,11 @@ export default function TextSummarization() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ text: inputText, language: selectedLanguage }),
+                body: JSON.stringify({ 
+                    text: inputText, 
+                    language: selectedLanguage,
+                    type: summaryType 
+                }),
             });
 
             if (!response.ok) {
@@ -120,17 +126,26 @@ export default function TextSummarization() {
                             <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
                             Văn bản cần tóm tắt
                         </label>
-                        <div className="flex items-center gap-">
+                        <div className="flex items-center gap-2">
+                            <select
+                                value={summaryType}
+                                onChange={(e) => setSummaryType(e.target.value)}
+                                className="text-sm border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 min-w-[160px]"
+                            >
+                                <option value="concise">Tóm tắt ngắn gọn</option>
+                                <option value="detailed">Tóm tắt chi tiết</option>
+                                <option value="bullet">Tóm tắt điểm chính</option>
+                            </select>
                             <select
                                 value={selectedLanguage}
                                 onChange={(e) => setSelectedLanguage(e.target.value)}
                                 className="text-sm border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 min-w-[140px]"
                             >
-                                <option value="vi">Tiếng Việt</option>
-                                <option value="en">English</option>
-                                <option value="zh">中文</option>
-                                <option value="ja">日本語</option>
-                                <option value="ko">한국어</option>
+                                {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
+                                    <option key={lang.code} value={lang.code}>
+                                        {lang.name}
+                                    </option>
+                                ))}
                             </select>
                             {inputText && (
                                 <button

@@ -3,7 +3,7 @@ import { aiService } from '@/lib/ai-service';
 
 export async function POST(request: Request) {
   try {
-    const { text, language } = await request.json();
+    const { text, language, type } = await request.json();
 
     if (!text) {
       return NextResponse.json(
@@ -13,13 +13,14 @@ export async function POST(request: Request) {
     }
 
     try {
-      console.log('📤 Sending text for summarization...');
-      const summary = await aiService.summarize(text, language);
+      console.log('📤 Sending text for summarization...', { type });
+      const summary = await aiService.summarize(text, language, type);
 
       console.log('📥 Received summarization:', {
         status: 'success',
         model: aiService.getModel(),
-        responseLength: summary.length
+        responseLength: summary.length,
+        type
       });
 
       return NextResponse.json({ summary });

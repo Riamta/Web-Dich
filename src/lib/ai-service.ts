@@ -162,26 +162,26 @@ class AIService {
                 // Extract target language from prompt
                 const targetLangMatch = prompt.match(/translate.*to\s+(\w+)/i);
                 const targetLang = targetLangMatch ? targetLangMatch[1].toLowerCase() : 'en';
-                
+
                 // Extract text to translate
                 const textToTranslate = prompt.split('CONTENT TO TRANSLATE:')[1]?.trim() || prompt;
 
                 console.log('📤 Sending request to Google Translate...');
-                
+
                 // Encode the text for URL
                 const encodedText = encodeURIComponent(textToTranslate);
-                
+
                 // Create Google Translate URL
                 const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodedText}`;
-                
+
                 const response = await fetch(url);
                 const data = await response.json();
-                
+
                 // Extract translated text from response
                 const translatedText = data[0]
                     .map((item: any[]) => item[0])
                     .join('');
-                
+
                 return translatedText;
             } catch (error) {
                 console.error('❌ Google Translate error:', {
@@ -400,19 +400,62 @@ ${chunk}`;
     }
 
     // Summarization specific method
-    async summarize(text: string, language: string): Promise<string> {
-        const prompt = `Hãy tóm tắt văn bản sau bằng ${language} và trình bày kết quả theo định dạng markdown với cấu trúc sau:
+    async summarize(text: string, language: string, type: string = 'concise'): Promise<string> {
+        let prompt = '';
 
-## Tóm tắt
-[Tóm tắt ngắn gọn, súc tích nội dung chính]
+        switch (type) {
+            case 'concise':
+                prompt = `Hãy tóm tắt ngắn gọn, súc tích văn bản sau bằng ${language}. Chỉ tập trung vào những điểm quan trọng nhất:
 
-## Các ý chính
-- [Ý chính 1]
-- [Ý chính 2]
+${text}
+
+## Tóm tắt tổng quan
+[Tóm tắt ngắn gọn nội dung chính]
+## Các điểm chính
+- [Điểm chính 1]
+- [Điểm chính 2]
+...`;
+                break;
+
+            case 'detailed':
+                prompt = `Hãy tóm tắt chi tiết văn bản sau bằng ${language} theo cấu trúc:
+
+## Tóm tắt tổng quan
+[Tóm tắt ngắn gọn nội dung chính]
+
+## Phân tích chi tiết
+[Phân tích chi tiết các nội dung quan trọng]
+
+## Kết luận
+[Kết luận và ý nghĩa chính]
+
+Văn bản cần tóm tắt:
+${text}`;
+                break;
+
+            case 'bullet':
+                prompt = `Hãy tóm tắt văn bản sau bằng ${language} dưới dạng các điểm chính:
+
+## Tóm tắt ngắn gọn
+[Tóm tắt ngắn gọn trong 1-2 câu]
+
+## Các điểm chính
+- [Điểm chính 1]
+- [Điểm chính 2]
+...
+
+## Các chi tiết quan trọng
+- [Chi tiết 1]
+- [Chi tiết 2]
 ...
 
 Văn bản cần tóm tắt:
 ${text}`;
+                break;
+
+            default:
+                throw new Error('Unsupported summary type');
+        }
 
         return this.processWithAI(prompt);
     }

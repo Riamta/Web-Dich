@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { DocumentArrowUpIcon, LanguageIcon } from '@heroicons/react/24/outline'
 import { MdCheck, MdClose } from 'react-icons/md'
 import { aiService } from '@/lib/ai-service'
+import { SUPPORTED_LANGUAGES } from '@/constants/languages'
 
 interface Question {
   id: number
@@ -12,14 +13,6 @@ interface Question {
   correctAnswer: number
   explanation: string
 }
-
-const SUPPORTED_LANGUAGES = [
-  { code: 'vi', name: 'Tiếng Việt' },
-  { code: 'en', name: 'Tiếng Anh' },
-  { code: 'zh', name: 'Tiếng Trung' },
-  { code: 'ja', name: 'Tiếng Nhật' },
-  { code: 'ko', name: 'Tiếng Hàn' },
-]
 
 const DIFFICULTY_LEVELS = [
   { code: 'easy', name: 'Dễ' },

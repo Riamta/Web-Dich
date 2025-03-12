@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { db } from '@/lib/firebase'
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore'
 import { VocabularyService } from '@/lib/vocabulary-service'
+import { SUPPORTED_LANGUAGES, getLanguageName } from '@/constants/languages'
 
 interface VocabularyItem {
   id?: string; // Add ID field for Firestore documents
@@ -16,21 +17,6 @@ interface VocabularyItem {
   language?: string
   topic?: string
 }
-
-const SUPPORTED_LANGUAGES = [
-  { code: 'en', name: 'Tiếng Anh' },
-  { code: 'zh', name: 'Tiếng Trung' },
-  { code: 'ja', name: 'Tiếng Nhật' },
-  { code: 'ko', name: 'Tiếng Hàn' },
-]
-
-const NATIVE_LANGUAGES = [
-  { code: 'vi', name: 'Tiếng Việt' },
-  { code: 'en', name: 'English' },
-  { code: 'zh', name: 'Chinese' },
-  { code: 'ja', name: 'Japanese' },
-  { code: 'ko', name: 'Korean' },
-]
 
 const COMMON_TOPICS = [
   { id: 'daily', name: 'Cuộc sống hàng ngày' },
@@ -215,10 +201,6 @@ export default function VocabularyLearning() {
     }
   }
 
-  const getLanguageName = (code: string) => {
-    return SUPPORTED_LANGUAGES.find(lang => lang.code === code)?.name || code
-  }
-
   const getTopicName = (topicId: string) => {
     if (topicId === '') return 'Chủ đề ngẫu nhiên'
     const commonTopic = COMMON_TOPICS.find(topic => topic.id === topicId)
@@ -273,7 +255,7 @@ export default function VocabularyLearning() {
                 onChange={(e) => setTargetLanguage(e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/30 hover:border-primary/50"
               >
-                {SUPPORTED_LANGUAGES.map((lang) => (
+                {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto' && lang.code !== nativeLanguage).map((lang) => (
                   <option key={lang.code} value={lang.code}>
                     {lang.name}
                   </option>
@@ -290,7 +272,7 @@ export default function VocabularyLearning() {
                 onChange={(e) => setNativeLanguage(e.target.value)}
                 className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/30 hover:border-primary/50"
               >
-                {NATIVE_LANGUAGES.map((lang) => (
+                {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto' && lang.code !== targetLanguage).map((lang) => (
                   <option key={lang.code} value={lang.code}>
                     {lang.name}
                   </option>

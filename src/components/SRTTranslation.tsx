@@ -7,6 +7,7 @@ import Dictionary from '@/components/Dictionary';
 import { dictionaryService } from '@/lib/dictionary-service';
 import { aiService } from '@/lib/ai-service';
 import { useToast, ToastContainer } from '@/utils/toast';
+import { SUPPORTED_LANGUAGES } from '@/constants/languages';
 
 interface ComparisonModalProps {
   isOpen: boolean;
@@ -169,14 +170,6 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
     </div>
   );
 };
-
-const SUPPORTED_LANGUAGES = [
-  { code: 'vi', name: 'Tiếng Việt' },
-  { code: 'en', name: 'Tiếng Anh' },
-  { code: 'zh', name: 'Tiếng Trung' },
-  { code: 'ja', name: 'Tiếng Nhật' },
-  { code: 'ko', name: 'Tiếng Hàn' },
-];
 
 export default function SRTTranslation() {
   const [srtContent, setSrtContent] = useState('');

@@ -3,15 +3,7 @@
 import { useState } from 'react'
 import { LanguageIcon } from '@heroicons/react/24/outline'
 import { aiService } from '@/lib/ai-service'
-
-const SUPPORTED_LANGUAGES = [
-    { code: 'vi', name: 'Tiếng Việt' },
-    { code: 'en', name: 'Tiếng Anh' },
-    { code: 'zh', name: 'Tiếng Trung' },
-    { code: 'ja', name: 'Tiếng Nhật' },
-    { code: 'ko', name: 'Tiếng Hàn' },
-    { code: 'auto', name: 'Tự động' }
-]
+import { SUPPORTED_LANGUAGES } from '@/constants/languages'
 
 interface Message {
     id: number
@@ -84,11 +76,11 @@ ${text}`
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 {/* Language Selection */}
-                <div className="p-4 border-b border-gray-100">
-                    <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 sm:p-4 border-b border-gray-100">
+                    <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-4">
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
                                 <LanguageIcon className="h-5 w-5 text-gray-400" />
@@ -97,7 +89,7 @@ ${text}`
                             <select
                                 value={myLanguage}
                                 onChange={(e) => setMyLanguage(e.target.value)}
-                                className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
+                                className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
                             >
                                 {SUPPORTED_LANGUAGES.map((lang) => (
                                     <option key={lang.code} value={lang.code}>
@@ -115,7 +107,7 @@ ${text}`
                             <select
                                 value={theirLanguage}
                                 onChange={(e) => setTheirLanguage(e.target.value)}
-                                className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
+                                className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
                             >
                                 {SUPPORTED_LANGUAGES.map((lang) => (
                                     <option key={lang.code} value={lang.code}>
@@ -128,7 +120,7 @@ ${text}`
                 </div>
 
                 {/* Chat Messages */}
-                <div className="h-[600px] overflow-y-auto p-4 space-y-4 bg-gray-50/50">
+                <div className="h-[400px] sm:h-[600px] overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50/50">
                     {messages.map((message) => (
                         <div
                             key={message.id}
@@ -136,7 +128,7 @@ ${text}`
                         >
                             {/* Main Message Bubble */}
                             <div
-                                className={`max-w-[80%] p-3 rounded-2xl mb-1
+                                className={`max-w-[90%] sm:max-w-[80%] p-2.5 sm:p-3 rounded-2xl mb-1
                                     ${message.isMe
                                         ? 'bg-primary text-white rounded-tl-none'
                                         : 'bg-white border border-gray-200 rounded-tr-none'
@@ -163,12 +155,12 @@ ${text}`
                                         <span>Đang dịch...</span>
                                     </div>
                                 ) : (
-                                    <p>{message.isMe ? message.translation : message.text}</p>
+                                    <p className="text-sm sm:text-base">{message.isMe ? message.translation : message.text}</p>
                                 )}
                             </div>
 
                             {/* Secondary Text Below */}
-                            <div className={`max-w-[80%] text-sm ${message.isMe ? 'text-left' : 'text-right'}`}>
+                            <div className={`max-w-[90%] sm:max-w-[80%] text-xs sm:text-sm ${message.isMe ? 'text-left' : 'text-right'}`}>
                                 <div className="text-gray-600 italic">
                                     {message.isMe ? `Gốc: "${message.text}"` : `Dịch: "${message.translation}"`}
                                 </div>
@@ -178,8 +170,8 @@ ${text}`
                 </div>
 
                 {/* Input Area */}
-                <div className="p-4 border-t border-gray-100 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 sm:p-4 border-t border-gray-100 space-y-3">
+                    <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-4">
                         {/* My Message Input */}
                         <div className="space-y-2">
                             <div className="relative">
@@ -193,18 +185,18 @@ ${text}`
                                         }
                                     }}
                                     placeholder={`Nhập tin nhắn bằng ${SUPPORTED_LANGUAGES.find(l => l.code === myLanguage)?.name}...`}
-                                    className="w-full h-20 p-3 pr-24 font-mono text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none bg-gray-50/50"
+                                    className="w-full h-16 sm:h-20 p-2.5 sm:p-3 pr-20 sm:pr-24 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none bg-gray-50/50"
                                 />
                                 <button
                                     onClick={handleSendMyMessage}
                                     disabled={isTranslatingMine || !myText.trim()}
-                                    className={`absolute right-2 top-1/2 -translate-y-1/2 py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center justify-center gap-2 ${isTranslatingMine || !myText.trim()
+                                    className={`absolute right-2 top-1/2 -translate-y-1/2 py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg text-white text-sm sm:text-base font-medium transition-all duration-200 flex items-center justify-center gap-2 ${isTranslatingMine || !myText.trim()
                                             ? 'bg-gray-400 cursor-not-allowed'
                                             : 'bg-primary hover:bg-primary/90'
                                         }`}
                                 >
                                     {isTranslatingMine ? (
-                                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                        <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24">
                                             <circle
                                                 className="opacity-25"
                                                 cx="12"
@@ -240,18 +232,18 @@ ${text}`
                                         }
                                     }}
                                     placeholder={`Nhập tin nhắn bằng ${SUPPORTED_LANGUAGES.find(l => l.code === theirLanguage)?.name}...`}
-                                    className="w-full h-20 p-3 pr-24 font-mono text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none bg-gray-50/50"
+                                    className="w-full h-16 sm:h-20 p-2.5 sm:p-3 pr-20 sm:pr-24 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none bg-gray-50/50"
                                 />
                                 <button
                                     onClick={handleSendTheirMessage}
                                     disabled={isTranslatingTheirs || !theirText.trim()}
-                                    className={`absolute right-2 top-1/2 -translate-y-1/2 py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center justify-center gap-2 ${isTranslatingTheirs || !theirText.trim()
+                                    className={`absolute right-2 top-1/2 -translate-y-1/2 py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg text-white text-sm sm:text-base font-medium transition-all duration-200 flex items-center justify-center gap-2 ${isTranslatingTheirs || !theirText.trim()
                                             ? 'bg-gray-400 cursor-not-allowed'
                                             : 'bg-primary hover:bg-primary/90'
                                         }`}
                                 >
                                     {isTranslatingTheirs ? (
-                                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                        <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24">
                                             <circle
                                                 className="opacity-25"
                                                 cx="12"

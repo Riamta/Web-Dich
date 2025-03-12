@@ -1,62 +1,68 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import TranslationForm from '@/components/TranslationForm'
 import TranslatedOutput from '@/components/TranslatedOutput'
 import { aiService } from '@/lib/ai-service'
+import { dictionaryService } from '@/lib/dictionary-service'
+import { useTabState } from '@/hooks/useTabState'
 
-export default function TranslatePage() {
-  const [translatedText, setTranslatedText] = useState('')
+export default function Home() {
+  const [mounted, setMounted] = useState(false)
+  const [translatedText, setTranslatedText] = useTabState('translatedText', '')
   const [isLoading, setIsLoading] = useState(false)
-  const [progress, setProgress] = useState<{ current: number; total: number } | undefined>()
+  const [error, setError] = useState<string | null>(null)
 
-  const handleTranslate = async (
-    text: string,
-    targetLanguage: string,
-    preserveContext: boolean,
-    onProgress: (current: number, total: number) => void
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const handleTranslation = async (
+    text: string, 
+    targetLanguage: string, 
+    preserveContext: boolean
   ) => {
+    setIsLoading(true)
+    setError(null)
     try {
-      setIsLoading(true)
-      setTranslatedText('')
-      
-      const result = await aiService.translate(
-        text,
-        targetLanguage,
-        preserveContext,
-        (current, total) => {
-          setProgress({ current, total })
-          onProgress(current, total)
-        }
-      )
-      
-      setTranslatedText(result)
+      const result = await aiService.translate(text, targetLanguage, preserveContext)
+      const processedText = dictionaryService.applyDictionary(result)
+      setTranslatedText(processedText)
     } catch (error) {
       console.error('Translation error:', error)
-      alert('Có lỗi xảy ra khi dịch văn bản. Vui lòng thử lại.')
+      setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch văn bản')
     } finally {
       setIsLoading(false)
-      setProgress(undefined)
     }
   }
 
-  const handleTextChange = (newText: string) => {
-    setTranslatedText(newText)
+  const handleTranslatedTextChange = (newText: string) => {
+    const processedText = dictionaryService.applyDictionary(newText)
+    setTranslatedText(processedText)
+  }
+
+  // Don't render content until mounted (client-side)
+  if (!mounted) {
+    return <main className="container mx-auto px-4 py-8"><div className="min-h-screen"></div></main>
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
-      <TranslationForm
-        onTranslate={handleTranslate}
-        isLoading={isLoading}
-        progress={progress}
-      />
-      <TranslatedOutput
-        text={translatedText}
-        isLoading={isLoading}
-        progress={progress}
-        onTextChange={handleTextChange}
-      />
-    </div>
+    <main className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="space-y-4">
+          <TranslationForm onTranslate={handleTranslation} isLoading={isLoading} />
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+              {error}
+            </div>
+          )}
+        </div>
+        <TranslatedOutput 
+          text={translatedText} 
+          isLoading={isLoading} 
+          onTextChange={handleTranslatedTextChange}
+        />
+      </div>
+    </main>
   )
 } 

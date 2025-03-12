@@ -5,6 +5,7 @@ import { DocumentArrowUpIcon, LanguageIcon, SparklesIcon } from '@heroicons/reac
 import { MdAdd, MdBook, MdClose } from 'react-icons/md'
 import { dictionaryService } from '@/lib/dictionary-service'
 import { useTabState } from '@/hooks/useTabState'
+import { SUPPORTED_LANGUAGES } from '@/constants/languages'
 
 interface DictionaryEntry {
   from: string
@@ -24,14 +25,6 @@ interface TranslationFormProps {
     total: number
   }
 }
-
-const SUPPORTED_LANGUAGES = [
-  { code: 'vi', name: 'Tiếng Việt' },
-  { code: 'en', name: 'Tiếng Anh' },
-  { code: 'zh', name: 'Tiếng Trung' },
-  { code: 'ja', name: 'Tiếng Nhật' },
-  { code: 'ko', name: 'Tiếng Hàn' },
-]
 
 export default function TranslationForm({ onTranslate, isLoading, progress }: TranslationFormProps) {
   const [text, setText] = useTabState('translateText', '')
