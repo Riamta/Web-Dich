@@ -79,6 +79,9 @@ textarea.w-full.h-20.p-3.pr-24.font-mono.text-sm.border.border-gray-200.rounded-
 select.w-full.sm\:w-auto.appearance-none.pl-3.sm\:pl-4.pr-8.sm\:pr-10.py-2.sm\:py-2\.5.rounded-xl.bg-white.border.border-gray-200.hover\:border-primary\/50.focus\:border-primary.focus\:ring-2.focus\:ring-primary\/20.transition-all.text-sm.sm\:text-base.font-medium.min-w-0.sm\:min-w-\[160px\].cursor-pointer {
   color: black;
 }
+textarea.w-full.p-4.sm\:p-6.resize-none.focus\:outline-none.text-base.min-h-\[300px\].sm\:min-h-\[500px\] {
+    color: black;
+}
 .max-w-4xl.mx-auto {
   max-width: unset;
 }
