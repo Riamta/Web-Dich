@@ -12,7 +12,8 @@ import {
   SpeakerWaveIcon,
   DocumentArrowUpIcon,
   ChevronDownIcon,
-  SparklesIcon
+  SparklesIcon,
+  StopIcon
 } from '@heroicons/react/24/outline'
 import { MdTextFields, MdContentPaste } from 'react-icons/md'
 import ReactMarkdown from 'react-markdown'
@@ -32,6 +33,8 @@ export default function Translator() {
   const [contentHeight, setContentHeight] = useState<number>(500)
   const sourceTextRef = useRef<HTMLTextAreaElement>(null)
   const translatedTextRef = useRef<HTMLDivElement>(null)
+  const [isSourcePlaying, setIsSourcePlaying] = useState(false)
+  const [isTranslationPlaying, setIsTranslationPlaying] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -119,6 +122,47 @@ export default function Translator() {
     }
   }
 
+  const handleSpeech = (text: string, lang: string, isSource: boolean) => {
+    const setPlaying = isSource ? setIsSourcePlaying : setIsTranslationPlaying
+    const isPlaying = isSource ? isSourcePlaying : isTranslationPlaying
+
+    if (isPlaying) {
+      window.speechSynthesis.cancel()
+      setPlaying(false)
+    } else {
+      const utterance = new SpeechSynthesisUtterance(text)
+      
+      // Xử lý ngôn ngữ nguồn
+      if (lang === 'auto') {
+        // Thử detect ngôn ngữ từ text hoặc fallback về en-US
+        try {
+          // Sử dụng 2 ký tự đầu tiên của đoạn text để detect ngôn ngữ
+          const detectedLang = text.trim().length >= 2 ? 
+            (text.charCodeAt(0) > 127 || text.charCodeAt(1) > 127 ? 'vi-VN' : 'en-US') 
+            : 'en-US';
+          utterance.lang = detectedLang;
+        } catch (e) {
+          utterance.lang = 'en-US';
+        }
+      } else {
+        // Thêm region code cho một số ngôn ngữ phổ biến
+        const langMap: { [key: string]: string } = {
+          'en': 'en-US',
+          'vi': 'vi-VN',
+          'ja': 'ja-JP',
+          'ko': 'ko-KR',
+          'zh': 'zh-CN',
+          // Thêm các ngôn ngữ khác nếu cần
+        };
+        utterance.lang = langMap[lang] || lang;
+      }
+
+      utterance.onend = () => setPlaying(false)
+      window.speechSynthesis.speak(utterance)
+      setPlaying(true)
+    }
+  }
+
   // Don't render content until mounted (client-side)
   if (!mounted) {
     return null
@@ -143,7 +187,6 @@ export default function Translator() {
                   </option>
                 ))}
               </select>
-              <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 h-4 sm:h-5 w-4 sm:w-5 text-gray-400 pointer-events-none" />
             </div>
 
             <button 
@@ -172,7 +215,6 @@ export default function Translator() {
                   </option>
                 ))}
               </select>
-              <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 h-4 sm:h-5 w-4 sm:w-5 text-gray-400 pointer-events-none" />
             </div>
 
             <div className="relative group flex-1 sm:flex-none">
@@ -187,8 +229,6 @@ export default function Translator() {
                   </option>
                 ))}
               </select>
-              <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 h-4 sm:h-5 w-4 sm:w-5 text-gray-400 pointer-events-none" />
-              <SparklesIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
             </div>
           </div>
 
@@ -272,6 +312,23 @@ export default function Translator() {
                   className="hidden"
                   id="file-upload"
                 />
+                <button 
+                  className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
+                  onClick={() => handleSpeech(sourceText, sourceLanguage, true)}
+                  title={isSourcePlaying ? "Stop" : "Listen to source text"}
+                >
+                  {isSourcePlaying ? (
+                    <>
+                      <StopIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
+                      <span className="text-xs sm:text-sm">Stop</span>
+                    </>
+                  ) : (
+                    <>
+                      <SpeakerWaveIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
+                      <span className="text-xs sm:text-sm">Listen</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
             <textarea
@@ -313,15 +370,20 @@ export default function Translator() {
                 </button>
                 <button 
                   className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
-                  onClick={() => {
-                    const utterance = new SpeechSynthesisUtterance(translatedText)
-                    utterance.lang = targetLanguage
-                    window.speechSynthesis.speak(utterance)
-                  }}
-                  title="Listen to translation"
+                  onClick={() => handleSpeech(translatedText, targetLanguage, false)}
+                  title={isTranslationPlaying ? "Stop" : "Listen to translation"}
                 >
-                  <SpeakerWaveIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                  <span className="text-xs sm:text-sm">Listen</span>
+                  {isTranslationPlaying ? (
+                    <>
+                      <StopIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
+                      <span className="text-xs sm:text-sm">Stop</span>
+                    </>
+                  ) : (
+                    <>
+                      <SpeakerWaveIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
+                      <span className="text-xs sm:text-sm">Listen</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

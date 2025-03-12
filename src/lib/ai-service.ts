@@ -35,9 +35,9 @@ export const TRANSLATION_TONES: Record<string, TranslationTone> = {
         style: 'Clear, direct, and neutral translation maintaining the original meaning and context'
     },
     novel: {
-        name: 'Chinese Novel',
+        name: 'Truyện trung quốc',
         description: 'Tối ưu cho dịch tiểu thuyết Trung Quốc',
-        style: 'Literary style with classical Chinese novel elements, martial arts terminology, cultivation terms, and poetic expressions'
+        style: 'Dịch theo phong cách tiểu thuyết Trung Quốc, dịch tên ra dạng hán việt, giữ văn phong tiểu thuyết, nhưng sử dụng từ ngữ dễ hiểu.'
     },
     academic: {
         name: 'Academic',
@@ -323,22 +323,22 @@ class AIService {
     ): string {
         const translationTone = TRANSLATION_TONES[options?.tone || 'normal'];
 
-        let prompt = `You are an expert translator. Translate this text to ${targetLanguage}.
+        let prompt = `Bạn là một chuyên gia dịch thuật. Hãy dịch đoạn văn sau sang ${targetLanguage}.
 
-Style: ${translationTone.style}
+Phong cách: ${translationTone.style}
 
-Context:
-${preserveContext ? '- Preserve original context, style, tone and terminology' : '- Focus on clarity and accuracy'}
-${options?.previousContext ? `\nPrevious context:\n${options.previousContext}` : ''}
-${options?.totalChunks ? `\nPart ${options.currentChunk}/${options.totalChunks}` : ''}
+Bối cảnh:
+${preserveContext ? '- Giữ nguyên ngữ cảnh, phong cách, giọng điệu và thuật ngữ gốc' : '- Tập trung vào sự rõ ràng và chính xác'}
+${options?.previousContext ? `\nNgữ cảnh trước đó:\n${options.previousContext}` : ''}
+${options?.totalChunks ? `\nPhần ${options.currentChunk}/${options.totalChunks}` : ''}
 
-Requirements:
-- Translate accurately while maintaining natural flow
-- Preserve formatting (paragraphs, emphasis)
-- Maintain consistent terminology and style
-- Return only the translated text, no explanations
-
-Text to translate:
+Yêu cầu:
+- Dịch chính xác nhưng vẫn đảm bảo tự nhiên và mạch lạc
+- Giữ nguyên định dạng (đoạn văn, nhấn mạnh)
+- Duy trì tính nhất quán về thuật ngữ và phong cách
+- Chỉ trả về bản dịch, không giải thích thêm
+- Đảm bảo chất lượng bản dịch dễ hiểu
+Văn bản cần dịch:
 ${text}`;
 
         return prompt;
