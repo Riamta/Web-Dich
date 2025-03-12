@@ -401,65 +401,157 @@ ${text}`;
         return chunks;
     }
 
-    // Summarization specific method
+    // Content type detection for better summarization
+    private detectContentType(text: string): 'article' | 'technical' | 'narrative' | 'conversation' {
+        const technicalPatterns = /(algorithm|implementation|function|class|method|api|documentation|technical|specification)/i;
+        const conversationPatterns = /([""'].*?[""']:|^[A-Za-z]+:)/m;
+        const narrativePatterns = /(chapter|scene|character|plot|story|novel)/i;
+        
+        if (technicalPatterns.test(text)) return 'technical';
+        if (conversationPatterns.test(text)) return 'conversation';
+        if (narrativePatterns.test(text)) return 'narrative';
+        return 'article';
+    }
+
+    // Enhanced summarization method
     async summarize(text: string, language: string, type: string = 'concise'): Promise<string> {
-        let prompt = '';
+        // Handle empty text
+        if (!text.trim()) {
+            return '';
+        }
+
+        // Detect content type for better prompting
+        const contentType = this.detectContentType(text);
+        
+        // Calculate optimal chunk size based on content length
+        const MAX_CHUNK_LENGTH = 4000;
+        let chunks: string[] = [];
+        
+        if (text.length > MAX_CHUNK_LENGTH) {
+            chunks = this.splitTextIntoChunks(text, MAX_CHUNK_LENGTH);
+        } else {
+            chunks = [text];
+        }
+
+        // Process each chunk and combine results
+        const summaries: string[] = [];
+        for (const chunk of chunks) {
+            const prompt = this.createSummaryPrompt(chunk, language, type, contentType, chunks.length > 1);
+            const summary = await this.processWithAI(prompt);
+            summaries.push(summary);
+        }
+
+        // Combine and refine final summary if multiple chunks
+        if (summaries.length > 1) {
+            const combinedSummary = summaries.join('\n\n');
+            const finalPrompt = this.createFinalSummaryPrompt(combinedSummary, language, type);
+            return this.processWithAI(finalPrompt);
+        }
+
+        return summaries[0];
+    }
+
+    private createSummaryPrompt(
+        text: string,
+        language: string,
+        type: string,
+        contentType: string,
+        isChunked: boolean
+    ): string {
+        const basePrompt = `Hãy tóm tắt văn bản sau bằng ${language}.
+
+Yêu cầu chung:
+- Đảm bảo tính chính xác và mạch lạc
+- Giữ nguyên các thuật ngữ chuyên ngành quan trọng
+- Tập trung vào nội dung có giá trị thông tin cao
+- Sử dụng ngôn ngữ rõ ràng, dễ hiểu
+${isChunked ? '- Đây là một phần của văn bản dài hơn, hãy tập trung vào các điểm chính trong phần này' : ''}
+
+Loại nội dung: ${contentType}
+`;
 
         switch (type) {
             case 'concise':
-                prompt = `Hãy tóm tắt ngắn gọn, súc tích văn bản sau bằng ${language}. Chỉ tập trung vào những điểm quan trọng nhất:
+                return `${basePrompt}
+Yêu cầu cụ thể:
+- Tóm tắt ngắn gọn, súc tích
+- Độ dài khoảng 20-25% văn bản gốc
+- Tập trung vào những điểm quan trọng nhất
 
-${text}
-
+Cấu trúc:
 ## Tóm tắt tổng quan
-[Tóm tắt ngắn gọn nội dung chính]
+[Tóm tắt ngắn gọn trong 2-3 câu]
+
 ## Các điểm chính
 - [Điểm chính 1]
 - [Điểm chính 2]
-...`;
-                break;
+${contentType === 'technical' ? '## Các khái niệm kỹ thuật quan trọng\n- [Khái niệm 1]\n- [Khái niệm 2]' : ''}
+
+Văn bản cần tóm tắt:
+${text}`;
 
             case 'detailed':
-                prompt = `Hãy tóm tắt chi tiết văn bản sau bằng ${language} theo cấu trúc:
+                return `${basePrompt}
+Yêu cầu cụ thể:
+- Phân tích chi tiết và có cấu trúc
+- Độ dài khoảng 40-50% văn bản gốc
+- Bảo toàn các chi tiết quan trọng và mối liên hệ
 
+Cấu trúc:
 ## Tóm tắt tổng quan
 [Tóm tắt ngắn gọn nội dung chính]
 
 ## Phân tích chi tiết
-[Phân tích chi tiết các nội dung quan trọng]
+[Phân tích có cấu trúc về các nội dung quan trọng]
+${contentType === 'narrative' ? '\n## Phát triển cốt truyện/nhân vật\n[Phân tích về diễn biến và phát triển]' : ''}
+${contentType === 'technical' ? '\n## Chi tiết kỹ thuật\n[Phân tích các khía cạnh kỹ thuật quan trọng]' : ''}
 
-## Kết luận
-[Kết luận và ý nghĩa chính]
+## Kết luận và ý nghĩa
+[Kết luận và điểm nhấn chính]
 
 Văn bản cần tóm tắt:
 ${text}`;
-                break;
 
             case 'bullet':
-                prompt = `Hãy tóm tắt văn bản sau bằng ${language} dưới dạng các điểm chính:
+                return `${basePrompt}
+Yêu cầu cụ thể:
+- Tóm tắt dưới dạng các điểm chính
+- Mỗi điểm ngắn gọn, rõ ràng
+- Sắp xếp theo thứ tự quan trọng
 
+Cấu trúc:
 ## Tóm tắt ngắn gọn
-[Tóm tắt ngắn gọn trong 1-2 câu]
+[Tóm tắt trong 1-2 câu]
 
 ## Các điểm chính
 - [Điểm chính 1]
 - [Điểm chính 2]
 ...
 
-## Các chi tiết quan trọng
-- [Chi tiết 1]
-- [Chi tiết 2]
-...
+## Chi tiết bổ sung
+${contentType === 'technical' ? '### Khái niệm kỹ thuật\n- [Khái niệm 1]\n- [Khái niệm 2]' : ''}
+${contentType === 'narrative' ? '### Diễn biến quan trọng\n- [Diễn biến 1]\n- [Diễn biến 2]' : ''}
+${contentType === 'conversation' ? '### Các quan điểm chính\n- [Quan điểm 1]\n- [Quan điểm 2]' : ''}
 
 Văn bản cần tóm tắt:
 ${text}`;
-                break;
 
             default:
                 throw new Error('Unsupported summary type');
         }
+    }
 
-        return this.processWithAI(prompt);
+    private createFinalSummaryPrompt(combinedSummary: string, language: string, type: string): string {
+        return `Hãy tổng hợp và tinh chỉnh các phần tóm tắt sau thành một bản tóm tắt hoàn chỉnh bằng ${language}.
+
+Yêu cầu:
+- Loại bỏ thông tin trùng lặp
+- Đảm bảo tính mạch lạc và liên kết giữa các phần
+- Giữ nguyên cấu trúc và định dạng
+- Tối ưu độ dài phù hợp với loại tóm tắt
+
+Các phần tóm tắt cần tổng hợp:
+${combinedSummary}`;
     }
 
     // Parse SRT content
