@@ -1,4 +1,5 @@
 import { useAuth } from '../contexts/AuthContext';
+import { MdLogout } from 'react-icons/md';
 
 export default function GoogleLoginButton() {
   const { user, signInWithGoogle, logout } = useAuth();
@@ -6,28 +7,30 @@ export default function GoogleLoginButton() {
   return (
     <div className="flex items-center justify-center">
       {user ? (
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <div className="flex items-center gap-2">
             {user.photoURL && (
               <img
                 src={user.photoURL}
                 alt={user.displayName || 'User'}
-                className="w-8 h-8 rounded-full"
+                className="w-8 h-8 rounded-full border-2 border-gray-200"
               />
             )}
-            <span className="text-sm font-medium">{user.displayName}</span>
+            <span className="text-sm font-medium hidden sm:block">{user.displayName}</span>
           </div>
           <button
             onClick={logout}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            className="p-2 sm:px-4 sm:py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 flex items-center gap-2"
+            aria-label="Đăng xuất"
           >
-            Đăng xuất
+            <MdLogout className="w-5 h-5" />
+            <span className="hidden sm:block">Đăng xuất</span>
           </button>
         </div>
       ) : (
         <button
           onClick={signInWithGoogle}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-sm hover:shadow"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -47,7 +50,8 @@ export default function GoogleLoginButton() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          Đăng nhập bằng Google
+          <span className="hidden sm:block">Đăng nhập bằng Google</span>
+          <span className="sm:hidden">Đăng nhập</span>
         </button>
       )}
     </div>
