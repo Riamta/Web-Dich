@@ -336,7 +336,7 @@ Yêu cầu:
 - Dịch chính xác nhưng vẫn đảm bảo tự nhiên và mạch lạc
 - Giữ nguyên định dạng (đoạn văn, nhấn mạnh)
 - Duy trì tính nhất quán về thuật ngữ và phong cách
-- Chỉ trả về bản dịch, không giải thích thêm
+- Chỉ trả về bản dịch, không giải thích thêm, không mở ngoặc chú thích hay gì cả
 - Đảm bảo chất lượng bản dịch dễ hiểu
 Văn bản cần dịch:
 ${text}`;
