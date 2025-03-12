@@ -53,6 +53,12 @@ interface EnhancementOptions {
     preserveContext: boolean
 }
 
+interface ImageTranslationOptions {
+    targetLanguage: string;
+    preserveContext: boolean;
+    tone: string;
+}
+
 class AIService {
     private config: AIServiceConfig = {
         model: 'gemini-2.0-flash'
@@ -587,6 +593,71 @@ ${text}`;
             console.error('Text enhancement error:', error);
             throw new Error('Failed to enhance text');
         }
+    }
+
+    async translateImage(
+        imageData: string,
+        mimeType: string,
+        options: ImageTranslationOptions
+    ): Promise<string> {
+        try {
+            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+            if (!geminiKey) {
+                throw new Error('Gemini API key is not configured');
+            }
+
+            console.log('📤 Sending image translation request to Gemini...');
+            const genAI = new GoogleGenerativeAI(geminiKey);
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+            const prompt = this.createImageTranslationPrompt(
+                options.targetLanguage,
+                options.preserveContext,
+                options.tone
+            );
+
+            const imagePart = {
+                inlineData: {
+                    data: imageData,
+                    mimeType
+                }
+            };
+
+            const result = await model.generateContent([prompt, imagePart]);
+            const translatedText = result.response.text();
+            
+            // Apply dictionary if needed
+            return await dictionaryService.applyDictionary(translatedText);
+        } catch (error) {
+            console.error('❌ Image translation error:', {
+                error: error instanceof Error ? error.message : 'Unknown error',
+                timestamp: new Date().toISOString()
+            });
+            throw new Error('Failed to translate image');
+        }
+    }
+
+    private createImageTranslationPrompt(
+        targetLanguage: string,
+        preserveContext: boolean,
+        tone: string
+    ): string {
+        const translationTone = TRANSLATION_TONES[tone];
+
+        return `You are an expert translator and image analyzer. Please analyze the image and translate any text content into ${targetLanguage}.
+
+Translation Style: ${translationTone.style}
+
+Requirements:
+- Translate all visible text in the image
+- Maintain the original context and meaning
+- Keep the same formatting and layout
+- Only return the translated text
+- Do not add any explanations or comments
+- Preserve any special characters or symbols
+- If there's no text in the image, respond with "No text found in image"
+
+Please provide the translation in a clear, structured format.`;
     }
 }
 
