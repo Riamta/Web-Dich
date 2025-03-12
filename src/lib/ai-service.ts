@@ -736,20 +736,21 @@ ${text}`;
     ): string {
         const translationTone = TRANSLATION_TONES[tone];
 
-        return `You are an expert translator and image analyzer. Please analyze the image and translate any text content into ${targetLanguage}.
+        return `You are an expert translator and image analyzer. Please analyze the image and translate significant text content into ${targetLanguage}.
 
 Translation Style: ${translationTone.style}
 
 Requirements:
-- Translate all visible text in the image
-- Maintain the original context and meaning
-- Keep the same formatting and layout
+- Focus ONLY on translating main and important text content
+- Ignore small, decorative, or unimportant text (like watermarks, timestamps, minor UI elements)
+- Ignore text that is less than approximately 12px in size
+- Maintain the original context and meaning of important text
+- Keep the same formatting and layout for translated text
 - Only return the translated text
 - Do not add any explanations or comments
-- Preserve any special characters or symbols
-- If there's no text in the image, respond with "No text found in image"
+- If there's no significant text in the image, respond with "No significant text found in image"
 
-Please provide the translation in a clear, structured format.`;
+Please provide translations only for the main, important text content in a clear, structured format.`;
     }
 }
 
