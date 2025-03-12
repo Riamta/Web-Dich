@@ -1,0 +1,16 @@
+{
+  "name": "AI Tool",
+  "short_name": "AI Tool",
+  "description": "AI Tool By Amri",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    }
+  ]
+} 

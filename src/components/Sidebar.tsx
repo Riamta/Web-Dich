@@ -18,6 +18,12 @@ export default function Sidebar() {
       isExternal: false
     },
     {
+      name: 'Dịch hội thoại',
+      path: '/conversation',
+      icon: <MdChat className="w-5 h-5" />,
+      isExternal: false
+    },
+    {
       name: 'Tóm tắt văn bản',
       path: '/summarize',
       icon: <MdShortText className="w-5 h-5" />,

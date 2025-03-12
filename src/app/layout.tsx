@@ -8,9 +8,31 @@ import { AuthProvider } from '@/contexts/AuthContext'
 
 const inter = Inter({ subsets: ['latin'] })
 import { Analytics } from "@vercel/analytics/react"
+
 export const metadata: Metadata = {
   title: 'AI Tool',
   description: 'AI Tool By Amri',
+  icons: {
+    icon: [
+      {
+        url: '/favicon.ico',
+        sizes: 'any',
+      },
+      {
+        url: '/icon.png',
+        type: 'image/png',
+        sizes: '32x32',
+      }
+    ],
+  },
+  manifest: '/manifest.json',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+  themeColor: '#ffffff',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'AI Tool',
+  },
 }
 
 export default function RootLayout({
