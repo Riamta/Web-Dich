@@ -76,6 +76,9 @@ textarea.w-full.h-20.p-3.pr-24.font-mono.text-sm.border.border-gray-200.rounded-
 [type='text'], input:where(:not([type])), [type='email'], [type='url'], [type='password'], [type='number'], [type='date'], [type='datetime-local'], [type='month'], [type='search'], [type='tel'], [type='time'], [type='week'], [multiple], textarea, select {
   border-color: #ffffff;
 }
+select.w-full.sm\:w-auto.appearance-none.pl-3.sm\:pl-4.pr-8.sm\:pr-10.py-2.sm\:py-2\.5.rounded-xl.bg-white.border.border-gray-200.hover\:border-primary\/50.focus\:border-primary.focus\:ring-2.focus\:ring-primary\/20.transition-all.text-sm.sm\:text-base.font-medium.min-w-0.sm\:min-w-\[160px\].cursor-pointer {
+  color: black;
+}
 .max-w-4xl.mx-auto {
   max-width: unset;
 }
