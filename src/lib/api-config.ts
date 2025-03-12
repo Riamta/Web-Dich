@@ -19,7 +19,6 @@ export const LOCAL_AI_MODELS = [
     { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Powerful and fast translation' },
     { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', description: '' },
     { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'Lightweight and efficient' },
-    { id: 'google-translate', name: 'Google Translate', description: 'Fast and reliable machine translation' }
 ] as const
 
 // Combined models type

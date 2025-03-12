@@ -6,11 +6,15 @@ import { aiService } from '@/lib/ai-service'
 import { SUPPORTED_LANGUAGES } from '@/constants/languages'
 
 interface Message {
-    id: number
-    text: string
-    translation: string
-    isMe: boolean
-    isTranslating: boolean
+    id: number;
+    text: string;
+    translation: {
+        text: string;
+        reading?: string;  // For hiragana/furigana readings
+        sourceReading?: string;  // For source text hiragana reading
+    };
+    isMe: boolean;
+    isTranslating: boolean;
 }
 
 export default function ConversationTranslator() {
@@ -27,11 +31,17 @@ export default function ConversationTranslator() {
 
         const sourceLanguage = isMe ? myLanguage : theirLanguage
         const targetLanguage = isMe ? theirLanguage : myLanguage
+        const isSourceJapanese = sourceLanguage === 'ja'
+        const isTargetJapanese = targetLanguage === 'ja'
 
         const newMessage: Message = {
             id: Date.now(),
             text,
-            translation: '',
+            translation: {
+                text: '',
+                reading: '',
+                sourceReading: ''
+            },
             isMe,
             isTranslating: true
         }
@@ -39,21 +49,68 @@ export default function ConversationTranslator() {
         setMessages(prev => [...prev, newMessage])
 
         try {
-            const prompt = `Translate this text from ${SUPPORTED_LANGUAGES.find(l => l.code === sourceLanguage)?.name} to ${SUPPORTED_LANGUAGES.find(l => l.code === targetLanguage)?.name}. Only return the translation, no explanations:
+            const prompt = `Translate this text from ${SUPPORTED_LANGUAGES.find(l => l.code === sourceLanguage)?.name} to ${SUPPORTED_LANGUAGES.find(l => l.code === targetLanguage)?.name}.
+${isSourceJapanese ? 'Include hiragana reading for the source Japanese text.' : ''}
+${isTargetJapanese ? 'Include hiragana reading for the translated Japanese text.' : ''}
+Return the response in this JSON format:
+{
+    "text": "translated text"${isTargetJapanese ? ',\n    "reading": "hiragana reading for translated text"' : ''}${isSourceJapanese ? ',\n    "sourceReading": "hiragana reading for source text"' : ''}
+}
 
-${text}`
+Text to translate: ${text}`
+
             const result = await aiService.processWithAI(prompt)
+            let translationData
+            try {
+                // Clean the response string by removing any extra quotes, backticks, and markdown code blocks
+                const cleanResult = result
+                    .replace(/^[\s\S]*?{/, '{') // Remove everything before the first {
+                    .replace(/}[\s\S]*$/, '}') // Remove everything after the last }
+                    .replace(/^['"`]+|['"`]+$/g, '') // Remove quotes/backticks from start and end
+                    .replace(/\\"/g, '"')  // Handle escaped quotes
+                    .replace(/^json\s*/, '') // Remove 'json' text if present
+                    .replace(/```/g, '') // Remove markdown code block markers
+                    .trim()
+                
+                console.log('Cleaned JSON:', cleanResult) // For debugging
+                
+                translationData = JSON.parse(cleanResult)
+                
+                // Validate the required fields
+                if (!translationData.text) {
+                    throw new Error('Missing required text field')
+                }
+                
+                // Ensure all fields exist
+                translationData = {
+                    text: translationData.text || '',
+                    reading: isTargetJapanese ? (translationData.reading || '') : '',
+                    sourceReading: isSourceJapanese ? (translationData.sourceReading || '') : ''
+                }
+            } catch (e) {
+                console.error('JSON parsing error:', e, 'Raw result:', result)
+                // Fallback if response is not valid JSON
+                translationData = { 
+                    text: result
+                        .replace(/^[\s\S]*?["']([^"']+)["'][\s\S]*$/, '$1') // Try to extract text between quotes
+                        .replace(/^['"`]+|['"`]+$/g, '')
+                        .replace(/```/g, '')
+                        .trim(), 
+                    reading: '',
+                    sourceReading: ''
+                }
+            }
 
             setMessages(prev => prev.map(msg =>
                 msg.id === newMessage.id
-                    ? { ...msg, translation: result, isTranslating: false }
+                    ? { ...msg, translation: translationData, isTranslating: false }
                     : msg
             ))
         } catch (error) {
             console.error('Translation error:', error)
             setMessages(prev => prev.map(msg =>
                 msg.id === newMessage.id
-                    ? { ...msg, translation: 'Lỗi dịch', isTranslating: false }
+                    ? { ...msg, translation: { text: 'Lỗi dịch', reading: '', sourceReading: '' }, isTranslating: false }
                     : msg
             ))
         }
@@ -158,14 +215,42 @@ ${text}`
                                         <span>Đang dịch...</span>
                                     </div>
                                 ) : (
-                                    <p className="text-sm sm:text-base">{message.isMe ? message.translation : message.text}</p>
+                                    <p className="text-sm sm:text-base">{message.isMe ? message.translation.text : message.text}</p>
                                 )}
                             </div>
 
                             {/* Secondary Text Below */}
                             <div className={`max-w-[90%] sm:max-w-[80%] text-xs sm:text-sm ${message.isMe ? 'text-left' : 'text-right'}`}>
                                 <div className="text-gray-600 italic">
-                                    {message.isMe ? `Gốc: "${message.text}"` : `Dịch: "${message.translation}"`}
+                                    {message.isMe ? (
+                                        <>
+                                            <div>Gốc: "{message.text}"</div>
+                                            {message.translation.sourceReading && (
+                                                <div className="text-gray-500 mt-1">
+                                                    Phiên âm gốc: {message.translation.sourceReading}
+                                                </div>
+                                            )}
+                                            {message.translation.reading && (
+                                                <div className="text-gray-500 mt-1">
+                                                    Phiên âm: {message.translation.reading}
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {message.translation.sourceReading && (
+                                                <div className="text-gray-500 mt-1">
+                                                    Phiên âm: {message.translation.sourceReading}
+                                                </div>
+                                            )}
+                                            <div className="mt-1">Dịch: "{message.translation.text}"</div>
+                                            {message.translation.reading && (
+                                                <div className="text-gray-500 mt-1">
+                                                    Phiên âm: {message.translation.reading}
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>

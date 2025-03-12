@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTabState } from '@/hooks/useTabState'
 import { aiService } from '@/lib/ai-service'
+import { TRANSLATION_TONES } from '@/lib/ai-service'
 import { dictionaryService } from '@/lib/dictionary-service'
 import { 
   ArrowsRightLeftIcon, 
@@ -10,7 +11,8 @@ import {
   ArrowDownTrayIcon,
   SpeakerWaveIcon,
   DocumentArrowUpIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 import { MdTextFields, MdContentPaste } from 'react-icons/md'
 import ReactMarkdown from 'react-markdown'
@@ -22,6 +24,7 @@ export default function Translator() {
   const [translatedText, setTranslatedText] = useTabState('translatedText', '')
   const [sourceLanguage, setSourceLanguage] = useTabState('sourceLanguage', 'auto')
   const [targetLanguage, setTargetLanguage] = useTabState('targetLanguage', 'vi')
+  const [translationTone, setTranslationTone] = useTabState('translationTone', 'normal')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [useMarkdown, setUseMarkdown] = useState(false)
@@ -61,7 +64,7 @@ export default function Translator() {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await aiService.translate(sourceText, targetLanguage, true)
+      const result = await aiService.translate(sourceText, targetLanguage, true, translationTone)
       const processedText = dictionaryService.applyDictionary(result)
       setTranslatedText(processedText)
     } catch (error) {
@@ -170,6 +173,22 @@ export default function Translator() {
                 ))}
               </select>
               <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 h-4 sm:h-5 w-4 sm:w-5 text-gray-400 pointer-events-none" />
+            </div>
+
+            <div className="relative group flex-1 sm:flex-none">
+              <select
+                value={translationTone}
+                onChange={(e) => setTranslationTone(e.target.value)}
+                className="w-full sm:w-auto appearance-none pl-3 sm:pl-4 pr-8 sm:pr-10 py-2 sm:py-2.5 rounded-xl bg-white border border-gray-200 hover:border-primary/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm sm:text-base font-medium min-w-0 sm:min-w-[160px] cursor-pointer"
+              >
+                {Object.entries(TRANSLATION_TONES).map(([key, tone]) => (
+                  <option key={key} value={key} title={tone.description}>
+                    {tone.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDownIcon className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 h-4 sm:h-5 w-4 sm:w-5 text-gray-400 pointer-events-none" />
+              <SparklesIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
             </div>
           </div>
 

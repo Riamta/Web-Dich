@@ -22,6 +22,30 @@ interface GrammarError {
     endIndex: number
 }
 
+interface TranslationTone {
+    name: string
+    description: string
+    style: string
+}
+
+export const TRANSLATION_TONES: Record<string, TranslationTone> = {
+    normal: {
+        name: 'Normal',
+        description: 'Dịch thông thường, phù hợp với văn bản chung',
+        style: 'Clear, direct, and neutral translation maintaining the original meaning and context'
+    },
+    novel: {
+        name: 'Chinese Novel',
+        description: 'Tối ưu cho dịch tiểu thuyết Trung Quốc',
+        style: 'Literary style with classical Chinese novel elements, martial arts terminology, cultivation terms, and poetic expressions'
+    },
+    academic: {
+        name: 'Academic',
+        description: 'Tối ưu cho dịch văn bản khoa học và chuyên ngành',
+        style: 'Technical and specialized language with precise terminology, complex sentence structures, and detailed explanations'
+    }
+}
+
 interface EnhancementOptions {
     improveStyle: boolean
     formalLevel: 'casual' | 'neutral' | 'formal'
@@ -157,39 +181,6 @@ class AIService {
                 });
                 throw new Error('Failed to process with GPT');
             }
-        } else if (this.config.model === 'google-translate') {
-            try {
-                // Extract target language from prompt
-                const targetLangMatch = prompt.match(/translate.*to\s+(\w+)/i);
-                const targetLang = targetLangMatch ? targetLangMatch[1].toLowerCase() : 'en';
-
-                // Extract text to translate
-                const textToTranslate = prompt.split('CONTENT TO TRANSLATE:')[1]?.trim() || prompt;
-
-                console.log('📤 Sending request to Google Translate...');
-
-                // Encode the text for URL
-                const encodedText = encodeURIComponent(textToTranslate);
-
-                // Create Google Translate URL
-                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodedText}`;
-
-                const response = await fetch(url);
-                const data = await response.json();
-
-                // Extract translated text from response
-                const translatedText = data[0]
-                    .map((item: any[]) => item[0])
-                    .join('');
-
-                return translatedText;
-            } catch (error) {
-                console.error('❌ Google Translate error:', {
-                    error: error instanceof Error ? error.message : 'Unknown error',
-                    timestamp: new Date().toISOString()
-                });
-                throw new Error('Failed to process with Google Translate');
-            }
         } else {
             throw new Error('Unsupported model');
         }
@@ -200,6 +191,7 @@ class AIService {
         text: string,
         targetLanguage: string,
         preserveContext: boolean,
+        tone: string = 'normal',
         onProgress?: (current: number, total: number) => void
     ): Promise<string> {
         // Kiểm tra text trống
@@ -208,7 +200,7 @@ class AIService {
         }
 
         // Tối ưu kích thước chunk dựa trên model
-        const MAX_CHUNK_LENGTH = this.config.model === 'google-translate' ? 5000 : 3000;
+        const MAX_CHUNK_LENGTH = 3000;
 
         // Chuẩn hóa xuống dòng
         const normalizedText = text.replace(/\r\n/g, '\n');
@@ -219,7 +211,7 @@ class AIService {
         // Nếu văn bản ngắn, xử lý trực tiếp
         if (text.length <= MAX_CHUNK_LENGTH) {
             onProgress?.(1, 1);
-            const prompt = this.createTranslationPrompt(text, targetLanguage, preserveContext);
+            const prompt = this.createTranslationPrompt(text, targetLanguage, preserveContext, { tone });
             const result = await this.processWithAI(prompt);
             return dictionaryService.applyDictionary(result);
         }
@@ -278,7 +270,8 @@ class AIService {
                     isFirstChunk,
                     isLastChunk,
                     totalChunks: chunks.length,
-                    currentChunk: i + 1
+                    currentChunk: i + 1,
+                    tone
                 }
             );
 
@@ -299,7 +292,7 @@ class AIService {
                 let subTranslated = '';
                 for (const subChunk of subChunks) {
                     try {
-                        const subPrompt = this.createTranslationPrompt(subChunk, targetLanguage, preserveContext);
+                        const subPrompt = this.createTranslationPrompt(subChunk, targetLanguage, preserveContext, { tone });
                         const subResult = await this.processWithAI(subPrompt);
                         subTranslated += subResult + ' ';
                     } catch (e) {
@@ -325,27 +318,70 @@ class AIService {
             isLastChunk?: boolean;
             totalChunks?: number;
             currentChunk?: number;
+            tone?: string;
         }
     ): string {
-        let prompt = `You are a professional translator. Translate the following content to ${targetLanguage} ${preserveContext ? 'while preserving the context and style' : ''}.`;
+        // Determine the target language name and characteristics
+        const languageCharacteristics = {
+            vi: {
+                name: 'Vietnamese',
+                features: 'tonal language with six tones, no verb conjugation, extensive use of particles and context-dependent meanings',
+                style: 'preference for concrete expressions, emphasis on politeness levels, and rich idiomatic expressions'
+            },
+            en: {
+                name: 'English',
+                features: 'subject-verb-object structure, verb tenses, articles, and prepositions',
+                style: 'clear and direct expression, active voice preference, and diverse vocabulary'
+            },
+            // Add more languages as needed
+        }[targetLanguage] || { name: targetLanguage, features: '', style: '' };
 
-        // Thêm thông tin về chunk nếu có
-        if (options?.totalChunks && options.totalChunks > 1) {
-            prompt += `\nThis is part ${options.currentChunk}/${options.totalChunks} of the text.`;
-        }
+        const translationTone = TRANSLATION_TONES[options?.tone || 'normal'];
 
-        // Thêm context từ chunk trước nếu có
-        if (options?.previousContext) {
-            prompt += `\n\nPrevious context for reference:\n${options.previousContext}\n`;
-        }
+        let prompt = `You are an expert translator with native-level proficiency in both the source language and ${languageCharacteristics.name}. 
+Your task is to provide a high-quality translation that sounds natural and authentic to native ${languageCharacteristics.name} speakers.
 
-        prompt += `\nTRANSLATION PRINCIPLES:
-1. ABSOLUTELY ONLY RETURN THE TRANSLATION, DO NOT ADD ANY NOTES OR EXPLANATIONS
-2. MAINTAIN THE ORIGINAL TEXT FORMAT (line spacing, line breaks, etc.)
-3. DO NOT ADD NUMBERING, BULLET POINTS OR ANY CHARACTERS NOT IN THE ORIGINAL
-4. ENSURE NATURAL FLOW AND COHERENCE WITH CONTEXT
-5. PRESERVE SPECIAL TERMS AND PROPER NOUNS
-6. MAINTAIN CONSISTENT STYLE AND TONE${options?.previousContext ? '\n7. ENSURE CONSISTENCY WITH PREVIOUS CONTEXT' : ''}
+TRANSLATION STYLE:
+${translationTone.style}
+
+TRANSLATION CONTEXT:
+${preserveContext ? `- Preserve the original context, style, tone, and cultural elements
+- Maintain the author's voice and intended message
+- Keep any specialized terminology or jargon in their appropriate context` : '- Focus on clarity and accuracy of meaning'}
+${options?.previousContext ? `\nPrevious context for reference (use this to maintain consistency):\n${options.previousContext}` : ''}
+${options?.totalChunks ? `\nThis is part ${options.currentChunk}/${options.totalChunks} of the text.` : ''}
+
+TRANSLATION REQUIREMENTS:
+1. PRODUCE ONLY THE TRANSLATED TEXT - NO EXPLANATIONS OR NOTES
+2. PRESERVE ALL FORMATTING INCLUDING:
+   - Paragraph breaks
+   - Line spacing
+   - Special characters
+   - Text emphasis (bold, italic, etc.)
+3. MAINTAIN AUTHENTICITY:
+   - Use natural ${languageCharacteristics.name} expressions and idioms
+   - Adapt cultural references appropriately
+   - Consider ${languageCharacteristics.features}
+   - Follow ${languageCharacteristics.style}
+4. ENSURE CONSISTENCY:
+   - Maintain consistent terminology throughout
+   - Use consistent tone and style
+   - Keep proper nouns and technical terms consistent
+5. GRAMMAR AND STRUCTURE:
+   - Use correct grammar and punctuation
+   - Ensure proper sentence structure
+   - Maintain logical flow between sentences
+   - Use appropriate connecting words
+6. CONTEXT AND MEANING:
+   - Preserve the original meaning precisely
+   - Maintain the emotional impact and tone
+   - Keep any humor or wordplay (adapt if necessary)
+   - Preserve any technical or specialized content
+7. QUALITY CHECKS:
+   - Ensure no omissions or additions
+   - Verify terminology accuracy
+   - Check for natural flow and readability
+   - Maintain professional language level
 
 CONTENT TO TRANSLATE:
 ${text}`;
