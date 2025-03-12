@@ -132,14 +132,14 @@ ${text}`
                     {messages.map((message) => (
                         <div
                             key={message.id}
-                            className={`flex flex-col ${message.isMe ? 'items-end' : 'items-start'}`}
+                            className={`flex flex-col ${message.isMe ? 'items-start' : 'items-end'}`}
                         >
                             {/* Main Message Bubble */}
                             <div
                                 className={`max-w-[80%] p-3 rounded-2xl mb-1
                                     ${message.isMe
-                                        ? 'bg-primary text-white rounded-tr-none'
-                                        : 'bg-white border border-gray-200 rounded-tl-none'
+                                        ? 'bg-primary text-white rounded-tl-none'
+                                        : 'bg-white border border-gray-200 rounded-tr-none'
                                     }`}
                             >
                                 {message.isTranslating ? (
@@ -168,7 +168,7 @@ ${text}`
                             </div>
 
                             {/* Secondary Text Below */}
-                            <div className={`max-w-[80%] text-sm ${message.isMe ? 'text-right' : 'text-left'}`}>
+                            <div className={`max-w-[80%] text-sm ${message.isMe ? 'text-left' : 'text-right'}`}>
                                 <div className="text-gray-600 italic">
                                     {message.isMe ? `Gốc: "${message.text}"` : `Dịch: "${message.translation}"`}
                                 </div>
