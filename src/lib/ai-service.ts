@@ -202,150 +202,155 @@ class AIService {
         preserveContext: boolean,
         onProgress?: (current: number, total: number) => void
     ): Promise<string> {
-        const MAX_CHUNK_LENGTH = 5000; // Characters per chunk
-        console.log('Original text length:', text.length);
-
-        // Split text into paragraphs first
-        const paragraphs = text.split(/\n\s*\n/); // Split on empty lines
-        console.log('Number of paragraphs:', paragraphs.length);
-
-        const chunks: string[] = [];
-        let currentChunk = '';
-        let currentLength = 0;
-
-        // Helper function to calculate effective length considering Chinese characters
-        const getEffectiveLength = (text: string): number => {
-            let length = 0;
-            for (let i = 0; i < text.length; i++) {
-                if (/[\u4e00-\u9fff]/.test(text[i])) {
-                    length += 2; // Chinese character counts as 2 characters
-                } else {
-                    length += 1;
-                }
-            }
-            return length;
-        };
-
-        // Group paragraphs into chunks
-        for (const paragraph of paragraphs) {
-            const paragraphLength = getEffectiveLength(paragraph);
-            console.log('Paragraph length:', paragraphLength, 'Current total length:', currentLength);
-
-            // If adding this paragraph would exceed maxLength and we have content
-            if ((currentLength + paragraphLength > MAX_CHUNK_LENGTH) && currentChunk) {
-                console.log('Creating new chunk, current chunk length:', currentLength);
-                chunks.push(currentChunk.trim());
-                currentChunk = paragraph;
-                currentLength = paragraphLength;
-            } else {
-                if (currentChunk) {
-                    currentChunk += '\n\n' + paragraph;
-                } else {
-                    currentChunk = paragraph;
-                }
-                currentLength += paragraphLength;
-            }
+        // Kiểm tra text trống
+        if (!text.trim()) {
+            return '';
         }
 
-        // Add the last chunk if not empty
-        if (currentChunk) {
-            chunks.push(currentChunk.trim());
-        }
+        // Tối ưu kích thước chunk dựa trên model
+        const MAX_CHUNK_LENGTH = this.config.model === 'google-translate' ? 5000 : 3000;
 
-        console.log('Number of chunks created:', chunks.length);
-        chunks.forEach((chunk, i) => {
-            console.log(`Chunk ${i + 1} length:`, chunk.length);
-        });
+        // Chuẩn hóa xuống dòng
+        const normalizedText = text.replace(/\r\n/g, '\n');
 
-        // IMPORTANT: Check if we need to force chunk splitting for very long texts
-        if (chunks.length === 1 && text.length > MAX_CHUNK_LENGTH) {
-            console.log('Forcing chunk split for long text');
-            // Split the single chunk into smaller pieces
-            const forcedChunks: string[] = [];
-            const lines = chunks[0].split('\n');
-            currentChunk = '';
-            currentLength = 0;
+        // Tách văn bản thành các đoạn dựa trên xuống dòng kép
+        const paragraphs = normalizedText.split(/\n\s*\n/).filter(p => p.trim());
 
-            for (const line of lines) {
-                const lineLength = getEffectiveLength(line);
-                if (currentLength + lineLength > MAX_CHUNK_LENGTH && currentChunk) {
-                    forcedChunks.push(currentChunk.trim());
-                    currentChunk = line;
-                    currentLength = lineLength;
-                } else {
-                    if (currentChunk) {
-                        currentChunk += '\n' + line;
-                    } else {
-                        currentChunk = line;
-                    }
-                    currentLength += lineLength;
-                }
-            }
-
-            if (currentChunk) {
-                forcedChunks.push(currentChunk.trim());
-            }
-
-            if (forcedChunks.length > 1) {
-                console.log('Forced splitting created', forcedChunks.length, 'chunks');
-                chunks.length = 0; // Clear original chunks
-                chunks.push(...forcedChunks);
-            }
-        }
-
-        // If text is still in one chunk and small enough, process normally
-        if (chunks.length === 1 && text.length <= MAX_CHUNK_LENGTH) {
+        // Nếu văn bản ngắn, xử lý trực tiếp
+        if (text.length <= MAX_CHUNK_LENGTH) {
             onProgress?.(1, 1);
-            const prompt = `You are a professional translator. Your task is to accurately translate the following content to ${targetLanguage}.
-
-TRANSLATION PRINCIPLES:
-1. ABSOLUTELY ONLY RETURN THE TRANSLATION, DO NOT ADD ANY NOTES OR EXPLANATIONS
-2. MUST MAINTAIN THE ORIGINAL TEXT FORMAT (line spacing, line breaks, etc.)
-3. DO NOT ADD NUMBERING, BULLET POINTS OR ANY CHARACTERS NOT IN THE ORIGINAL
-4. DO NOT REPLY "OK" OR CONFIRM UNDERSTANDING
-
-CONTENT TO TRANSLATE:
-${text}`;
+            const prompt = this.createTranslationPrompt(text, targetLanguage, preserveContext);
             const result = await this.processWithAI(prompt);
             return dictionaryService.applyDictionary(result);
         }
 
-        // Translate each chunk
-        const translatedChunks = [];
+        // Nhóm các đoạn thành các chunk
+        const chunks: string[] = [];
+        let currentChunk = '';
+
+        for (const paragraph of paragraphs) {
+            // Nếu đoạn quá dài, chia nhỏ thành các câu
+            if (paragraph.length > MAX_CHUNK_LENGTH) {
+                const sentences = paragraph.match(/[^.!?]+[.!?]+/g) || [paragraph];
+                for (const sentence of sentences) {
+                    if (currentChunk.length + sentence.length > MAX_CHUNK_LENGTH && currentChunk) {
+                        chunks.push(currentChunk.trim());
+                        currentChunk = sentence;
+                    } else {
+                        currentChunk = currentChunk ? `${currentChunk} ${sentence}` : sentence;
+                    }
+                }
+            }
+            // Nếu không, thêm cả đoạn vào chunk
+            else {
+                if (currentChunk.length + paragraph.length > MAX_CHUNK_LENGTH) {
+                    chunks.push(currentChunk.trim());
+                    currentChunk = paragraph;
+                } else {
+                    currentChunk = currentChunk ? `${currentChunk}\n\n${paragraph}` : paragraph;
+                }
+            }
+        }
+
+        // Thêm chunk cuối cùng nếu còn
+        if (currentChunk) {
+            chunks.push(currentChunk.trim());
+        }
+
+        // Dịch từng chunk
+        const translatedChunks: string[] = [];
+        let previousContext = '';
+
         for (let i = 0; i < chunks.length; i++) {
             onProgress?.(i + 1, chunks.length);
 
             const chunk = chunks[i];
-            console.log(`Translating chunk ${i + 1}/${chunks.length}, length:`, chunk.length);
+            const isFirstChunk = i === 0;
+            const isLastChunk = i === chunks.length - 1;
 
-            const prompt = `You are a professional translator. Your task is to accurately translate the following content to ${targetLanguage}. This is part ${i + 1}/${chunks.length} of the text.
+            // Tạo prompt với context
+            let prompt = this.createTranslationPrompt(
+                chunk,
+                targetLanguage,
+                preserveContext,
+                {
+                    previousContext: isFirstChunk ? '' : previousContext,
+                    isFirstChunk,
+                    isLastChunk,
+                    totalChunks: chunks.length,
+                    currentChunk: i + 1
+                }
+            );
 
-TRANSLATION PRINCIPLES:
-1. ABSOLUTELY ONLY RETURN THE TRANSLATION, DO NOT ADD ANY NOTES OR EXPLANATIONS
-2. MUST MAINTAIN THE ORIGINAL TEXT FORMAT (line spacing, line breaks, etc.)
-3. DO NOT ADD NUMBERING, BULLET POINTS OR ANY CHARACTERS NOT IN THE ORIGINAL
-4. DO NOT REPLY "OK" OR CONFIRM UNDERSTANDING
-5. ENSURE CONTINUITY WITH PREVIOUS PARTS (if any)
+            try {
+                const result = await this.processWithAI(prompt);
+                const processedResult = await dictionaryService.applyDictionary(result);
+                translatedChunks.push(processedResult);
 
-CONTENT TO TRANSLATE:
-${chunk}`;
+                // Lưu context cho chunk tiếp theo
+                previousContext = processedResult.slice(-200); // Lấy 200 ký tự cuối làm context
 
-            const result = await this.processWithAI(prompt);
-            const processedResult = await dictionaryService.applyDictionary(result);
-            translatedChunks.push(processedResult);
-
-            // Log translation progress
-            console.log(`✓ Completed chunk ${i + 1}/${chunks.length}`);
+                // Log tiến độ
+                console.log(`✓ Completed chunk ${i + 1}/${chunks.length}`);
+            } catch (error) {
+                console.error(`Error translating chunk ${i + 1}:`, error);
+                // Nếu lỗi, thử lại với chunk nhỏ hơn
+                const subChunks = chunk.split(/[.!?] /).filter(Boolean);
+                let subTranslated = '';
+                for (const subChunk of subChunks) {
+                    try {
+                        const subPrompt = this.createTranslationPrompt(subChunk, targetLanguage, preserveContext);
+                        const subResult = await this.processWithAI(subPrompt);
+                        subTranslated += subResult + ' ';
+                    } catch (e) {
+                        console.error('Sub-chunk translation failed:', e);
+                        subTranslated += subChunk + ' '; // Giữ nguyên text gốc nếu lỗi
+                    }
+                }
+                translatedChunks.push(subTranslated.trim());
+            }
         }
 
-        // Log final combination
-        console.log('Combining', translatedChunks.length, 'translated chunks');
+        // Kết hợp các chunk đã dịch
+        return translatedChunks.join('\n\n');
+    }
 
-        // Combine translated chunks with proper spacing
-        const finalResult = translatedChunks.join('\n\n');
-        console.log('Final translation length:', finalResult.length);
+    private createTranslationPrompt(
+        text: string,
+        targetLanguage: string,
+        preserveContext: boolean,
+        options?: {
+            previousContext?: string;
+            isFirstChunk?: boolean;
+            isLastChunk?: boolean;
+            totalChunks?: number;
+            currentChunk?: number;
+        }
+    ): string {
+        let prompt = `You are a professional translator. Translate the following content to ${targetLanguage} ${preserveContext ? 'while preserving the context and style' : ''}.`;
 
-        return finalResult;
+        // Thêm thông tin về chunk nếu có
+        if (options?.totalChunks && options.totalChunks > 1) {
+            prompt += `\nThis is part ${options.currentChunk}/${options.totalChunks} of the text.`;
+        }
+
+        // Thêm context từ chunk trước nếu có
+        if (options?.previousContext) {
+            prompt += `\n\nPrevious context for reference:\n${options.previousContext}\n`;
+        }
+
+        prompt += `\nTRANSLATION PRINCIPLES:
+1. ABSOLUTELY ONLY RETURN THE TRANSLATION, DO NOT ADD ANY NOTES OR EXPLANATIONS
+2. MAINTAIN THE ORIGINAL TEXT FORMAT (line spacing, line breaks, etc.)
+3. DO NOT ADD NUMBERING, BULLET POINTS OR ANY CHARACTERS NOT IN THE ORIGINAL
+4. ENSURE NATURAL FLOW AND COHERENCE WITH CONTEXT
+5. PRESERVE SPECIAL TERMS AND PROPER NOUNS
+6. MAINTAIN CONSISTENT STYLE AND TONE${options?.previousContext ? '\n7. ENSURE CONSISTENCY WITH PREVIOUS CONTEXT' : ''}
+
+CONTENT TO TRANSLATE:
+${text}`;
+
+        return prompt;
     }
 
     private splitTextIntoChunks(text: string, maxLength: number): string[] {

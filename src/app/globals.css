@@ -73,6 +73,9 @@ select.w-full.p-4.border-2.border-gray-200.rounded-xl.focus\:ring-2.focus\:ring-
 textarea.w-full.h-20.p-3.pr-24.font-mono.text-sm.border.border-gray-200.rounded-lg.focus\:ring-2.focus\:ring-primary\/20.focus\:border-primary.transition-all.duration-200.resize-none.bg-gray-50\/50 {
   color: black;
 }
+[type='text'], input:where(:not([type])), [type='email'], [type='url'], [type='password'], [type='number'], [type='date'], [type='datetime-local'], [type='month'], [type='search'], [type='tel'], [type='time'], [type='week'], [multiple], textarea, select {
+  border-color: #ffffff;
+}
 .max-w-4xl.mx-auto {
   max-width: unset;
 }
@@ -90,4 +93,7 @@ textarea.w-full.h-20.p-3.pr-24.font-mono.text-sm.border.border-gray-200.rounded-
 .py-8 {
   padding-top: 1rem;
   padding-bottom: 2rem;
+}
+.p-6 {
+  padding: 0.5rem;
 }
