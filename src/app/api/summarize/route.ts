@@ -3,7 +3,7 @@ import { aiService } from '@/lib/ai-service';
 
 export async function POST(request: Request) {
   try {
-    const { text } = await request.json();
+    const { text, language } = await request.json();
 
     if (!text) {
       return NextResponse.json(
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
     try {
       console.log('📤 Sending text for summarization...');
-      const summary = await aiService.summarize(text);
+      const summary = await aiService.summarize(text, language);
 
       console.log('📥 Received summarization:', {
         status: 'success',

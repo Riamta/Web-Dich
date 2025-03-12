@@ -11,6 +11,7 @@ export default function TextSummarization() {
     const [mounted, setMounted] = useState(false);
     const [inputText, setInputText] = useTabState('summarizeText', '');
     const [summary, setSummary] = useTabState('summarizeResult', '');
+    const [selectedLanguage, setSelectedLanguage] = useTabState('summarizeLanguage', 'vi');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -57,20 +58,19 @@ export default function TextSummarization() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ text: inputText }),
+                body: JSON.stringify({ text: inputText, language: selectedLanguage }),
             });
 
             if (!response.ok) {
+                console.error('❌ Error summarizing text:', response.statusText);
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Failed to summarize text');
             }
 
             const data = await response.json();
             setSummary(data.summary);
-            console.log('✅ Text summarized successfully');
             scrollToResults();
         } catch (error) {
-            console.error('❌ Error summarizing text:', error);
             setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi tóm tắt văn bản');
             setSummary('');
         } finally {
@@ -120,10 +120,18 @@ export default function TextSummarization() {
                             <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
                             Văn bản cần tóm tắt
                         </label>
-                        <div className="flex items-center gap-3 text-sm text-gray-500">
-                            <span>{getCharacterCount(inputText)} ký tự</span>
-                            <span>|</span>
-                            <span>{getWordCount(inputText)} từ</span>
+                        <div className="flex items-center gap-">
+                            <select
+                                value={selectedLanguage}
+                                onChange={(e) => setSelectedLanguage(e.target.value)}
+                                className="text-sm border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 min-w-[140px]"
+                            >
+                                <option value="vi">Tiếng Việt</option>
+                                <option value="en">English</option>
+                                <option value="zh">中文</option>
+                                <option value="ja">日本語</option>
+                                <option value="ko">한국어</option>
+                            </select>
                             {inputText && (
                                 <button
                                     onClick={handleClearText}

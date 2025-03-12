@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { MdTranslate, MdSubtitles, MdQuiz, MdSchool, MdChat, MdShortText, MdEdit, MdSpellcheck, MdAutoFixHigh } from 'react-icons/md';
+import { MdTranslate, MdSubtitles, MdQuiz, MdSchool, MdChat, MdShortText, MdEdit, MdSpellcheck, MdAutoFixHigh, MdGamepad } from 'react-icons/md';
 import Image from 'next/image';
 import { useSidebar } from '@/contexts/SidebarContext';
 
@@ -33,6 +33,12 @@ export default function Sidebar() {
       name: 'Dịch phụ đề',
       path: '/srt-translate',
       icon: <MdSubtitles className="w-5 h-5" />,
+      isExternal: false
+    },
+    {
+      name: 'Dịch RPGMV',
+      path: '/rpgmv-translate',
+      icon: <MdGamepad className="w-5 h-5" />,
       isExternal: false
     },
     {

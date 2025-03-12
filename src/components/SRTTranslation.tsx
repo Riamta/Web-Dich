@@ -364,6 +364,8 @@ ${batchText}`;
     };
     setEntries(newEntries);
   };
+  
+
 
   const handleTranslateRow = async (index: number) => {
     if (isLoading) return;
@@ -415,7 +417,7 @@ ${entry.text}`;
             <select
               value={targetLanguage}
               onChange={(e) => setTargetLanguage(e.target.value)}
-              className="p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+              className="w-48 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
             >
               {SUPPORTED_LANGUAGES.map((lang) => (
                 <option key={lang.code} value={lang.code}>

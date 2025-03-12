@@ -157,6 +157,39 @@ class AIService {
                 });
                 throw new Error('Failed to process with GPT');
             }
+        } else if (this.config.model === 'google-translate') {
+            try {
+                // Extract target language from prompt
+                const targetLangMatch = prompt.match(/translate.*to\s+(\w+)/i);
+                const targetLang = targetLangMatch ? targetLangMatch[1].toLowerCase() : 'en';
+                
+                // Extract text to translate
+                const textToTranslate = prompt.split('CONTENT TO TRANSLATE:')[1]?.trim() || prompt;
+
+                console.log('📤 Sending request to Google Translate...');
+                
+                // Encode the text for URL
+                const encodedText = encodeURIComponent(textToTranslate);
+                
+                // Create Google Translate URL
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodedText}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                // Extract translated text from response
+                const translatedText = data[0]
+                    .map((item: any[]) => item[0])
+                    .join('');
+                
+                return translatedText;
+            } catch (error) {
+                console.error('❌ Google Translate error:', {
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                    timestamp: new Date().toISOString()
+                });
+                throw new Error('Failed to process with Google Translate');
+            }
         } else {
             throw new Error('Unsupported model');
         }
@@ -367,8 +400,8 @@ ${chunk}`;
     }
 
     // Summarization specific method
-    async summarize(text: string): Promise<string> {
-        const prompt = `Hãy tóm tắt văn bản sau và trình bày kết quả theo định dạng markdown với cấu trúc sau:
+    async summarize(text: string, language: string): Promise<string> {
+        const prompt = `Hãy tóm tắt văn bản sau bằng ${language} và trình bày kết quả theo định dạng markdown với cấu trúc sau:
 
 ## Tóm tắt
 [Tóm tắt ngắn gọn, súc tích nội dung chính]
@@ -409,14 +442,12 @@ ${text}`;
             return { id, timecode, text };
         }).filter((entry): entry is SRTEntry => entry !== null);
     }
-
     // Format SRT content
     private formatSRT(entries: SRTEntry[]): string {
         return entries.map(entry => {
             return `${entry.id}\n${entry.timecode}\n${entry.text}`;
         }).join('\n\n') + '\n';
     }
-
     // SRT translation method
     async translateSRT(
         content: string,

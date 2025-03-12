@@ -147,18 +147,23 @@ export default function TranslationForm({ onTranslate, isLoading, progress }: Tr
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-gray-50/50 p-4 rounded-lg border border-gray-100">
-            <input
-              type="checkbox"
-              id="preserveContext"
-              checked={preserveContext}
-              onChange={(e) => setPreserveContext(e.target.checked)}
-              className="h-4 w-4 text-primary focus:ring-primary/20 border-gray-300 rounded transition-all duration-200"
-            />
-            <label htmlFor="preserveContext" className="text-sm text-gray-700 flex items-center gap-2">
+          <div className="space-y-2">
+            <label htmlFor="preserveContext" className="block text-sm font-medium text-gray-700 flex items-center gap-2">
               <SparklesIcon className="h-5 w-5 text-gray-400" />
-              Preserve literary context and style
+              Translation Options
             </label>
+            <div className="flex items-center gap-3 bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+              <input
+                type="checkbox"
+                id="preserveContext"
+                checked={preserveContext}
+                onChange={(e) => setPreserveContext(e.target.checked)}
+                className="h-4 w-4 text-primary focus:ring-primary/20 border-gray-300 rounded transition-all duration-200"
+              />
+              <label htmlFor="preserveContext" className="text-sm text-gray-700">
+                Giữ ngữ cảnh
+              </label>
+            </div>
           </div>
         </div>
 

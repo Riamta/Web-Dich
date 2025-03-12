@@ -42,8 +42,6 @@ export default function EnhanceTextPage() {
 
     return (
         <div className="container mx-auto px-4 py-8 min-h-screen">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">Công cụ cải thiện văn bản</h1>
-
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Input Section */}
                 <div className="space-y-4">
