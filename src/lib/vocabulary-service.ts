@@ -1,10 +1,27 @@
-import { NextResponse } from 'next/server'
-import { aiService } from '@/lib/ai-service'
+import { aiService } from './ai-service'
 
-export async function POST(req: Request) {
-  try {
-    const { targetLanguage, nativeLanguage = 'vi', topic, wordCount = 10 } = await req.json()
+interface VocabularyItem {
+  word: string
+  meaning: string
+  pronunciation: string
+  example: string
+  translation: string
+}
 
+interface GenerateVocabularyParams {
+  targetLanguage: string
+  nativeLanguage?: string
+  topic: string
+  wordCount?: number
+}
+
+export class VocabularyService {
+  static async generateVocabulary({
+    targetLanguage,
+    nativeLanguage = 'vi',
+    topic,
+    wordCount = 10
+  }: GenerateVocabularyParams) {
     // Validate word count
     const validWordCount = Math.max(1, Math.min(20, parseInt(String(wordCount)) || 10))
 
@@ -53,11 +70,7 @@ Trả về kết quả dưới dạng JSON với cấu trúc sau:
       "translation": string
     }
   ]
-}
-
-Chú ý: 
-- Chỉ trả về JSON thuần túy, không thêm markdown hoặc định dạng khác
-- Đảm bảo đủ số lượng ${validWordCount} từ vựng theo yêu cầu`
+}`
 
     const response = await aiService.processWithAI(systemPrompt)
     let data
@@ -88,12 +101,6 @@ Chú ý:
       }
     })
 
-    return NextResponse.json(data)
-  } catch (error) {
-    console.error('Vocabulary generation error:', error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Có lỗi xảy ra' },
-      { status: 500 }
-    )
+    return data
   }
 } 

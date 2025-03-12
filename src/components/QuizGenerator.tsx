@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { DocumentArrowUpIcon, LanguageIcon } from '@heroicons/react/24/outline'
 import { MdCheck, MdClose } from 'react-icons/md'
+import { aiService } from '@/lib/ai-service'
 
 interface Question {
   id: number
@@ -27,6 +28,21 @@ const DIFFICULTY_LEVELS = [
   { code: 'expert', name: 'Chuyên gia' },
 ]
 
+const getDifficultyDescription = (level: string) => {
+  switch (level) {
+    case 'easy':
+      return 'dễ, phù hợp cho người mới bắt đầu, kiến thức cơ bản'
+    case 'medium':
+      return 'trung bình, đòi hỏi hiểu biết tốt về chủ đề'
+    case 'hard':
+      return 'khó, yêu cầu kiến thức chuyên sâu và khả năng phân tích'
+    case 'expert':
+      return 'chuyên gia, cực kỳ khó, đòi hỏi hiểu biết toàn diện và khả năng xử lý tình huống phức tạp'
+    default:
+      return 'trung bình'
+  }
+}
+
 export default function QuizGenerator() {
   const [prompt, setPrompt] = useState('')
   const [numQuestions, setNumQuestions] = useState<string>('3')
@@ -48,35 +64,77 @@ export default function QuizGenerator() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await fetch('/api/generate-quiz', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          prompt,
-          numQuestions: validatedNumQuestions,
-          explanationLanguage,
-          difficulty
-        }),
-      })
+      const systemPrompt = `
+        Bạn là một giáo viên chuyên tạo câu hỏi trắc nghiệm. 
+        Hãy tạo ${validatedNumQuestions} câu hỏi dựa trên yêu cầu của người dùng.
+        
+        Độ khó yêu cầu: ${getDifficultyDescription(difficulty)}
 
-      const text = await response.text()
-      let data
+        Giải thích bằng ${SUPPORTED_LANGUAGES.find(lang => lang.code === explanationLanguage)?.name}
+        
+        Yêu cầu định dạng:
+        1. Mỗi câu hỏi phải có:
+           - Câu hỏi rõ ràng, dễ hiểu
+           - 4 đáp án lựa chọn
+           - Chỉ có 1 đáp án đúng
+           - Giải thích chi tiết tại sao đáp án đó là đúng ( bằng ${SUPPORTED_LANGUAGES.find(lang => lang.code === explanationLanguage)?.name})
+           - Đảm bảo độ khó phù hợp với yêu cầu
+        
+        2. Trả về kết quả CHÍNH XÁC theo định dạng JSON sau:
+        {
+          "questions": [
+            {
+              "id": 1,
+              "question": "Câu hỏi...",
+              "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
+              "correctAnswer": 0,
+              "explanation": "Giải thích..."
+            }
+          ]
+        }
+
+        Lưu ý:
+        - Tạo đúng ${validatedNumQuestions} câu hỏi
+        - Độ khó phải đúng theo yêu cầu: ${getDifficultyDescription(difficulty)}
+        - Chỉ trả về JSON, không thêm bất kỳ text nào khác
+        - correctAnswer là index của đáp án đúng (0-3)
+        - Đảm bảo JSON hợp lệ và đúng định dạng
+        - Không thêm dấu backtick hoặc markdown
+      `
+
+      const response = await aiService.generateQuiz(systemPrompt, prompt)
+      let questions
+
       try {
-        data = JSON.parse(text)
-      } catch (e) {
-        console.error('Invalid JSON response:', text)
-        throw new Error('Lỗi khi xử lý phản hồi từ server: ' + text)
-      }
+        // Clean up response to ensure valid JSON
+        const jsonStr = response.trim().replace(/```json\s*|\s*```/g, '').trim()
+        questions = JSON.parse(jsonStr)
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Lỗi khi tạo câu hỏi')
-      }
+        // Validate response structure
+        if (!questions.questions || !Array.isArray(questions.questions)) {
+          throw new Error('Invalid response format')
+        }
 
-      setQuestions(data.questions)
-      setSelectedAnswers({})
-      setShowExplanations({})
+        // Validate each question and number of questions
+        if (questions.questions.length !== validatedNumQuestions) {
+          throw new Error(`Expected ${validatedNumQuestions} questions but got ${questions.questions.length}`)
+        }
+
+        questions.questions.forEach((q: any, index: number) => {
+          if (!q.id || !q.question || !Array.isArray(q.options) || 
+              q.options.length !== 4 || typeof q.correctAnswer !== 'number' || 
+              !q.explanation) {
+            throw new Error(`Invalid question format at index ${index}`)
+          }
+        })
+
+        setQuestions(questions.questions)
+        setSelectedAnswers({})
+        setShowExplanations({})
+      } catch (error) {
+        console.error('Failed to parse AI response:', response)
+        throw new Error('Lỗi khi xử lý câu trả lời từ AI. Vui lòng thử lại.')
+      }
     } catch (error) {
       console.error('Quiz generation error:', error)
       setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi tạo câu hỏi')

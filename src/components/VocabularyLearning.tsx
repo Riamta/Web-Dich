@@ -4,6 +4,7 @@ import { MdVolumeUp, MdCheck, MdClose, MdBookmark, MdBookmarkBorder, MdRefresh }
 import { useAuth } from '@/contexts/AuthContext'
 import { db } from '@/lib/firebase'
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore'
+import { VocabularyService } from '@/lib/vocabulary-service'
 
 interface VocabularyItem {
   id?: string; // Add ID field for Firestore documents
@@ -59,7 +60,7 @@ export default function VocabularyLearning() {
   const [nativeLanguage, setNativeLanguage] = useState('vi')
   const [selectedTopic, setSelectedTopic] = useState('custom')
   const [customTopic, setCustomTopic] = useState('Hãy cho tôi chủ đề bất kỳ mà bạn nghĩ sẽ thú vị')
-  const [wordCount, setWordCount] = useState(10)
+  const [wordCount, setWordCount] = useState(5)
   const [learningMode, setLearningMode] = useState('review')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -160,23 +161,12 @@ export default function VocabularyLearning() {
         throw new Error('Vui lòng nhập chủ đề tùy chỉnh')
       }
 
-      const response = await fetch('/api/generate-vocabulary', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          targetLanguage,
-          nativeLanguage,
-          topic: topicToSend || 'random',
-          wordCount: wordCount
-        }),
+      const data = await VocabularyService.generateVocabulary({
+        targetLanguage,
+        nativeLanguage,
+        topic: topicToSend || 'random',
+        wordCount: wordCount
       })
-
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data.error || 'Lỗi khi tạo danh sách từ vựng')
-      }
 
       setVocabularyList(data.vocabulary)
     } catch (error) {
@@ -252,8 +242,8 @@ export default function VocabularyLearning() {
                     setError(null)
                   }}
                   className={`p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-[1.02] ${mode === m.id
-                      ? 'bg-primary/10 text-primary border-primary font-medium shadow-sm'
-                      : 'border-gray-200 text-gray-700 hover:border-primary/50 hover:text-primary'
+                    ? 'bg-primary/10 text-primary border-primary font-medium shadow-sm'
+                    : 'border-gray-200 text-gray-700 hover:border-primary/50 hover:text-primary'
                     }`}
                 >
                   {m.name}
@@ -276,23 +266,6 @@ export default function VocabularyLearning() {
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
                 <LanguageIcon className="h-5 w-5 text-primary/60" />
-                Ngôn ngữ mẹ đẻ
-              </label>
-              <select
-                value={nativeLanguage}
-                onChange={(e) => setNativeLanguage(e.target.value)}
-                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/30 hover:border-primary/50"
-              >
-                {NATIVE_LANGUAGES.map((lang) => (
-                  <option key={lang.code} value={lang.code}>
-                    {lang.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                <LanguageIcon className="h-5 w-5 text-primary/60" />
                 {mode === 'learn' ? 'Ngôn ngữ cần học' : 'Chọn ngôn ngữ ôn tập'}
               </label>
               <select
@@ -307,9 +280,23 @@ export default function VocabularyLearning() {
                 ))}
               </select>
             </div>
-
-
-
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                <LanguageIcon className="h-5 w-5 text-primary/60" />
+                Ngôn ngữ mẹ đẻ
+              </label>
+              <select
+                value={nativeLanguage}
+                onChange={(e) => setNativeLanguage(e.target.value)}
+                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/30 hover:border-primary/50"
+              >
+                {NATIVE_LANGUAGES.map((lang) => (
+                  <option key={lang.code} value={lang.code}>
+                    {lang.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             {mode === 'learn' && (
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
@@ -374,9 +361,9 @@ export default function VocabularyLearning() {
                   type="number"
                   value={wordCount}
                   onChange={(e) => {
-                    const value = parseInt(e.target.value) || 10
+                    const value = parseInt(e.target.value) || 5
                     if (e.target.value === '') {
-                      setWordCount(10)
+                      setWordCount(5)
                     } else if (value < 1) {
                       setWordCount(1)
                     } else if (value > 20) {
@@ -406,8 +393,8 @@ export default function VocabularyLearning() {
                     key={m.id}
                     onClick={() => setLearningMode(m.id)}
                     className={`p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-[1.02] ${learningMode === m.id
-                        ? 'bg-primary/10 text-primary border-primary font-medium shadow-sm'
-                        : 'border-gray-200 text-gray-700 hover:border-primary/50 hover:text-primary'
+                      ? 'bg-primary/10 text-primary border-primary font-medium shadow-sm'
+                      : 'border-gray-200 text-gray-700 hover:border-primary/50 hover:text-primary'
                       }`}
                   >
                     {m.name}
@@ -421,8 +408,8 @@ export default function VocabularyLearning() {
             onClick={handleGenerateVocabulary}
             disabled={isLoading}
             className={`w-full py-4 px-6 rounded-xl text-white font-medium transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-[1.02] ${isLoading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg'
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg'
               }`}
           >
             {isLoading ? (
@@ -517,8 +504,8 @@ export default function VocabularyLearning() {
 
                   {showAnswers[index] && (
                     <div className={`p-4 rounded-xl border-2 transition-all duration-300 ${isAnswerCorrect(index)
-                        ? 'bg-green-50/50 border-green-200'
-                        : 'bg-red-50/50 border-red-200'
+                      ? 'bg-green-50/50 border-green-200'
+                      : 'bg-red-50/50 border-red-200'
                       }`}>
                       <div className="flex items-center gap-2">
                         {isAnswerCorrect(index) ? (
