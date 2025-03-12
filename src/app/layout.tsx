@@ -5,9 +5,10 @@ import Sidebar from '@/components/Sidebar'
 import Menubar from '@/components/Menubar'
 import { SidebarProvider } from '@/contexts/SidebarContext'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { ThemeProvider } from '@/contexts/ThemeContext'
+import { Analytics } from "@vercel/analytics/react"
 
 const inter = Inter({ subsets: ['latin'] })
-import { Analytics } from "@vercel/analytics/react"
 
 export const metadata: Metadata = {
   title: 'AI Tool',
@@ -41,23 +42,26 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <AuthProvider>
-          <SidebarProvider>
-            <div className="flex h-screen overflow-hidden bg-gray-100">
-              <Sidebar />
-              <div className="flex-1 flex flex-col">
-                <Menubar />
-                <main className="flex-1 overflow-y-auto">
-                  <div className="container mx-auto px-4 py-8">
-                    {children}
-                  </div>
-                </main>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} antialiased`}>
+        <ThemeProvider>
+          <AuthProvider>
+            <SidebarProvider>
+              <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+                <Sidebar />
+                <div className="flex-1 flex flex-col">
+                  <Menubar />
+                  <main className="flex-1 overflow-y-auto">
+                    <div className="container mx-auto px-4 py-8">
+                      {children}
+                    </div>
+                  </main>
+                </div>
               </div>
-            </div>
-          </SidebarProvider>
-        </AuthProvider>
+            </SidebarProvider>
+          </AuthProvider>
+        </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )

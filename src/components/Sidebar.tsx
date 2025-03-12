@@ -73,7 +73,7 @@ export default function Sidebar() {
       {/* Backdrop overlay for mobile */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -82,17 +82,17 @@ export default function Sidebar() {
       <div className={`${isOpen ? 'w-[280px]' : 'w-0'} shrink-0 transition-all duration-300 md:w-[240px]`} />
 
       {/* Fixed sidebar */}
-      <div className={`fixed left-0 top-0 h-[100dvh] w-[280px] max-w-[90vw] bg-gradient-to-b from-[#1A1B21] to-[#1E1F25] text-white flex flex-col z-50 
-        transition-all duration-300 ease-in-out shadow-2xl
+      <div className={`fixed left-0 top-0 h-[100dvh] w-[280px] max-w-[90vw] bg-card border-r border-[hsl(var(--border))] flex flex-col z-50 
+        transition-all duration-300 ease-in-out shadow-lg
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
-        md:shadow-xl md:w-[240px] md:translate-x-0 md:h-screen`}>
+        md:shadow-none md:w-[240px] md:translate-x-0 md:h-screen`}>
         {/* Logo section */}
-        <div className="h-[70px] md:h-16 flex items-center px-6 border-b border-gray-800/50 backdrop-blur-sm">
+        <div className="h-[70px] md:h-16 flex items-center px-6 border-b border-[hsl(var(--border))]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 md:w-8 md:h-8 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
+            <div className="w-9 h-9 md:w-8 md:h-8 rounded-xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--primary))]/60 flex items-center justify-center text-primary-foreground">
               <MdAutoFixHigh className="w-[22px] h-[22px] md:w-5 md:h-5" />
             </div>
-            <span className="font-semibold text-lg tracking-tight">AI Tool</span>
+            <span className="font-semibold text-lg tracking-tight text-foreground">AI Tool</span>
           </div>
         </div>
 
@@ -114,14 +114,14 @@ export default function Sidebar() {
                 }}
                 className={`group flex items-center gap-3 px-3 py-3 md:py-2.5 rounded-xl transition-colors duration-200
                   ${isActive
-                    ? 'bg-primary/10 text-primary border border-primary/20'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5 active:scale-[0.98] border border-transparent'
+                    ? 'bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))] border border-[hsl(var(--primary))]/20'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--accent))] active:scale-[0.98] border border-transparent'
                   } outline-none focus:outline-none focus:ring-0 focus-visible:outline-none [-webkit-tap-highlight-color:transparent] select-none`}
               >
                 <div className={`p-2 md:p-1.5 rounded-lg transition-colors duration-200 
                   ${isActive 
-                    ? 'bg-primary/20 text-primary'
-                    : 'bg-gray-800/50 group-hover:bg-gray-700/50 group-hover:text-white'
+                    ? 'bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]'
+                    : 'bg-[hsl(var(--secondary))] group-hover:bg-[hsl(var(--secondary))]/80 group-hover:text-foreground'
                   }`}>
                   {item.icon}
                 </div>
@@ -147,7 +147,7 @@ export default function Sidebar() {
         </div>
 
         {/* Version info */}
-        <div className="h-14 md:h-12 flex items-center justify-between px-6 border-t border-gray-800/50 text-sm md:text-xs text-gray-500 backdrop-blur-sm">
+        <div className="h-14 md:h-12 flex items-center justify-between px-6 border-t border-[hsl(var(--border))] text-sm md:text-xs text-muted-foreground">
           <span className="font-medium">v2.8.0</span>
           <span className="opacity-60">© 2024 AI Tool By Amri</span>
         </div>

@@ -406,7 +406,7 @@ ${text}`;
         const technicalPatterns = /(algorithm|implementation|function|class|method|api|documentation|technical|specification)/i;
         const conversationPatterns = /([""'].*?[""']:|^[A-Za-z]+:)/m;
         const narrativePatterns = /(chapter|scene|character|plot|story|novel)/i;
-        
+
         if (technicalPatterns.test(text)) return 'technical';
         if (conversationPatterns.test(text)) return 'conversation';
         if (narrativePatterns.test(text)) return 'narrative';
@@ -422,11 +422,11 @@ ${text}`;
 
         // Detect content type for better prompting
         const contentType = this.detectContentType(text);
-        
+
         // Calculate optimal chunk size based on content length
         const MAX_CHUNK_LENGTH = 4000;
         let chunks: string[] = [];
-        
+
         if (text.length > MAX_CHUNK_LENGTH) {
             chunks = this.splitTextIntoChunks(text, MAX_CHUNK_LENGTH);
         } else {
@@ -717,7 +717,7 @@ ${text}`;
 
             const result = await model.generateContent([prompt, imagePart]);
             const translatedText = result.response.text();
-            
+
             // Apply dictionary if needed
             return await dictionaryService.applyDictionary(translatedText);
         } catch (error) {
@@ -742,7 +742,7 @@ Translation Style: ${translationTone.style}
 
 Requirements:
 - Focus ONLY on translating main and important text content
-- Ignore small, decorative, or unimportant text (like watermarks, timestamps, minor UI elements)
+- Ignore small, decorative, or unimportant text (like watermarks, timestamps, minor UI elements,phone numbers,etc)
 - Ignore text that is less than approximately 12px in size
 - Maintain the original context and meaning of important text
 - Keep the same formatting and layout for translated text
