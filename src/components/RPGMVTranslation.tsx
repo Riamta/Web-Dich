@@ -38,7 +38,7 @@ export default function RPGMVTranslation() {
   const [showTable, setShowTable] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const { loading, success, error: showError } = useToast();
-
+  const stringNoTranslate = ['D_TEXT', '_', '\c[23]\N[1]\c[0]', '\c[23]\N[1]\c[0]', 'showWindow', 'eraseWindow']
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -59,12 +59,15 @@ export default function RPGMVTranslation() {
       const processObject = (obj: any, prefix: string = '') => {
         for (const [key, value] of Object.entries(obj)) {
           if (typeof value === 'string') {
-            parsedEntries.push({
-              key: prefix ? `${prefix}.${key}` : key,
-              original: value,
-              translation: value,
-              isTranslated: false
-            });
+            // Skip if value contains D_TEXTT
+            if (!stringNoTranslate.some(str => value.includes(str)) && value) {
+              parsedEntries.push({
+                key: prefix ? `${prefix}.${key}` : key,
+                original: value,
+                translation: value,
+                isTranslated: false
+              });
+            }
           } else if (typeof value === 'object' && value !== null) {
             processObject(value, prefix ? `${prefix}.${key}` : key);
           }

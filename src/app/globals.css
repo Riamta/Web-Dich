@@ -67,7 +67,12 @@ input.w-full.p-4.border-2.border-gray-200.rounded-xl.focus\:ring-2.focus\:ring-p
 select.w-full.p-4.border-2.border-gray-200.rounded-xl.focus\:ring-2.focus\:ring-primary\/20.focus\:border-primary.transition-all.duration-200.appearance-none.bg-gray-50\/30.hover\:border-primary\/50 {
   color: black;
 }
-
+.max-w-\[80\%\].p-3.rounded-2xl.mb-1.bg-white.border.border-gray-200.rounded-tl-none {
+  color: black;
+}
+textarea.w-full.h-20.p-3.pr-24.font-mono.text-sm.border.border-gray-200.rounded-lg.focus\:ring-2.focus\:ring-primary\/20.focus\:border-primary.transition-all.duration-200.resize-none.bg-gray-50\/50 {
+  color: black;
+}
 .max-w-4xl.mx-auto {
   max-width: unset;
 }
