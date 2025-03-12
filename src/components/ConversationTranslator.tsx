@@ -76,7 +76,7 @@ ${text}`
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 max-w-5xl mx-auto">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 {/* Language Selection */}
                 <div className="p-3 sm:p-4 border-b border-gray-100">
@@ -111,7 +111,7 @@ ${text}`
                                     onChange={(e) => setTheirLanguage(e.target.value)}
                                     className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
                                 >
-                                    {SUPPORTED_LANGUAGES.map((lang) => (
+                                    {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
                                         <option key={lang.code} value={lang.code}>
                                             {lang.name}
                                         </option>

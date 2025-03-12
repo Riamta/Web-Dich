@@ -82,6 +82,9 @@ textarea.w-full.h-20.p-3.pr-24.font-mono.text-sm.border.border-gray-200.rounded-
 .max-w-4xl {
   max-width: unset;
 }
+.max-w-6xl {
+  max-width: 100rem;
+}
 .px-4 {
   padding-left: 0.35rem;
   padding-right: 0.5rem;
