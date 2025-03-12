@@ -5,6 +5,7 @@ import { LOCAL_AI_MODELS, OPENROUTER_MODELS } from '@/lib/api-config';
 import { aiService } from '@/lib/ai-service';
 import { CommandLineIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { useSidebar } from '@/contexts/SidebarContext';
+import GoogleLoginButton from './GoogleLoginButton';
 
 export default function Menubar() {
   const [selectedModel, setSelectedModel] = useState(aiService.getModel());
@@ -66,6 +67,10 @@ export default function Menubar() {
             {ALL_AI_MODELS.find((m) => m.id === selectedModel)?.description}
           </p>
         )}
+      </div>
+      
+      <div className="flex items-center">
+        <GoogleLoginButton />
       </div>
     </div>
   );

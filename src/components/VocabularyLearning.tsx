@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react'
 import { DocumentArrowUpIcon, LanguageIcon, TagIcon } from '@heroicons/react/24/outline'
 import { MdVolumeUp, MdCheck, MdClose, MdBookmark, MdBookmarkBorder, MdRefresh } from 'react-icons/md'
+import { useAuth } from '@/contexts/AuthContext'
+import { db } from '@/lib/firebase'
+import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore'
 
 interface VocabularyItem {
+  id?: string; // Add ID field for Firestore documents
   word: string
   meaning: string
   pronunciation: string
@@ -17,6 +21,14 @@ const SUPPORTED_LANGUAGES = [
   { code: 'zh', name: 'Tiếng Trung' },
   { code: 'ja', name: 'Tiếng Nhật' },
   { code: 'ko', name: 'Tiếng Hàn' },
+]
+
+const NATIVE_LANGUAGES = [
+  { code: 'vi', name: 'Tiếng Việt' },
+  { code: 'en', name: 'English' },
+  { code: 'zh', name: 'Chinese' },
+  { code: 'ja', name: 'Japanese' },
+  { code: 'ko', name: 'Korean' },
 ]
 
 const COMMON_TOPICS = [
@@ -41,8 +53,10 @@ const MODES = [
 ]
 
 export default function VocabularyLearning() {
+  const { user } = useAuth() // Get current user from auth context
   const [mode, setMode] = useState('learn')
   const [targetLanguage, setTargetLanguage] = useState('en')
+  const [nativeLanguage, setNativeLanguage] = useState('vi')
   const [selectedTopic, setSelectedTopic] = useState('custom')
   const [customTopic, setCustomTopic] = useState('Hãy cho tôi chủ đề bất kỳ mà bạn nghĩ sẽ thú vị')
   const [wordCount, setWordCount] = useState(10)
@@ -50,26 +64,68 @@ export default function VocabularyLearning() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [vocabularyList, setVocabularyList] = useState<VocabularyItem[]>([])
-  const [userAnswers, setUserAnswers] = useState<{[key: number]: string}>({})
-  const [showAnswers, setShowAnswers] = useState<{[key: number]: boolean}>({})
+  const [userAnswers, setUserAnswers] = useState<{ [key: number]: string }>({})
+  const [showAnswers, setShowAnswers] = useState<{ [key: number]: boolean }>({})
   const [bookmarkedWords, setBookmarkedWords] = useState<VocabularyItem[]>([])
   const [showBookmarkModal, setShowBookmarkModal] = useState(false)
 
-  // Load bookmarked words from localStorage on component mount
+  // Load bookmarked words from Firestore on component mount or when user changes
   useEffect(() => {
-    const savedWords = localStorage.getItem('bookmarkedWords')
-    if (savedWords) {
-      setBookmarkedWords(JSON.parse(savedWords))
-    }
-  }, [])
+    const loadBookmarkedWords = async () => {
+      if (!user) {
+        setBookmarkedWords([])
+        return
+      }
 
-  const toggleBookmark = (word: VocabularyItem) => {
-    const newBookmarkedWords = bookmarkedWords.some(w => w.word === word.word)
-      ? bookmarkedWords.filter(w => w.word !== word.word)
-      : [...bookmarkedWords, { ...word, language: targetLanguage, topic: selectedTopic === 'custom' ? customTopic : selectedTopic }]
-    
-    setBookmarkedWords(newBookmarkedWords)
-    localStorage.setItem('bookmarkedWords', JSON.stringify(newBookmarkedWords))
+      try {
+        const q = query(
+          collection(db, 'bookmarkedWords'),
+          where('userId', '==', user.uid)
+        )
+        const querySnapshot = await getDocs(q)
+        const words = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as VocabularyItem[]
+        setBookmarkedWords(words)
+      } catch (error) {
+        console.error('Error loading bookmarked words:', error)
+      }
+    }
+
+    loadBookmarkedWords()
+  }, [user])
+
+  const toggleBookmark = async (word: VocabularyItem) => {
+    if (!user) {
+      alert('Vui lòng đăng nhập để lưu từ vựng')
+      return
+    }
+
+    try {
+      if (isBookmarked(word.word)) {
+        // Remove from Firestore
+        const wordDoc = bookmarkedWords.find(w => w.word === word.word)
+        if (wordDoc?.id) {
+          await deleteDoc(doc(db, 'bookmarkedWords', wordDoc.id))
+        }
+        setBookmarkedWords(prev => prev.filter(w => w.word !== word.word))
+      } else {
+        // Add to Firestore
+        const wordData = {
+          ...word,
+          userId: user.uid,
+          language: targetLanguage,
+          topic: selectedTopic === 'custom' ? customTopic : selectedTopic,
+          createdAt: new Date().toISOString()
+        }
+        const docRef = await addDoc(collection(db, 'bookmarkedWords'), wordData)
+        setBookmarkedWords(prev => [...prev, { ...wordData, id: docRef.id }])
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error)
+      alert('Có lỗi xảy ra khi lưu từ vựng')
+    }
   }
 
   const isBookmarked = (word: string) => {
@@ -83,7 +139,7 @@ export default function VocabularyLearning() {
     setError(null)
     setUserAnswers({})
     setShowAnswers({})
-    
+
     try {
       if (mode === 'review') {
         // Filter bookmarked words by selected language if in review mode
@@ -111,6 +167,7 @@ export default function VocabularyLearning() {
         },
         body: JSON.stringify({
           targetLanguage,
+          nativeLanguage,
           topic: topicToSend || 'random',
           wordCount: wordCount
         }),
@@ -156,10 +213,16 @@ export default function VocabularyLearning() {
     return answer === correctAnswer
   }
 
-  const removeBookmark = (word: VocabularyItem) => {
-    const newBookmarkedWords = bookmarkedWords.filter(w => w.word !== word.word)
-    setBookmarkedWords(newBookmarkedWords)
-    localStorage.setItem('bookmarkedWords', JSON.stringify(newBookmarkedWords))
+  const removeBookmark = async (word: VocabularyItem) => {
+    if (!user || !word.id) return
+
+    try {
+      await deleteDoc(doc(db, 'bookmarkedWords', word.id))
+      setBookmarkedWords(prev => prev.filter(w => w.id !== word.id))
+    } catch (error) {
+      console.error('Error removing bookmark:', error)
+      alert('Có lỗi xảy ra khi xóa từ vựng')
+    }
   }
 
   const getLanguageName = (code: string) => {
@@ -188,11 +251,10 @@ export default function VocabularyLearning() {
                     setVocabularyList([])
                     setError(null)
                   }}
-                  className={`p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-[1.02] ${
-                    mode === m.id
+                  className={`p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-[1.02] ${mode === m.id
                       ? 'bg-primary/10 text-primary border-primary font-medium shadow-sm'
                       : 'border-gray-200 text-gray-700 hover:border-primary/50 hover:text-primary'
-                  }`}
+                    }`}
                 >
                   {m.name}
                 </button>
@@ -214,6 +276,23 @@ export default function VocabularyLearning() {
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
                 <LanguageIcon className="h-5 w-5 text-primary/60" />
+                Ngôn ngữ mẹ đẻ
+              </label>
+              <select
+                value={nativeLanguage}
+                onChange={(e) => setNativeLanguage(e.target.value)}
+                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/30 hover:border-primary/50"
+              >
+                {NATIVE_LANGUAGES.map((lang) => (
+                  <option key={lang.code} value={lang.code}>
+                    {lang.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                <LanguageIcon className="h-5 w-5 text-primary/60" />
                 {mode === 'learn' ? 'Ngôn ngữ cần học' : 'Chọn ngôn ngữ ôn tập'}
               </label>
               <select
@@ -228,6 +307,8 @@ export default function VocabularyLearning() {
                 ))}
               </select>
             </div>
+
+
 
             {mode === 'learn' && (
               <div className="space-y-2">
@@ -324,11 +405,10 @@ export default function VocabularyLearning() {
                   <button
                     key={m.id}
                     onClick={() => setLearningMode(m.id)}
-                    className={`p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-[1.02] ${
-                      learningMode === m.id
+                    className={`p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-[1.02] ${learningMode === m.id
                         ? 'bg-primary/10 text-primary border-primary font-medium shadow-sm'
                         : 'border-gray-200 text-gray-700 hover:border-primary/50 hover:text-primary'
-                    }`}
+                      }`}
                   >
                     {m.name}
                   </button>
@@ -340,11 +420,10 @@ export default function VocabularyLearning() {
           <button
             onClick={handleGenerateVocabulary}
             disabled={isLoading}
-            className={`w-full py-4 px-6 rounded-xl text-white font-medium transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-[1.02] ${
-              isLoading
+            className={`w-full py-4 px-6 rounded-xl text-white font-medium transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-[1.02] ${isLoading
                 ? 'bg-gray-400 cursor-not-allowed'
                 : 'bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg'
-            }`}
+              }`}
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -437,11 +516,10 @@ export default function VocabularyLearning() {
                   </div>
 
                   {showAnswers[index] && (
-                    <div className={`p-4 rounded-xl border-2 transition-all duration-300 ${
-                      isAnswerCorrect(index)
+                    <div className={`p-4 rounded-xl border-2 transition-all duration-300 ${isAnswerCorrect(index)
                         ? 'bg-green-50/50 border-green-200'
                         : 'bg-red-50/50 border-red-200'
-                    }`}>
+                      }`}>
                       <div className="flex items-center gap-2">
                         {isAnswerCorrect(index) ? (
                           <MdCheck className="h-5 w-5 text-green-500" />
@@ -492,7 +570,7 @@ export default function VocabularyLearning() {
                 <MdClose className="h-6 w-6" />
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto flex-1">
               {bookmarkedWords.length === 0 ? (
                 <div className="text-center py-12">
@@ -546,7 +624,7 @@ export default function VocabularyLearning() {
                 </div>
               )}
             </div>
-            
+
             <div className="p-6 border-t border-gray-100">
               <button
                 onClick={() => setShowBookmarkModal(false)}
