@@ -321,69 +321,24 @@ class AIService {
             tone?: string;
         }
     ): string {
-        // Determine the target language name and characteristics
-        const languageCharacteristics = {
-            vi: {
-                name: 'Vietnamese',
-                features: 'tonal language with six tones, no verb conjugation, extensive use of particles and context-dependent meanings',
-                style: 'preference for concrete expressions, emphasis on politeness levels, and rich idiomatic expressions'
-            },
-            en: {
-                name: 'English',
-                features: 'subject-verb-object structure, verb tenses, articles, and prepositions',
-                style: 'clear and direct expression, active voice preference, and diverse vocabulary'
-            },
-            // Add more languages as needed
-        }[targetLanguage] || { name: targetLanguage, features: '', style: '' };
-
         const translationTone = TRANSLATION_TONES[options?.tone || 'normal'];
 
-        let prompt = `You are an expert translator with native-level proficiency in both the source language and ${languageCharacteristics.name}. 
-Your task is to provide a high-quality translation that sounds natural and authentic to native ${languageCharacteristics.name} speakers.
+        let prompt = `You are an expert translator. Translate this text to ${targetLanguage}.
 
-TRANSLATION STYLE:
-${translationTone.style}
+Style: ${translationTone.style}
 
-TRANSLATION CONTEXT:
-${preserveContext ? `- Preserve the original context, style, tone, and cultural elements
-- Maintain the author's voice and intended message
-- Keep any specialized terminology or jargon in their appropriate context` : '- Focus on clarity and accuracy of meaning'}
-${options?.previousContext ? `\nPrevious context for reference (use this to maintain consistency):\n${options.previousContext}` : ''}
-${options?.totalChunks ? `\nThis is part ${options.currentChunk}/${options.totalChunks} of the text.` : ''}
+Context:
+${preserveContext ? '- Preserve original context, style, tone and terminology' : '- Focus on clarity and accuracy'}
+${options?.previousContext ? `\nPrevious context:\n${options.previousContext}` : ''}
+${options?.totalChunks ? `\nPart ${options.currentChunk}/${options.totalChunks}` : ''}
 
-TRANSLATION REQUIREMENTS:
-1. PRODUCE ONLY THE TRANSLATED TEXT - NO EXPLANATIONS OR NOTES
-2. PRESERVE ALL FORMATTING INCLUDING:
-   - Paragraph breaks
-   - Line spacing
-   - Special characters
-   - Text emphasis (bold, italic, etc.)
-3. MAINTAIN AUTHENTICITY:
-   - Use natural ${languageCharacteristics.name} expressions and idioms
-   - Adapt cultural references appropriately
-   - Consider ${languageCharacteristics.features}
-   - Follow ${languageCharacteristics.style}
-4. ENSURE CONSISTENCY:
-   - Maintain consistent terminology throughout
-   - Use consistent tone and style
-   - Keep proper nouns and technical terms consistent
-5. GRAMMAR AND STRUCTURE:
-   - Use correct grammar and punctuation
-   - Ensure proper sentence structure
-   - Maintain logical flow between sentences
-   - Use appropriate connecting words
-6. CONTEXT AND MEANING:
-   - Preserve the original meaning precisely
-   - Maintain the emotional impact and tone
-   - Keep any humor or wordplay (adapt if necessary)
-   - Preserve any technical or specialized content
-7. QUALITY CHECKS:
-   - Ensure no omissions or additions
-   - Verify terminology accuracy
-   - Check for natural flow and readability
-   - Maintain professional language level
+Requirements:
+- Translate accurately while maintaining natural flow
+- Preserve formatting (paragraphs, emphasis)
+- Maintain consistent terminology and style
+- Return only the translated text, no explanations
 
-CONTENT TO TRANSLATE:
+Text to translate:
 ${text}`;
 
         return prompt;
