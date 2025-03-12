@@ -79,3 +79,15 @@ textarea.w-full.h-20.p-3.pr-24.font-mono.text-sm.border.border-gray-200.rounded-
 .max-w-4xl {
   max-width: unset;
 }
+.px-4 {
+  padding-left: 0.35rem;
+  padding-right: 0.5rem;
+}
+.py-6 {
+  padding-top: 0;
+  padding-bottom: 1.5rem;
+}
+.py-8 {
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+}

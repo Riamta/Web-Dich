@@ -80,41 +80,44 @@ ${text}`
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 {/* Language Selection */}
                 <div className="p-3 sm:p-4 border-b border-gray-100">
-                    <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-4">
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                                <LanguageIcon className="h-5 w-5 text-gray-400" />
-                                Ngôn ngữ của bạn
-                            </label>
-                            <select
-                                value={myLanguage}
-                                onChange={(e) => setMyLanguage(e.target.value)}
-                                className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
-                            >
-                                {SUPPORTED_LANGUAGES.map((lang) => (
-                                    <option key={lang.code} value={lang.code}>
-                                        {lang.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                    <div className="flex flex-col gap-3">
+                        {/* Language Selection Row */}
+                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                                    <LanguageIcon className="h-5 w-5 text-gray-400" />
+                                    Input
+                                </label>
+                                <select
+                                    value={myLanguage}
+                                    onChange={(e) => setMyLanguage(e.target.value)}
+                                    className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
+                                >
+                                    {SUPPORTED_LANGUAGES.map((lang) => (
+                                        <option key={lang.code} value={lang.code}>
+                                            {lang.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                                <LanguageIcon className="h-5 w-5 text-gray-400" />
-                                Ngôn ngữ của người khác
-                            </label>
-                            <select
-                                value={theirLanguage}
-                                onChange={(e) => setTheirLanguage(e.target.value)}
-                                className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
-                            >
-                                {SUPPORTED_LANGUAGES.map((lang) => (
-                                    <option key={lang.code} value={lang.code}>
-                                        {lang.name}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                                    <LanguageIcon className="h-5 w-5 text-gray-400" />
+                                    Target
+                                </label>
+                                <select
+                                    value={theirLanguage}
+                                    onChange={(e) => setTheirLanguage(e.target.value)}
+                                    className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
+                                >
+                                    {SUPPORTED_LANGUAGES.map((lang) => (
+                                        <option key={lang.code} value={lang.code}>
+                                            {lang.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -191,8 +194,8 @@ ${text}`
                                     onClick={handleSendMyMessage}
                                     disabled={isTranslatingMine || !myText.trim()}
                                     className={`absolute right-2 top-1/2 -translate-y-1/2 py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg text-white text-sm sm:text-base font-medium transition-all duration-200 flex items-center justify-center gap-2 ${isTranslatingMine || !myText.trim()
-                                            ? 'bg-gray-400 cursor-not-allowed'
-                                            : 'bg-primary hover:bg-primary/90'
+                                        ? 'bg-gray-400 cursor-not-allowed'
+                                        : 'bg-primary hover:bg-primary/90'
                                         }`}
                                 >
                                     {isTranslatingMine ? (
@@ -238,8 +241,8 @@ ${text}`
                                     onClick={handleSendTheirMessage}
                                     disabled={isTranslatingTheirs || !theirText.trim()}
                                     className={`absolute right-2 top-1/2 -translate-y-1/2 py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg text-white text-sm sm:text-base font-medium transition-all duration-200 flex items-center justify-center gap-2 ${isTranslatingTheirs || !theirText.trim()
-                                            ? 'bg-gray-400 cursor-not-allowed'
-                                            : 'bg-primary hover:bg-primary/90'
+                                        ? 'bg-gray-400 cursor-not-allowed'
+                                        : 'bg-primary hover:bg-primary/90'
                                         }`}
                                 >
                                     {isTranslatingTheirs ? (
