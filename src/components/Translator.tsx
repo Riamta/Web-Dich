@@ -24,8 +24,8 @@ import JSZip from 'jszip'
 
 export default function Translator() {
   const [mounted, setMounted] = useState(false)
-  const [sourceText, setSourceText] = useTabState('translateText', '')
-  const [translatedText, setTranslatedText] = useTabState('translatedText', '')
+  const [sourceText, setSourceText] = useState('')
+  const [translatedText, setTranslatedText] = useState('')
   const [sourceLanguage, setSourceLanguage] = useTabState('sourceLanguage', 'auto')
   const [targetLanguage, setTargetLanguage] = useTabState('targetLanguage', 'vi')
   const [translationTone, setTranslationTone] = useTabState('translationTone', 'normal')

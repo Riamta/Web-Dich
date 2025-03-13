@@ -27,6 +27,9 @@ const COMMON_TOPICS = [
   { id: 'health', name: 'Sức khỏe' },
   { id: 'education', name: 'Giáo dục' },
   { id: 'entertainment', name: 'Giải trí' },
+  { id: 'sports', name: 'Thể thao' },
+  { id: 'music', name: 'Âm nhạc' },
+  
 ]
 
 const LEARNING_MODES = [

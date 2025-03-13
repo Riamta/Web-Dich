@@ -10,8 +10,8 @@ import { SUPPORTED_LANGUAGES } from '@/constants/languages';
 
 export default function TextSummarization() {
     const [mounted, setMounted] = useState(false);
-    const [inputText, setInputText] = useTabState('summarizeText', '');
-    const [summary, setSummary] = useTabState('summarizeResult', '');
+    const [inputText, setInputText] = useState('');
+    const [summary, setSummary] = useState('');
     const [selectedLanguage, setSelectedLanguage] = useTabState('summarizeLanguage', 'vi');
     const [summaryType, setSummaryType] = useTabState('summarizeType', 'concise');
     const [isLoading, setIsLoading] = useState(false);
