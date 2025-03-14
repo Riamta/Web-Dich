@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { LanguageIcon } from '@heroicons/react/24/outline'
 import { aiService } from '@/lib/ai-service'
 import { SUPPORTED_LANGUAGES } from '@/constants/languages'
@@ -25,6 +25,22 @@ export default function ConversationTranslator() {
     const [messages, setMessages] = useState<Message[]>([])
     const [isTranslatingMine, setIsTranslatingMine] = useState(false)
     const [isTranslatingTheirs, setIsTranslatingTheirs] = useState(false)
+    const [isAIMode, setIsAIMode] = useState(false)
+    
+    // Add ref for chat container
+    const chatContainerRef = useRef<HTMLDivElement>(null)
+
+    // Auto scroll to bottom when messages change
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            const scrollContainer = chatContainerRef.current
+            // Smooth scroll to bottom
+            scrollContainer.scrollTo({
+                top: scrollContainer.scrollHeight,
+                behavior: 'smooth'
+            })
+        }
+    }, [messages]) // Run effect when messages array changes
 
     const translateAndSend = async (text: string, isMe: boolean) => {
         if (!text.trim()) return
@@ -106,6 +122,11 @@ Text to translate: ${text}`
                     ? { ...msg, translation: translationData, isTranslating: false }
                     : msg
             ))
+
+            // If AI mode is on and this is a user message, generate AI response
+            if (isAIMode && isMe) {
+                await generateAIResponse(translationData.text);
+            }
         } catch (error) {
             console.error('Translation error:', error)
             setMessages(prev => prev.map(msg =>
@@ -113,6 +134,26 @@ Text to translate: ${text}`
                     ? { ...msg, translation: { text: 'Lỗi dịch', reading: '', sourceReading: '' }, isTranslating: false }
                     : msg
             ))
+        }
+    }
+
+    const generateAIResponse = async (translatedText: string) => {
+        setIsTranslatingTheirs(true)
+
+        try {
+            // Generate AI response in their language
+            const aiResponse = await aiService.generateChatResponse(
+                translatedText,
+                SUPPORTED_LANGUAGES.find(l => l.code === theirLanguage)?.name || 'English',
+                messages.map(msg => ({ text: msg.translation.text || msg.text, isMe: msg.isMe }))
+            )
+
+            // Send the AI response directly through translation flow
+            await translateAndSend(aiResponse, false)
+        } catch (error) {
+            console.error('AI response error:', error)
+        } finally {
+            setIsTranslatingTheirs(false)
         }
     }
 
@@ -138,6 +179,23 @@ Text to translate: ${text}`
                 {/* Language Selection */}
                 <div className="p-3 sm:p-4 border-b border-gray-100">
                     <div className="flex flex-col gap-3">
+                        {/* AI Mode Toggle */}
+                        <div className="flex items-center justify-end gap-2">
+                            <label className="text-sm font-medium text-gray-700">AI Chat Mode</label>
+                            <button
+                                onClick={() => setIsAIMode(!isAIMode)}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+                                    isAIMode ? 'bg-primary' : 'bg-gray-200'
+                                }`}
+                            >
+                                <span
+                                    className={`${
+                                        isAIMode ? 'translate-x-6' : 'translate-x-1'
+                                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                                />
+                            </button>
+                        </div>
+
                         {/* Language Selection Row */}
                         <div className="grid grid-cols-2 gap-3 sm:gap-4">
                             <div className="space-y-2">
@@ -180,7 +238,10 @@ Text to translate: ${text}`
                 </div>
 
                 {/* Chat Messages */}
-                <div className="h-[400px] sm:h-[600px] overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50/50">
+                <div 
+                    ref={chatContainerRef}
+                    className="h-[400px] sm:h-[600px] overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50/50"
+                >
                     {messages.map((message) => (
                         <div
                             key={message.id}

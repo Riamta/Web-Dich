@@ -2,6 +2,7 @@ import { OpenAI } from 'openai'
 
 // OpenRouter models list
 export const OPENROUTER_MODELS = [
+    { id: 'google/gemma-3-27b-it', name: 'Gemma 3.27B', description: 'High performance multilingual model' },
     { id: 'qwen/qwq-32b', name: 'Qwen 32B', description: 'High performance multilingual model' },
     { id: 'thedrummer/anubis-pro-105b-v1', name: 'Anubis Pro 105B', description: 'High performance multilingual model' },
     { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', description: 'Advanced language understanding' },

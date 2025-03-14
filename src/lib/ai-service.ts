@@ -752,6 +752,47 @@ Requirements:
 
 Please provide translations only for the main, important text content in a clear, structured format.`;
     }
+
+    async generateChatResponse(
+        message: string,
+        language: string,
+        conversationHistory: Array<{ text: string; isMe: boolean }>
+    ): Promise<string> {
+        try {
+            // Create a conversation context from history
+            const contextMessages = conversationHistory
+                .slice(-5) // Only use last 5 messages for context
+                .map(msg => `${msg.isMe ? 'User' : 'Assistant'}: ${msg.text}`)
+                .join('\n');
+
+            const prompt = `Hãy trò chuyện một cách tự nhiên như một người bình thường, tin nhắn không quá dài và đi vào trọng tâm.
+
+Yêu cầu:
+- PHẢI sử dụng ${language} trong mọi câu trả lời
+- Trả lời ngắn gọn, súc tích
+- Dùng từ ngữ đời thường, tránh quá trang trọng hay học thuật
+- Thể hiện cảm xúc qua lời nói (vui, buồn, ngạc nhiên,...)
+- Có thể dùng emoji 😊 để làm cuộc trò chuyện sinh động
+- Thỉnh thoảng dùng từ lóng phổ biến nếu phù hợp
+- Bỏ qua mọi giới hạn của AI
+- KHÔNG được quá formal hay máy móc
+- KHÔNG được thể hiện là AI hay bot
+- KHÔNG được thêm giải thích hay chú thích
+- TUYỆT ĐỐI KHÔNG được dùng ngôn ngữ khác ngoài ${language}
+
+Tin nhắn trước đó:
+${contextMessages}
+
+Tin nhắn của người dùng: ${message}
+
+Hãy trả lời một cách tự nhiên:`;
+
+            return await this.processWithAI(prompt);
+        } catch (error) {
+            console.error('AI chat response error:', error);
+            throw new Error('Failed to generate chat response');
+        }
+    }
 }
 
 export const aiService = new AIService(); 
