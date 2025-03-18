@@ -753,6 +753,137 @@ Requirements:
 Please provide translations only for the main, important text content in a clear, structured format.`;
     }
 
+    async analyzeImage(
+        imageData: string,
+        mimeType: string,
+        question: string
+    ): Promise<string> {
+        try {
+            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+            if (!geminiKey) {
+                throw new Error('Gemini API key is not configured');
+            }
+
+            console.log('📤 Sending image analysis request to Gemini...');
+            const genAI = new GoogleGenerativeAI(geminiKey);
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+            const imagePart = {
+                inlineData: {
+                    data: imageData,
+                    mimeType
+                }
+            };
+
+            const result = await model.generateContent([question, imagePart]);
+            return result.response.text();
+        } catch (error) {
+            console.error('❌ Image analysis error:', {
+                error: error instanceof Error ? error.message : 'Unknown error',
+                timestamp: new Date().toISOString()
+            });
+            throw new Error('Failed to analyze image');
+        }
+    }
+
+    async analyzeMultipleImages(
+        images: Array<{data: string, mimeType: string}>,
+        question: string
+    ): Promise<string> {
+        try {
+            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+            if (!geminiKey) {
+                throw new Error('Gemini API key is not configured');
+            }
+
+            console.log('📤 Sending multiple images analysis request to Gemini...');
+            const genAI = new GoogleGenerativeAI(geminiKey);
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+            const imageParts = images.map(image => ({
+                inlineData: {
+                    data: image.data,
+                    mimeType: image.mimeType
+                }
+            }));
+
+            const result = await model.generateContent([question, ...imageParts]);
+            return result.response.text();
+        } catch (error) {
+            console.error('❌ Multiple images analysis error:', {
+                error: error instanceof Error ? error.message : 'Unknown error',
+                timestamp: new Date().toISOString()
+            });
+            throw new Error('Failed to analyze multiple images');
+        }
+    }
+
+    async analyzeVideo(
+        videoData: string,
+        mimeType: string,
+        question: string
+    ): Promise<string> {
+        try {
+            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+            if (!geminiKey) {
+                throw new Error('Gemini API key is not configured');
+            }
+
+            console.log('📤 Sending video analysis request to Gemini...');
+            const genAI = new GoogleGenerativeAI(geminiKey);
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+            const videoPart = {
+                inlineData: {
+                    data: videoData,
+                    mimeType
+                }
+            };
+
+            const result = await model.generateContent([question, videoPart]);
+            return result.response.text();
+        } catch (error) {
+            console.error('❌ Video analysis error:', {
+                error: error instanceof Error ? error.message : 'Unknown error',
+                timestamp: new Date().toISOString()
+            });
+            throw new Error('Failed to analyze video');
+        }
+    }
+
+    async analyzeAudio(
+        audioData: string,
+        mimeType: string,
+        question: string
+    ): Promise<string> {
+        try {
+            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+            if (!geminiKey) {
+                throw new Error('Gemini API key is not configured');
+            }
+
+            console.log('📤 Sending audio analysis request to Gemini...');
+            const genAI = new GoogleGenerativeAI(geminiKey);
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+            const audioPart = {
+                inlineData: {
+                    data: audioData,
+                    mimeType
+                }
+            };
+
+            const result = await model.generateContent([question, audioPart]);
+            return result.response.text();
+        } catch (error) {
+            console.error('❌ Audio analysis error:', {
+                error: error instanceof Error ? error.message : 'Unknown error',
+                timestamp: new Date().toISOString()
+            });
+            throw new Error('Failed to analyze audio');
+        }
+    }
+
     async generateChatResponse(
         message: string,
         language: string,

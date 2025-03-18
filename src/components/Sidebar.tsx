@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { MdTranslate, MdSubtitles, MdQuiz, MdSchool, MdChat, MdShortText, MdEdit, MdSpellcheck, MdAutoFixHigh, MdGamepad } from 'react-icons/md';
+import { MdTranslate, MdSubtitles, MdQuiz, MdSchool, MdChat, MdShortText, MdEdit, MdSpellcheck, MdAutoFixHigh, MdGamepad, MdImage } from 'react-icons/md';
 import Image from 'next/image';
 import { useSidebar } from '@/contexts/SidebarContext';
 
@@ -21,6 +21,12 @@ export default function Sidebar() {
       name: 'Dịch hội thoại',
       path: '/conversation',
       icon: <MdChat className="w-5 h-5" />,
+      isExternal: false
+    },
+    {
+      name: 'Hỏi đáp đa phương tiện',
+      path: '/media-qa',
+      icon: <MdImage className="w-5 h-5" />,
       isExternal: false
     },
     {
