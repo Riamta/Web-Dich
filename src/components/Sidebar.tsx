@@ -48,12 +48,6 @@ export default function Sidebar() {
       isExternal: false
     },
     {
-      name: 'Dịch RPGMV',
-      path: '/rpgmv-translate',
-      icon: <MdGamepad className="w-5 h-5" />,
-      isExternal: false
-    },
-    {
       name: 'Tạo câu hỏi',
       path: '/quiz',
       icon: <MdQuiz className="w-5 h-5" />,

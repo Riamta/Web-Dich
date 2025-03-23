@@ -468,6 +468,22 @@ export default function Translator() {
     }
   };
 
+  const handleTextAreaResize = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target;
+    const text = e.target.value;
+    setSourceText(text);
+
+    if (!text.trim()) {
+      // Reset height when no text
+      textarea.style.height = '';
+      setContentHeight(500); // Reset to default height
+      return;
+    }
+
+    textarea.style.height = 'auto'; // Reset height
+    textarea.style.height = `${textarea.scrollHeight}px`; // Set new height
+  };
+
   // Don't render content until mounted (client-side)
   if (!mounted) {
     return null
@@ -831,12 +847,13 @@ export default function Translator() {
                   <textarea
                     ref={sourceTextRef}
                     value={sourceText}
-                    onChange={(e) => setSourceText(e.target.value)}
+                    onChange={handleTextAreaResize}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                         handleTranslation();
                       }
                     }}
+                    style={{ overflow: 'hidden' }}
                     className="w-full p-4 sm:p-6 resize-none focus:outline-none text-base min-h-[300px] sm:min-h-[500px] bg-transparent"
                     placeholder={isDragging ? 'Drop text file here' : 'Enter text to translate...'}
                   />
