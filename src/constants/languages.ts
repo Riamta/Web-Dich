@@ -10,6 +10,8 @@ export const SUPPORTED_LANGUAGES: Language[] = [
     { code: 'ja', name: 'Tiếng Nhật' },
     { code: 'ko', name: 'Tiếng Hàn' },
     { code: 'fr', name: 'Tiếng Pháp' },
+    { code: 'de', name: 'Tiếng Đức' },
+    { code: 'ru', name: 'Tiếng Nga' },
     { code: 'auto', name: 'Detect Language' }
 ];
 
