@@ -123,7 +123,7 @@ class AIService {
     }
 
     private async processWithLocalModel(prompt: string): Promise<string> {
-        if (this.config.model === 'gemini-2.0-flash' || this.config.model === 'gemini-2.0-flash-lite') {
+        if (this.config.model === 'gemini-2.0-flash' || this.config.model === 'gemini-2.0-flash-lite' || this.config.model === 'gemini-2.5-pro-exp-03-25') {
             const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
             if (!geminiKey) {
                 throw new Error('Gemini API key is not configured');
@@ -133,12 +133,21 @@ class AIService {
                 console.log(`📤 Sending request to ${this.config.model}...`);
                 const genAI = new GoogleGenerativeAI(geminiKey);
                 const geminiModel = genAI.getGenerativeModel({ model: this.config.model });
-                const generationConfig = {
+                let generationConfig = {
                     temperature: 1,
                     topP: 0.95,
                     topK: 40,
                     maxOutputTokens: 8192
                 };
+
+                if (this.config.model === 'gemini-2.5-pro-exp-03-25') {
+                    generationConfig = {
+                        temperature: 0.7,
+                        topP: 0.95,
+                        topK: 64,
+                        maxOutputTokens: 65536
+                    };
+                }
 
                 const chatSession = geminiModel.startChat({
                     generationConfig,
