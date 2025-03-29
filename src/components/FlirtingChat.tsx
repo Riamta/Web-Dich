@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { ClipboardDocumentIcon } from '@heroicons/react/24/outline'
+import { ClipboardDocumentIcon, SparklesIcon, HandRaisedIcon } from '@heroicons/react/24/outline'
 import { aiService } from '@/lib/ai-service'
 import { useToast, ToastContainer } from '@/utils/toast'
 
@@ -12,7 +12,7 @@ interface Message {
     isTranslating: boolean;
 }
 
-type Gender = 'male' | 'female';
+type Gender = 'male' | 'female' | 'gay' | 'lesbian';
 
 export default function FlirtingChat() {
     const [text, setText] = useState('')
@@ -20,6 +20,9 @@ export default function FlirtingChat() {
     const [isTranslating, setIsTranslating] = useState(false)
     const [copySuccess, setCopySuccess] = useState<{id: number, type: 'original' | 'translated' | 'main'} | null>(null)
     const [gender, setGender] = useState<Gender>('male')
+    const [responseCount, setResponseCount] = useState(1)
+    const [suggestions, setSuggestions] = useState<string[]>([])
+    const [showSuggestions, setShowSuggestions] = useState(false)
     
     // Add ref for chat container
     const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -54,26 +57,48 @@ export default function FlirtingChat() {
 
         try {
             // Generate AI response
-            const prompt = `You are a ${gender === 'male' ? 'male' : 'female'} flirting expert. Respond to this message with a flirty, engaging, and appropriate response in Vietnamese language. Keep it natural, playful, and respectful. The response should be from a ${gender === 'male' ? 'man' : 'woman'}'s perspective.
+            const prompt = `You are a ${gender === 'male' ? 'male' : gender === 'female' ? 'female' : gender === 'gay' ? 'gay male' : 'lesbian female'} flirting expert. Generate ${responseCount} different responses in Vietnamese language. Use casual, friendly, and simple language that people use in everyday conversations. Avoid using fancy or formal words. Keep it natural and relatable.
 
 Message: "${userMessage}"
 
-Respond with ONLY the message, no explanations or additional text.`
+Respond with ONLY the ${responseCount} messages, each on a new line, no explanations or additional text.`
 
             const aiResponse = await aiService.processWithAI(prompt)
+            const responses = aiResponse.split('\n').filter(line => line.trim())
 
-            // Add AI response to messages
-            const newMessage: Message = {
-                id: Date.now(),
-                text: aiResponse,
-                isMe: false,
-                isTranslating: false
-            }
-
-            setMessages(prev => [...prev, newMessage])
+            // Add AI responses to messages
+            responses.forEach(response => {
+                const newMessage: Message = {
+                    id: Date.now() + Math.random(),
+                    text: response.trim(),
+                    isMe: false,
+                    isTranslating: false
+                }
+                setMessages(prev => [...prev, newMessage])
+            })
         } catch (error) {
             console.error('AI response error:', error)
             toastError('Có lỗi xảy ra khi tạo phản hồi. Vui lòng thử lại.')
+        } finally {
+            setIsTranslating(false)
+        }
+    }
+
+    const generateSuggestions = async (type: 'opening' | 'goodbye' | 'goodnight' | 'meet' | 'food' | 'breakup' | 'flirt' | 'apology') => {
+        setIsTranslating(true)
+        setShowSuggestions(true)
+
+        try {
+            const prompt = `You are a ${gender === 'male' ? 'male' : gender === 'female' ? 'female' : gender === 'gay' ? 'gay male' : 'lesbian female'} flirting expert. Generate 5 ${type === 'opening' ? 'opening lines' : type === 'goodbye' ? 'goodbye messages' : type === 'goodnight' ? 'goodnight messages' : type === 'meet' ? 'messages to ask for a date' : type === 'food' ? 'messages to ask about food' : type === 'breakup' ? 'messages to break up' : type === 'flirt' ? 'flirty messages' : 'apology messages'} in Vietnamese language. Use casual, friendly, and simple language that people use in everyday conversations. Avoid using fancy or formal words. Keep it natural and relatable.
+
+Respond with ONLY the 5 messages, each on a new line, no explanations or additional text.`
+
+            const aiResponse = await aiService.processWithAI(prompt)
+            const responses = aiResponse.split('\n').filter(line => line.trim())
+            setSuggestions(responses)
+        } catch (error) {
+            console.error('AI response error:', error)
+            toastError('Có lỗi xảy ra khi tạo gợi ý. Vui lòng thử lại.')
         } finally {
             setIsTranslating(false)
         }
@@ -97,34 +122,185 @@ Respond with ONLY the message, no explanations or additional text.`
         await generateAIResponse(text.trim())
     }
 
+    const handleSuggestionClick = (suggestion: string) => {
+        setText(suggestion)
+        setShowSuggestions(false)
+        setSuggestions([])
+    }
+
     return (
         <div className="space-y-4 max-w-5xl mx-auto">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 {/* Gender Selection */}
                 <div className="p-3 sm:p-4 border-b border-gray-100">
-                    <div className="flex items-center justify-center gap-4">
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-center gap-4">
+                            <label className="text-sm font-medium text-gray-700">Giới tính của đối phương là:</label>
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={() => setGender('male')}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                                        gender === 'male'
+                                            ? 'bg-primary text-white'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    Nam
+                                </button>
+                                <button
+                                    onClick={() => setGender('female')}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                                        gender === 'female'
+                                            ? 'bg-primary text-white'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    Nữ
+                                </button>
+                                <button
+                                    onClick={() => setGender('gay')}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                                        gender === 'gay'
+                                            ? 'bg-primary text-white'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    Gay
+                                </button>
+                                <button
+                                    onClick={() => setGender('lesbian')}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                                        gender === 'lesbian'
+                                            ? 'bg-primary text-white'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    Lesbian
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-center gap-4">
+                            <label className="text-sm font-medium text-gray-700">Số câu trả lời:</label>
+                            <select
+                                value={responseCount}
+                                onChange={(e) => setResponseCount(Number(e.target.value))}
+                                className="px-3 py-1.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            >
+                                {[1, 2, 3, 4, 5].map(num => (
+                                    <option key={num} value={num}>{num}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Suggestion Buttons */}
+                <div className="p-3 sm:p-4 border-b border-gray-100">
+                    <div className="flex flex-wrap items-center justify-center gap-3">
                         <button
-                            onClick={() => setGender('male')}
-                            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                                gender === 'male'
-                                    ? 'bg-primary text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
+                            onClick={() => generateSuggestions('opening')}
+                            disabled={isTranslating}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Nam
+                            <SparklesIcon className="h-5 w-5" />
+                            Câu mở đầu
                         </button>
                         <button
-                            onClick={() => setGender('female')}
-                            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                                gender === 'female'
-                                    ? 'bg-primary text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
+                            onClick={() => generateSuggestions('goodbye')}
+                            disabled={isTranslating}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Nữ
+                            <HandRaisedIcon className="h-5 w-5" />
+                            Câu tạm biệt
+                        </button>
+                        <button
+                            onClick={() => generateSuggestions('goodnight')}
+                            disabled={isTranslating}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                            </svg>
+                            Chúc ngủ ngon
+                        </button>
+                        <button
+                            onClick={() => generateSuggestions('meet')}
+                            disabled={isTranslating}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-green-50 text-green-600 hover:bg-green-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                            Muốn làm quen
+                        </button>
+                        <button
+                            onClick={() => generateSuggestions('food')}
+                            disabled={isTranslating}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-orange-50 text-orange-600 hover:bg-orange-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+                                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+                                <line x1="6" y1="1" x2="6" y2="4" />
+                                <line x1="10" y1="1" x2="10" y2="4" />
+                                <line x1="14" y1="1" x2="14" y2="4" />
+                            </svg>
+                            Hỏi ăn cơm
+                        </button>
+                        <button
+                            onClick={() => generateSuggestions('breakup')}
+                            disabled={isTranslating}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                            Chia tay
+                        </button>
+                        <button
+                            onClick={() => generateSuggestions('flirt')}
+                            disabled={isTranslating}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-pink-50 text-pink-600 hover:bg-pink-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0L12 5.34l-.77-.76a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z" />
+                            </svg>
+                            Tán tỉnh
+                        </button>
+                        <button
+                            onClick={() => generateSuggestions('apology')}
+                            disabled={isTranslating}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-yellow-50 text-yellow-600 hover:bg-yellow-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                                <path d="M12 16v-4" />
+                                <path d="M12 8h.01" />
+                            </svg>
+                            Xin lỗi
                         </button>
                     </div>
                 </div>
+
+                {/* Suggestions Panel */}
+                {showSuggestions && suggestions.length > 0 && (
+                    <div className="p-3 sm:p-4 border-b border-gray-100 bg-gray-50/50">
+                        <div className="space-y-2">
+                            {suggestions.map((suggestion, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handleSuggestionClick(suggestion)}
+                                    className="w-full text-left p-2 rounded-lg hover:bg-white transition-all duration-200"
+                                >
+                                    {suggestion}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Chat Messages */}
                 <div 
