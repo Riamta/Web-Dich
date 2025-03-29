@@ -53,6 +53,13 @@ export default function Translator() {
   const [isPasteEnabled, setIsPasteEnabled] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
+  // Add effect for auto-translation when image is pasted
+  useEffect(() => {
+    if (activeTab === 'image' && selectedImage) {
+      handleImageTranslation();
+    }
+  }, [selectedImage, activeTab]);
+
   // Supported file types
   const SUPPORTED_FILE_TYPES = {
     'text/plain': '.txt',
