@@ -19,10 +19,12 @@ export default function FlirtingChat() {
     const [messages, setMessages] = useState<Message[]>([])
     const [isTranslating, setIsTranslating] = useState(false)
     const [copySuccess, setCopySuccess] = useState<{id: number, type: 'original' | 'translated' | 'main'} | null>(null)
-    const [gender, setGender] = useState<Gender>('male')
+    const [targetgender, setTargetGender] = useState<Gender>('male')
     const [responseCount, setResponseCount] = useState(1)
     const [suggestions, setSuggestions] = useState<string[]>([])
     const [showSuggestions, setShowSuggestions] = useState(false)
+    const [showCustomInput, setShowCustomInput] = useState(false)
+    const [customScenario, setCustomScenario] = useState('')
     
     // Add ref for chat container
     const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -57,7 +59,7 @@ export default function FlirtingChat() {
 
         try {
             // Generate AI response
-            const prompt = `You are a ${gender === 'male' ? 'male' : gender === 'female' ? 'female' : gender === 'gay' ? 'gay male' : 'lesbian female'} flirting expert. Generate ${responseCount} different responses in Vietnamese language. Use casual, friendly, and simple language that people use in everyday conversations. Avoid using fancy or formal words. Keep it natural and relatable.
+            const prompt = `You are a ${targetgender === 'male' ? 'male' : targetgender === 'female' ? 'female' : targetgender === 'gay' ? 'gay male' : 'lesbian female'} flirting expert. Generate ${responseCount} different responses in Vietnamese language. Use casual, friendly, and simple language that people use in everyday conversations. Avoid using fancy or formal words. Keep it natural and relatable.
 
 Message: "${userMessage}"
 
@@ -89,9 +91,31 @@ Respond with ONLY the ${responseCount} messages, each on a new line, no explanat
         setShowSuggestions(true)
 
         try {
-            const prompt = `You are a ${gender === 'male' ? 'male' : gender === 'female' ? 'female' : gender === 'gay' ? 'gay male' : 'lesbian female'} flirting expert. Generate 5 ${type === 'opening' ? 'opening lines' : type === 'goodbye' ? 'goodbye messages' : type === 'goodnight' ? 'goodnight messages' : type === 'meet' ? 'messages to ask for a date' : type === 'food' ? 'messages to ask about food' : type === 'breakup' ? 'messages to break up' : type === 'flirt' ? 'flirty messages' : 'apology messages'} in Vietnamese language. Use casual, friendly, and simple language that people use in everyday conversations. Avoid using fancy or formal words. Keep it natural and relatable.
+            const prompt = `Bạn đang tán người có giới tính là ${targetgender === 'male' ? 'male' : targetgender === 'female' ? 'female' : targetgender === 'gay' ? 'gay male' : 'lesbian female'} flirting expert. Generate ${responseCount} ${type === 'opening' ? 'opening lines' : type === 'goodbye' ? 'goodbye messages' : type === 'goodnight' ? 'goodnight messages' : type === 'meet' ? 'messages to ask for a date' : type === 'food' ? 'messages to ask about food' : type === 'breakup' ? 'messages to break up' : type === 'flirt' ? 'flirty messages' : 'apology messages'} in Vietnamese language. Use casual, friendly, and simple language that people use in everyday conversations. Avoid using fancy or formal words. Keep it natural and relatable.
 
-Respond with ONLY the 5 messages, each on a new line, no explanations or additional text.`
+Respond with ONLY the ${responseCount} messages, each on a new line, no explanations or additional text.`
+
+            const aiResponse = await aiService.processWithAI(prompt)
+            const responses = aiResponse.split('\n').filter(line => line.trim())
+            setSuggestions(responses)
+        } catch (error) {
+            console.error('AI response error:', error)
+            toastError('Có lỗi xảy ra khi tạo gợi ý. Vui lòng thử lại.')
+        } finally {
+            setIsTranslating(false)
+        }
+    }
+
+    const generateCustomSuggestions = async () => {
+        if (!customScenario.trim()) return
+        
+        setIsTranslating(true)
+        setShowSuggestions(true)
+
+        try {
+            const prompt = `Bạn đang nói chuyện với người có giới tính là ${targetgender === 'male' ? 'male' : targetgender === 'female' ? 'female' : targetgender === 'gay' ? 'gay male' : 'lesbian female'} flirting expert. Generate ${responseCount} responses for this scenario in Vietnamese language: "${customScenario}". Use casual, friendly, and simple language that people use in everyday conversations. Avoid using fancy or formal words. Keep it natural and relatable.
+
+Chỉ trả lời ${responseCount} tin nhắn, mỗi tin nhắn một dòng, không giải thích thêm.`
 
             const aiResponse = await aiService.processWithAI(prompt)
             const responses = aiResponse.split('\n').filter(line => line.trim())
@@ -138,9 +162,9 @@ Respond with ONLY the 5 messages, each on a new line, no explanations or additio
                             <label className="text-sm font-medium text-gray-700">Giới tính của đối phương là:</label>
                             <div className="flex items-center gap-4">
                                 <button
-                                    onClick={() => setGender('male')}
+                                    onClick={() => setTargetGender('male')}
                                     className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                                        gender === 'male'
+                                        targetgender === 'male'
                                             ? 'bg-primary text-white'
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
@@ -148,9 +172,9 @@ Respond with ONLY the 5 messages, each on a new line, no explanations or additio
                                     Nam
                                 </button>
                                 <button
-                                    onClick={() => setGender('female')}
+                                    onClick={() => setTargetGender('female')}
                                     className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                                        gender === 'female'
+                                        targetgender === 'female'
                                             ? 'bg-primary text-white'
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
@@ -158,9 +182,9 @@ Respond with ONLY the 5 messages, each on a new line, no explanations or additio
                                     Nữ
                                 </button>
                                 <button
-                                    onClick={() => setGender('gay')}
+                                    onClick={() => setTargetGender('gay')}
                                     className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                                        gender === 'gay'
+                                        targetgender === 'gay'
                                             ? 'bg-primary text-white'
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
@@ -168,9 +192,9 @@ Respond with ONLY the 5 messages, each on a new line, no explanations or additio
                                     Gay
                                 </button>
                                 <button
-                                    onClick={() => setGender('lesbian')}
+                                    onClick={() => setTargetGender('lesbian')}
                                     className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                                        gender === 'lesbian'
+                                        targetgender === 'lesbian'
                                             ? 'bg-primary text-white'
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
@@ -282,7 +306,47 @@ Respond with ONLY the 5 messages, each on a new line, no explanations or additio
                             </svg>
                             Xin lỗi
                         </button>
+                        <button
+                            onClick={() => setShowCustomInput(true)}
+                            disabled={isTranslating}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-teal-50 text-teal-600 hover:bg-teal-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M12 5v14M5 12h14" />
+                            </svg>
+                            Tình huống khác
+                        </button>
                     </div>
+
+                    {/* Custom Input */}
+                    {showCustomInput && (
+                        <div className="mt-4 flex flex-col gap-3">
+                            <textarea
+                                value={customScenario}
+                                onChange={(e) => setCustomScenario(e.target.value)}
+                                placeholder="Nhập tình huống bạn muốn AI tạo câu trả lời..."
+                                className="w-full h-20 p-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none bg-gray-50/50"
+                            />
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    onClick={() => {
+                                        setShowCustomInput(false)
+                                        setCustomScenario('')
+                                    }}
+                                    className="px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-200"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    onClick={generateCustomSuggestions}
+                                    disabled={isTranslating || !customScenario.trim()}
+                                    className="px-4 py-2 rounded-lg font-medium bg-teal-600 text-white hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Tạo câu trả lời
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Suggestions Panel */}
