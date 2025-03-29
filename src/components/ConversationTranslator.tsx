@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { LanguageIcon } from '@heroicons/react/24/outline'
 import { aiService } from '@/lib/ai-service'
 import { SUPPORTED_LANGUAGES } from '@/constants/languages'
+import { useTabState } from '@/hooks/useTabState'
 
 interface Message {
     id: number;
@@ -18,14 +19,14 @@ interface Message {
 }
 
 export default function ConversationTranslator() {
-    const [myLanguage, setMyLanguage] = useState('vi')
-    const [theirLanguage, setTheirLanguage] = useState('en')
+    const [myLanguage, setMyLanguage] = useTabState('conversationMyLanguage', 'vi')
+    const [theirLanguage, setTheirLanguage] = useTabState('conversationTheirLanguage', 'en')
     const [myText, setMyText] = useState('')
     const [theirText, setTheirText] = useState('')
     const [messages, setMessages] = useState<Message[]>([])
     const [isTranslatingMine, setIsTranslatingMine] = useState(false)
     const [isTranslatingTheirs, setIsTranslatingTheirs] = useState(false)
-    const [isAIMode, setIsAIMode] = useState(false)
+    const [isAIMode, setIsAIMode] = useTabState('conversationAIMode', false)
     
     // Add ref for chat container
     const chatContainerRef = useRef<HTMLDivElement>(null)
