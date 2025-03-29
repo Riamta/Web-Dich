@@ -66,14 +66,14 @@ export default function ConversationTranslator() {
 
         try {
             const prompt = `Translate this text from ${SUPPORTED_LANGUAGES.find(l => l.code === sourceLanguage)?.name} to ${SUPPORTED_LANGUAGES.find(l => l.code === targetLanguage)?.name}.
-${isSourceJapanese ? 'Include hiragana reading for the source Japanese text.' : ''}
-${isTargetJapanese ? 'Include hiragana reading for the translated Japanese text.' : ''}
-Return the response in this JSON format:
-{
-    "text": "translated text"${isTargetJapanese ? ',\n    "reading": "hiragana reading for translated text"' : ''}${isSourceJapanese ? ',\n    "sourceReading": "hiragana reading for source text"' : ''}
-}
+                            ${isSourceJapanese ? 'Include hiragana reading for the source Japanese text.' : ''}
+                            ${isTargetJapanese ? 'Include hiragana reading for the translated Japanese text.' : ''}
+                            Return the response in this JSON format:
+                            {
+                                "text": "translated text"${isTargetJapanese ? ',\n    "reading": "hiragana reading for translated text"' : ''}${isSourceJapanese ? ',\n    "sourceReading": "hiragana reading for source text"' : ''}
+                            }
 
-Text to translate: ${text}`
+                            Text to translate: ${text}`
 
             const result = await aiService.processWithAI(prompt)
             let translationData

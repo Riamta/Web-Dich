@@ -18,12 +18,6 @@ export default function Sidebar() {
       isExternal: false
     },
     {
-      name: 'Từ điển',
-      path: '/dictionary',
-      icon: <MdSchool className="w-5 h-5" />,
-      isExternal: false
-    },
-    {
       name: 'Dịch hội thoại',
       path: '/conversation',
       icon: <MdChat className="w-5 h-5" />,
@@ -60,6 +54,12 @@ export default function Sidebar() {
       isExternal: false
     },
     {
+      name: 'Từ điển',
+      path: '/dictionary',
+      icon: <MdSchool className="w-5 h-5" />,
+      isExternal: false
+    },
+    {
       name: 'Chat với AI',
       path: 'https://chat.amri2k.com',
       icon: <MdChat className="w-5 h-5" />,
@@ -72,7 +72,7 @@ export default function Sidebar() {
     <>
       {/* Backdrop overlay for mobile */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsOpen(false)}
         />
@@ -119,7 +119,7 @@ export default function Sidebar() {
                   } outline-none focus:outline-none focus:ring-0 focus-visible:outline-none [-webkit-tap-highlight-color:transparent] select-none`}
               >
                 <div className={`p-2 md:p-1.5 rounded-lg transition-colors duration-200 
-                  ${isActive 
+                  ${isActive
                     ? 'bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]'
                     : 'bg-[hsl(var(--secondary))] group-hover:bg-[hsl(var(--secondary))]/80 group-hover:text-foreground'
                   }`}>
