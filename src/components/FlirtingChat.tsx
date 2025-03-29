@@ -93,7 +93,7 @@ Chỉ trả lời ${responseCount} tin nhắn, mỗi tin nhắn một dòng, kh�
 
         try {
             const prompt = `Bạn là một chuyên gia tán tỉnh. Bạn đang giúp người dùng tán tỉnh một người ${targetgender === 'male' ? 'nam' : targetgender === 'female' ? 'nữ' : targetgender === 'gay' ? 'nam (gay)' : 'nữ (lesbian)'}. 
-Hãy tạo ${responseCount} ${type === 'opening' ? 'câu mở đầu' : type === 'goodbye' ? 'câu tạm biệt' : type === 'goodnight' ? 'câu chúc ngủ ngon' : type === 'meet' ? 'câu hẹn gặp' : type === 'food' ? 'câu hỏi về ăn uống' : type === 'breakup' ? 'câu chia tay' : type === 'flirt' ? 'câu tán tỉnh' : 'câu xin lỗi'} phù hợp để tán tỉnh người đó. Sử dụng ngôn ngữ thân mật, đơn giản và tự nhiên như trong cuộc sống hàng ngày. Tránh sử dụng từ ngữ quá trang trọng hoặc phức tạp.
+Hãy tạo ${responseCount} ${type === 'opening' ? 'câu mở đầu' : type === 'goodbye' ? 'câu tạm biệt' : type === 'goodnight' ? 'câu chúc ngủ ngon' : type === 'meet' ? 'câu hẹn gặp' : type === 'food' ? 'câu hỏi xem đã ăn cơm chưa' : type === 'breakup' ? 'câu nói chia tay' : type === 'flirt' ? 'câu tán tỉnh' : 'câu xin lỗi'} phù hợp để tán tỉnh người đó. Sử dụng ngôn ngữ thân mật, đơn giản và tự nhiên như trong cuộc sống hàng ngày. Tránh sử dụng từ ngữ quá trang trọng hoặc phức tạp.
 
 Chỉ trả lời ${responseCount} tin nhắn, mỗi tin nhắn một dòng, không giải thích thêm.`
 
