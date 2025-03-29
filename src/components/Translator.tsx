@@ -21,6 +21,7 @@ import { MdTextFields, MdContentPaste } from 'react-icons/md'
 import ReactMarkdown from 'react-markdown'
 import { SUPPORTED_LANGUAGES } from '@/constants/languages'
 import JSZip from 'jszip'
+import { useDebounce } from '@/hooks/useDebounce'
 
 export default function Translator() {
   const [mounted, setMounted] = useState(false)
@@ -48,6 +49,9 @@ export default function Translator() {
   const [fileName, setFileName] = useState<string>('')
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [translatedFiles, setTranslatedFiles] = useState<{name: string, content: string}[]>([])
+  const debouncedSourceText = useDebounce(sourceText, 1000); // 1 second delay
+  const [isPasteEnabled, setIsPasteEnabled] = useState(false);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
 
   // Supported file types
   const SUPPORTED_FILE_TYPES = {
@@ -93,12 +97,53 @@ export default function Translator() {
     return () => resizeObserver.disconnect()
   }, [sourceText, translatedText])
 
+  // Add effect for auto-translation
+  useEffect(() => {
+    if (debouncedSourceText.trim() && activeTab === 'text') {
+      handleTranslation();
+    }
+  }, [debouncedSourceText, activeTab]);
+
+  // Add effect to handle paste events globally
+  useEffect(() => {
+    const handleGlobalPaste = async (e: ClipboardEvent) => {
+      if (activeTab !== 'image' || !isPasteEnabled) return;
+
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          e.preventDefault(); // Prevent default paste behavior
+          const file = items[i].getAsFile();
+          if (file) {
+            // Validate file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+              setError('Image size should be less than 10MB');
+              return;
+            }
+            setSelectedImage(file);
+            setImagePreview(URL.createObjectURL(file));
+            setError(null);
+            return;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('paste', handleGlobalPaste);
+    return () => window.removeEventListener('paste', handleGlobalPaste);
+  }, [activeTab, isPasteEnabled]);
+
   const handleTranslation = async () => {
     if (activeTab === 'file' && uploadedFiles.length === 0) return;
     if (activeTab === 'text' && !sourceText.trim()) return;
     if (activeTab === 'image' && !selectedImage) return;
 
-    setIsLoading(true);
+    // Don't show loading state for auto-translation
+    if (debouncedSourceText === sourceText) {
+      setIsLoading(true);
+    }
     setError(null);
 
     try {
@@ -124,7 +169,6 @@ export default function Translator() {
         // Existing image translation code
         // ... existing image translation code ...
       } else {
-        // Existing text translation code
         const result = await aiService.translate(sourceText, targetLanguage, true, translationTone);
         const processedText = dictionaryService.applyDictionary(result);
         setTranslatedText(processedText);
@@ -133,7 +177,9 @@ export default function Translator() {
       console.error('Translation error:', error);
       setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch văn bản');
     } finally {
-      setIsLoading(false);
+      if (debouncedSourceText === sourceText) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -301,9 +347,12 @@ export default function Translator() {
     }
   };
 
-  // Add tab switching handler
+  // Update tab switching handler
   const handleTabSwitch = (tab: 'text' | 'image' | 'file') => {
     setActiveTab(tab);
+    // Enable paste for image tab
+    setIsPasteEnabled(tab === 'image');
+    
     // Clear data when switching tabs
     if (tab === 'text') {
       setSelectedImage(null);
@@ -323,6 +372,13 @@ export default function Translator() {
       setSourceText('');
       setSelectedImage(null);
       setImagePreview(null);
+    }
+  };
+
+  // Update image container click handler
+  const handleImageContainerClick = () => {
+    if (activeTab === 'image' && !imagePreview) {
+      fileInputRef.current?.click();
     }
   };
 
@@ -730,133 +786,52 @@ export default function Translator() {
 
             {/* Source Content */}
             <div 
-              className={`relative ${
+              ref={imageContainerRef}
+              className={`relative h-full cursor-pointer transition-colors ${
                 isDragging 
                   ? 'bg-gray-100/80 border-2 border-dashed border-primary/50' 
-                  : ''
+                  : imagePreview ? '' : 'hover:bg-gray-50/50'
               }`}
-              style={{ height: `${contentHeight}px` }}
-              onPaste={handleImagePaste}
+              onClick={handleImageContainerClick}
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
             >
-              {activeTab === 'file' ? (
-                <div className="p-4 sm:p-6">
-                  {uploadedFiles.length > 0 ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium text-gray-900">
-                          Uploaded Files ({uploadedFiles.length})
-                        </h3>
-                        <button
-                          onClick={() => {
-                            setUploadedFiles([]);
-                            setTranslatedFiles([]);
-                            if (fileInputRef.current) {
-                              fileInputRef.current.value = '';
-                            }
-                          }}
-                          className="text-xs text-gray-500 hover:text-gray-700"
-                        >
-                          Clear all
-                        </button>
-                      </div>
-                      <div className="space-y-2">
-                        {uploadedFiles.map((file, index) => (
-                          <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                            <DocumentTextIcon className="h-5 w-5 text-gray-400" />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
-                              <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
-                            </div>
-                            <button
-                              onClick={() => {
-                                setUploadedFiles(files => files.filter((_, i) => i !== index));
-                                setTranslatedFiles(files => files.filter((_, i) => i !== index));
-                              }}
-                              className="p-1 hover:bg-gray-200 rounded-full"
-                            >
-                              <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div 
-                      className={`flex flex-col items-center justify-center h-full text-gray-400 gap-3 cursor-pointer hover:bg-gray-50/50 transition-colors ${isDragging ? 'bg-gray-100/80 border-2 border-dashed border-primary/50' : ''}`}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
-                        <DocumentArrowUpIcon className="h-6 sm:h-8 w-6 sm:w-8 text-gray-300" />
-                      </div>
-                      <span className="text-sm sm:text-base font-medium text-center">
-                        {isDragging ? 'Drop files here' : 'Upload documents or drag and drop'}
-                      </span>
-                      <span className="text-xs sm:text-sm text-gray-400 text-center">
-                        Supported formats: {Object.values(SUPPORTED_FILE_TYPES).join(', ')}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ) : activeTab === 'image' ? (
-                imagePreview ? (
-                  <div className="relative h-full">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="max-h-full w-auto mx-auto"
-                    />
-                    <button
-                      onClick={() => {
-                        setSelectedImage(null);
-                        setImagePreview(null);
-                        if (fileInputRef.current) {
-                          fileInputRef.current.value = '';
-                        }
-                      }}
-                      className="absolute top-2 right-2 p-1 bg-white/80 hover:bg-white rounded-full shadow-sm"
-                    >
-                      <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                ) : (
-                  <div 
-                    className={`flex flex-col items-center justify-center h-full text-gray-400 gap-3 cursor-pointer hover:bg-gray-50/50 transition-colors ${isDragging ? 'bg-gray-100/80 border-2 border-dashed border-primary/50' : ''}`}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
-                      <PhotoIcon className="h-6 sm:h-8 w-6 sm:w-8 text-gray-300" />
-                    </div>
-                    <span className="text-sm sm:text-base font-medium text-center">
-                      {isDragging ? 'Drop image here' : 'Upload an image or paste from clipboard'}
-                    </span>
-                    <span className="text-xs sm:text-sm text-gray-400 text-center">
-                      Supported formats: JPG, PNG, GIF (max 10MB)
-                    </span>
-                  </div>
-                )
-              ) : (
-                <div className={`relative h-full ${isDragging ? 'bg-gray-100/80 border-2 border-dashed border-primary/50' : ''}`}>
-                  <textarea
-                    ref={sourceTextRef}
-                    value={sourceText}
-                    onChange={handleTextAreaResize}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                        handleTranslation();
+              {imagePreview ? (
+                <div className="relative h-full">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="max-h-full w-auto mx-auto"
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImage(null);
+                      setImagePreview(null);
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = '';
                       }
                     }}
-                    style={{ overflow: 'hidden' }}
-                    className="w-full p-4 sm:p-6 resize-none focus:outline-none text-base min-h-[300px] sm:min-h-[500px] bg-transparent"
-                    placeholder={isDragging ? 'Drop text file here' : 'Enter text to translate...'}
-                  />
+                    className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-sm transition-colors"
+                  >
+                    <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-3">
+                  <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+                    <PhotoIcon className="h-6 sm:h-8 w-6 sm:w-8 text-gray-300" />
+                  </div>
+                  <span className="text-sm sm:text-base font-medium text-center">
+                    {isDragging ? 'Drop image here' : 'Click to upload or paste image (Ctrl+V)'}
+                  </span>
+                  <span className="text-xs sm:text-sm text-gray-400 text-center">
+                    Supported formats: JPG, PNG, GIF (max 10MB)
+                  </span>
                 </div>
               )}
             </div>
