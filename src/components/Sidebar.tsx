@@ -30,12 +30,6 @@ export default function Sidebar() {
       isExternal: false
     },
     {
-      name: 'Hỏi đáp đa phương tiện',
-      path: '/media-qa',
-      icon: <MdImage className="w-5 h-5" />,
-      isExternal: false
-    },
-    {
       name: 'Tóm tắt văn bản',
       path: '/summarize',
       icon: <MdShortText className="w-5 h-5" />,
