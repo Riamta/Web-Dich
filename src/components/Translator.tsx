@@ -49,7 +49,7 @@ export default function Translator() {
   const [fileName, setFileName] = useState<string>('')
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [translatedFiles, setTranslatedFiles] = useState<{name: string, content: string}[]>([])
-  const debouncedSourceText = useDebounce(sourceText, 1000); // 1 second delay
+  const debouncedSourceText = useDebounce(sourceText, 500); // 0.25 second delay
   const [isPasteEnabled, setIsPasteEnabled] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
@@ -785,56 +785,135 @@ export default function Translator() {
             </div>
 
             {/* Source Content */}
-            <div 
-              ref={imageContainerRef}
-              className={`relative h-full cursor-pointer transition-colors ${
-                isDragging 
-                  ? 'bg-gray-100/80 border-2 border-dashed border-primary/50' 
-                  : imagePreview ? '' : 'hover:bg-gray-50/50'
-              }`}
-              onClick={handleImageContainerClick}
-              onDragEnter={handleDragEnter}
-              onDragLeave={handleDragLeave}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-            >
-              {imagePreview ? (
-                <div className="relative h-full">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="max-h-full w-auto mx-auto"
-                  />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedImage(null);
-                      setImagePreview(null);
-                      if (fileInputRef.current) {
-                        fileInputRef.current.value = '';
-                      }
-                    }}
-                    className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-sm transition-colors"
-                  >
-                    <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-3">
-                  <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
-                    <PhotoIcon className="h-6 sm:h-8 w-6 sm:w-8 text-gray-300" />
+            {activeTab === 'file' ? (
+              <div className="p-4 sm:p-6">
+                {uploadedFiles.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-gray-900">
+                        Uploaded Files ({uploadedFiles.length})
+                      </h3>
+                      <button
+                        onClick={() => {
+                          setUploadedFiles([]);
+                          setTranslatedFiles([]);
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = '';
+                          }
+                        }}
+                        className="text-xs text-gray-500 hover:text-gray-700"
+                      >
+                        Clear all
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {uploadedFiles.map((file, index) => (
+                        <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                          <DocumentTextIcon className="h-5 w-5 text-gray-400" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                            <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setUploadedFiles(files => files.filter((_, i) => i !== index));
+                              setTranslatedFiles(files => files.filter((_, i) => i !== index));
+                            }}
+                            className="p-1 hover:bg-gray-200 rounded-full"
+                          >
+                            <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <span className="text-sm sm:text-base font-medium text-center">
-                    {isDragging ? 'Drop image here' : 'Click to upload or paste image (Ctrl+V)'}
-                  </span>
-                  <span className="text-xs sm:text-sm text-gray-400 text-center">
-                    Supported formats: JPG, PNG, GIF (max 10MB)
-                  </span>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div 
+                    className={`flex flex-col items-center justify-center h-full text-gray-400 gap-3 cursor-pointer hover:bg-gray-50/50 transition-colors ${isDragging ? 'bg-gray-100/80 border-2 border-dashed border-primary/50' : ''}`}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+                      <DocumentArrowUpIcon className="h-6 sm:h-8 w-6 sm:w-8 text-gray-300" />
+                    </div>
+                    <span className="text-sm sm:text-base font-medium text-center">
+                      {isDragging ? 'Drop files here' : 'Upload documents or drag and drop'}
+                    </span>
+                    <span className="text-xs sm:text-sm text-gray-400 text-center">
+                      Supported formats: {Object.values(SUPPORTED_FILE_TYPES).join(', ')}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : activeTab === 'image' ? (
+              <div 
+                ref={imageContainerRef}
+                className={`relative h-full cursor-pointer transition-colors ${
+                  isDragging 
+                    ? 'bg-gray-100/80 border-2 border-dashed border-primary/50' 
+                    : imagePreview ? '' : 'hover:bg-gray-50/50'
+                }`}
+                onClick={handleImageContainerClick}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              >
+                {imagePreview ? (
+                  <div className="relative h-full">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="max-h-full w-auto mx-auto"
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedImage(null);
+                        setImagePreview(null);
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = '';
+                        }
+                      }}
+                      className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-sm transition-colors"
+                    >
+                      <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-3">
+                    <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+                      <PhotoIcon className="h-6 sm:h-8 w-6 sm:w-8 text-gray-300" />
+                    </div>
+                    <span className="text-sm sm:text-base font-medium text-center">
+                      {isDragging ? 'Drop image here' : 'Click to upload or paste image (Ctrl+V)'}
+                    </span>
+                    <span className="text-xs sm:text-sm text-gray-400 text-center">
+                      Supported formats: JPG, PNG, GIF (max 10MB)
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className={`relative h-full ${isDragging ? 'bg-gray-100/80 border-2 border-dashed border-primary/50' : ''}`}>
+                <textarea
+                  ref={sourceTextRef}
+                  value={sourceText}
+                  onChange={handleTextAreaResize}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                      handleTranslation();
+                    }
+                  }}
+                  style={{ overflow: 'hidden' }}
+                  className="w-full p-4 sm:p-6 resize-none focus:outline-none text-base min-h-[300px] sm:min-h-[500px] bg-transparent"
+                  placeholder={isDragging ? 'Drop text file here' : 'Enter text to translate...'}
+                />
+              </div>
+            )}
           </div>
 
           {/* Translated Text Panel */}
