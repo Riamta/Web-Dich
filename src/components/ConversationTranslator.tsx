@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { LanguageIcon } from '@heroicons/react/24/outline'
+import { LanguageIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline'
 import { aiService } from '@/lib/ai-service'
 import { SUPPORTED_LANGUAGES } from '@/constants/languages'
 import { useTabState } from '@/hooks/useTabState'
@@ -27,6 +27,7 @@ export default function ConversationTranslator() {
     const [isTranslatingMine, setIsTranslatingMine] = useState(false)
     const [isTranslatingTheirs, setIsTranslatingTheirs] = useState(false)
     const [isAIMode, setIsAIMode] = useTabState('conversationAIMode', false)
+    const [copySuccess, setCopySuccess] = useState<{id: number, type: 'original' | 'translated' | 'main'} | null>(null)
     
     // Add ref for chat container
     const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -42,6 +43,16 @@ export default function ConversationTranslator() {
             })
         }
     }, [messages]) // Run effect when messages array changes
+
+    const handleCopy = async (text: string, messageId: number, type: 'original' | 'translated' | 'main') => {
+        try {
+            await navigator.clipboard.writeText(text)
+            setCopySuccess({ id: messageId, type })
+            setTimeout(() => setCopySuccess(null), 2000)
+        } catch (err) {
+            console.error('Failed to copy text:', err)
+        }
+    }
 
     const translateAndSend = async (text: string, isMe: boolean) => {
         if (!text.trim()) return
@@ -250,7 +261,7 @@ export default function ConversationTranslator() {
                         >
                             {/* Main Message Bubble */}
                             <div
-                                className={`max-w-[90%] sm:max-w-[80%] p-2.5 sm:p-3 rounded-2xl mb-1
+                                className={`max-w-[90%] sm:max-w-[80%] p-2.5 sm:p-3 rounded-2xl mb-1 group relative
                                     ${message.isMe
                                         ? 'bg-primary text-white rounded-tl-none'
                                         : 'bg-white border border-gray-200 rounded-tr-none'
@@ -274,10 +285,25 @@ export default function ConversationTranslator() {
                                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                             />
                                         </svg>
-                                        <span>Đang dịch...</span>
+                                        <span>...</span>
                                     </div>
                                 ) : (
-                                    <p className="text-sm sm:text-base">{message.isMe ? message.translation.text : message.text}</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm sm:text-base flex-1">
+                                            {message.isMe ? message.translation.text : message.text}
+                                        </p>
+                                        <button
+                                            onClick={() => handleCopy(message.isMe ? message.translation.text : message.text, message.id, 'main')}
+                                            className={`absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100 ${
+                                                message.isMe 
+                                                    ? 'hover:bg-white/20 text-white/80 hover:text-white' 
+                                                    : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
+                                            }`}
+                                            title="Copy message"
+                                        >
+                                            <ClipboardDocumentIcon className="h-3.5 w-3.5" />
+                                        </button>
+                                    </div>
                                 )}
                             </div>
 
@@ -286,7 +312,16 @@ export default function ConversationTranslator() {
                                 <div className="text-gray-600 italic">
                                     {message.isMe ? (
                                         <>
-                                            <div>Gốc: "{message.text}"</div>
+                                            <div className="flex items-center gap-2 group">
+                                                <span>"{message.text}"</span>
+                                                <button
+                                                    onClick={() => handleCopy(message.text, message.id, 'original')}
+                                                    className="p-1 hover:bg-gray-100 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100"
+                                                    title="Copy original text"
+                                                >
+                                                    <ClipboardDocumentIcon className="h-3 w-3 text-gray-400" />
+                                                </button>
+                                            </div>
                                             {message.translation.sourceReading && (
                                                 <div className="text-gray-500 mt-1">
                                                     Phiên âm gốc: {message.translation.sourceReading}
@@ -305,7 +340,16 @@ export default function ConversationTranslator() {
                                                     Phiên âm: {message.translation.sourceReading}
                                                 </div>
                                             )}
-                                            <div className="mt-1">Dịch: "{message.translation.text}"</div>
+                                            <div className="flex items-center gap-2 mt-1 group">
+                                                <span>"{message.translation.text}"</span>
+                                                <button
+                                                    onClick={() => handleCopy(message.translation.text, message.id, 'translated')}
+                                                    className="p-1 hover:bg-gray-100 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100"
+                                                    title="Copy translated text"
+                                                >
+                                                    <ClipboardDocumentIcon className="h-3 w-3 text-gray-400" />
+                                                </button>
+                                            </div>
                                             {message.translation.reading && (
                                                 <div className="text-gray-500 mt-1">
                                                     Phiên âm: {message.translation.reading}

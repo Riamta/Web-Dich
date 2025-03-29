@@ -566,7 +566,7 @@ export default function Translator() {
             }`}
           >
             <DocumentTextIcon className="h-5 w-5" />
-            Text Translation
+            Text
           </button>
           <button
             onClick={() => handleTabSwitch('image')}
@@ -577,7 +577,7 @@ export default function Translator() {
             }`}
           >
             <PhotoIcon className="h-5 w-5" />
-            Image Translation
+            Image
           </button>
           <button
             onClick={() => handleTabSwitch('file')}
@@ -588,7 +588,7 @@ export default function Translator() {
             }`}
           >
             <DocumentArrowUpIcon className="h-5 w-5" />
-            File Translation
+            File
           </button>
         </div>
 
