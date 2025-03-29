@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { MdTranslate, MdSubtitles, MdQuiz, MdSchool, MdChat, MdShortText, MdEdit, MdSpellcheck, MdAutoFixHigh, MdGamepad, MdImage } from 'react-icons/md';
+import { MdTranslate, MdSubtitles, MdQuiz, MdSchool, MdChat, MdShortText, MdEdit, MdSpellcheck, MdAutoFixHigh, MdGamepad, MdImage, MdFavorite, MdOutlineMenuBook } from 'react-icons/md';
 import Image from 'next/image';
 import { useSidebar } from '@/contexts/SidebarContext';
 
@@ -26,7 +26,7 @@ export default function Sidebar() {
     {
       name: 'Hỗ trợ tán gái',
       path: '/flirting',
-      icon: <MdChat className="w-5 h-5" />,
+      icon: <MdFavorite className="w-5 h-5" />,
       isExternal: false
     },
     {
@@ -62,7 +62,7 @@ export default function Sidebar() {
     {
       name: 'Từ điển',
       path: '/dictionary',
-      icon: <MdSchool className="w-5 h-5" />,
+      icon: <MdOutlineMenuBook className="w-5 h-5" />,
       isExternal: false
     },
     {

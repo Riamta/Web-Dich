@@ -59,11 +59,12 @@ export default function FlirtingChat() {
 
         try {
             // Generate AI response
-            const prompt = `You are a ${targetgender === 'male' ? 'male' : targetgender === 'female' ? 'female' : targetgender === 'gay' ? 'gay male' : 'lesbian female'} flirting expert. Generate ${responseCount} different responses in Vietnamese language. Use casual, friendly, and simple language that people use in everyday conversations. Avoid using fancy or formal words. Keep it natural and relatable.
+            const prompt = `Bạn là một chuyên gia tán tỉnh. Bạn đang giúp người dùng tán tỉnh một người ${targetgender === 'male' ? 'nam' : targetgender === 'female' ? 'nữ' : targetgender === 'gay' ? 'nam (gay)' : 'nữ (lesbian)'}. 
+Hãy tạo ${responseCount} câu trả lời phù hợp để tán tỉnh người đó. Sử dụng ngôn ngữ thân mật, đơn giản và tự nhiên như trong cuộc sống hàng ngày. Tránh sử dụng từ ngữ quá trang trọng hoặc phức tạp.
 
-Message: "${userMessage}"
+Tin nhắn từ đối phương: "${userMessage}"
 
-Respond with ONLY the ${responseCount} messages, each on a new line, no explanations or additional text.`
+Chỉ trả lời ${responseCount} tin nhắn, mỗi tin nhắn một dòng, không giải thích thêm.`
 
             const aiResponse = await aiService.processWithAI(prompt)
             const responses = aiResponse.split('\n').filter(line => line.trim())
@@ -91,9 +92,10 @@ Respond with ONLY the ${responseCount} messages, each on a new line, no explanat
         setShowSuggestions(true)
 
         try {
-            const prompt = `Bạn đang tán người có giới tính là ${targetgender === 'male' ? 'male' : targetgender === 'female' ? 'female' : targetgender === 'gay' ? 'gay male' : 'lesbian female'} flirting expert. Generate ${responseCount} ${type === 'opening' ? 'opening lines' : type === 'goodbye' ? 'goodbye messages' : type === 'goodnight' ? 'goodnight messages' : type === 'meet' ? 'messages to ask for a date' : type === 'food' ? 'messages to ask about food' : type === 'breakup' ? 'messages to break up' : type === 'flirt' ? 'flirty messages' : 'apology messages'} in Vietnamese language. Use casual, friendly, and simple language that people use in everyday conversations. Avoid using fancy or formal words. Keep it natural and relatable.
+            const prompt = `Bạn là một chuyên gia tán tỉnh. Bạn đang giúp người dùng tán tỉnh một người ${targetgender === 'male' ? 'nam' : targetgender === 'female' ? 'nữ' : targetgender === 'gay' ? 'nam (gay)' : 'nữ (lesbian)'}. 
+Hãy tạo ${responseCount} ${type === 'opening' ? 'câu mở đầu' : type === 'goodbye' ? 'câu tạm biệt' : type === 'goodnight' ? 'câu chúc ngủ ngon' : type === 'meet' ? 'câu hẹn gặp' : type === 'food' ? 'câu hỏi về ăn uống' : type === 'breakup' ? 'câu chia tay' : type === 'flirt' ? 'câu tán tỉnh' : 'câu xin lỗi'} phù hợp để tán tỉnh người đó. Sử dụng ngôn ngữ thân mật, đơn giản và tự nhiên như trong cuộc sống hàng ngày. Tránh sử dụng từ ngữ quá trang trọng hoặc phức tạp.
 
-Respond with ONLY the ${responseCount} messages, each on a new line, no explanations or additional text.`
+Chỉ trả lời ${responseCount} tin nhắn, mỗi tin nhắn một dòng, không giải thích thêm.`
 
             const aiResponse = await aiService.processWithAI(prompt)
             const responses = aiResponse.split('\n').filter(line => line.trim())
@@ -113,7 +115,8 @@ Respond with ONLY the ${responseCount} messages, each on a new line, no explanat
         setShowSuggestions(true)
 
         try {
-            const prompt = `Bạn đang nói chuyện với người có giới tính là ${targetgender === 'male' ? 'male' : targetgender === 'female' ? 'female' : targetgender === 'gay' ? 'gay male' : 'lesbian female'} flirting expert. Generate ${responseCount} responses for this scenario in Vietnamese language: "${customScenario}". Use casual, friendly, and simple language that people use in everyday conversations. Avoid using fancy or formal words. Keep it natural and relatable.
+            const prompt = `Bạn là một chuyên gia tán tỉnh. Bạn đang giúp người dùng tán tỉnh một người ${targetgender === 'male' ? 'nam' : targetgender === 'female' ? 'nữ' : targetgender === 'gay' ? 'nam (gay)' : 'nữ (lesbian)'}. 
+Hãy tạo ${responseCount} câu trả lời phù hợp cho tình huống sau: "${customScenario}". Sử dụng ngôn ngữ thân mật, đơn giản và tự nhiên như trong cuộc sống hàng ngày. Tránh sử dụng từ ngữ quá trang trọng hoặc phức tạp.
 
 Chỉ trả lời ${responseCount} tin nhắn, mỗi tin nhắn một dòng, không giải thích thêm.`
 
@@ -158,47 +161,80 @@ Chỉ trả lời ${responseCount} tin nhắn, mỗi tin nhắn một dòng, kh�
                 {/* Gender Selection */}
                 <div className="p-3 sm:p-4 border-b border-gray-100">
                     <div className="flex flex-col gap-4">
-                        <div className="flex items-center justify-center gap-4">
-                            <label className="text-sm font-medium text-gray-700">Giới tính của đối phương là:</label>
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="flex items-center gap-2">
+                                <label className="text-sm font-medium text-gray-700">Giới tính của đối phương:</label>
+                                <div className="group relative">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path d="M12 16v-4" />
+                                        <path d="M12 8h.01" />
+                                    </svg>
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg">
+                                        Chọn giới tính của người bạn muốn tán tỉnh
+                                    </div>
+                                </div>
+                            </div>
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={() => setTargetGender('male')}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                                         targetgender === 'male'
-                                            ? 'bg-primary text-white'
+                                            ? 'bg-blue-500 text-white'
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                                 >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <circle cx="12" cy="8" r="5" />
+                                        <path d="M20 21v-2a8 8 0 0 0-16 0v2" />
+                                    </svg>
                                     Nam
                                 </button>
                                 <button
                                     onClick={() => setTargetGender('female')}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                                         targetgender === 'female'
-                                            ? 'bg-primary text-white'
+                                            ? 'bg-pink-500 text-white'
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                                 >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <circle cx="12" cy="8" r="5" />
+                                        <path d="M20 21v-2a8 8 0 0 0-16 0v2" />
+                                        <path d="M12 8v8" />
+                                        <path d="M8 12h8" />
+                                    </svg>
                                     Nữ
                                 </button>
                                 <button
                                     onClick={() => setTargetGender('gay')}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                                         targetgender === 'gay'
-                                            ? 'bg-primary text-white'
+                                            ? 'bg-purple-500 text-white'
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                                 >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <circle cx="12" cy="8" r="5" />
+                                        <path d="M20 21v-2a8 8 0 0 0-16 0v2" />
+                                        <path d="M12 8v8" />
+                                    </svg>
                                     Gay
                                 </button>
                                 <button
                                     onClick={() => setTargetGender('lesbian')}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                                         targetgender === 'lesbian'
-                                            ? 'bg-primary text-white'
+                                            ? 'bg-red-500 text-white'
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                                 >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <circle cx="12" cy="8" r="5" />
+                                        <path d="M20 21v-2a8 8 0 0 0-16 0v2" />
+                                        <path d="M12 8v8" />
+                                        <path d="M8 12h8" />
+                                    </svg>
                                     Lesbian
                                 </button>
                             </div>
