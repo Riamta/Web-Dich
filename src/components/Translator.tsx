@@ -714,7 +714,7 @@ export default function Translator() {
                       title="Upload document"
                     >
                       <DocumentArrowUpIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm">Upload</span>
+                      <span className="text-xs sm:text-sm"></span>
                     </label>
                     <input
                       type="file"
@@ -733,7 +733,7 @@ export default function Translator() {
                       title="Paste from clipboard"
                     >
                       <MdContentPaste className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm">Paste</span>
+                      <span className="text-xs sm:text-sm"></span>
                     </button>
                     <button 
                       className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
@@ -741,7 +741,7 @@ export default function Translator() {
                       title="Copy to clipboard"
                     >
                       <ClipboardDocumentIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm">Copy</span>
+                      <span className="text-xs sm:text-sm"></span>
                     </button>
                     <input
                       type="file"
@@ -759,7 +759,7 @@ export default function Translator() {
                       title="Upload image"
                     >
                       <DocumentArrowUpIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm">Upload</span>
+                      <span className="text-xs sm:text-sm"></span>
                     </label>
                     <input
                       type="file"
@@ -779,12 +779,12 @@ export default function Translator() {
                   {isSourcePlaying ? (
                     <>
                       <StopIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm">Stop</span>
+                      <span className="text-xs sm:text-sm"></span>
                     </>
                   ) : (
                     <>
                       <SpeakerWaveIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm">Listen</span>
+                      <span className="text-xs sm:text-sm"></span>
                     </>
                   )}
                 </button>
@@ -937,7 +937,7 @@ export default function Translator() {
                       title="Download translated files"
                     >
                       <ArrowDownTrayIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm">Download {translatedFiles.length > 1 ? 'All' : ''}</span>
+                      <span className="text-xs sm:text-sm"> {translatedFiles.length > 1 ? 'All' : ''}</span>
                     </button>
                   )
                 ) : (
@@ -948,7 +948,7 @@ export default function Translator() {
                       title="Copy to clipboard"
                     >
                       <ClipboardDocumentIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm">Copy</span>
+                      <span className="text-xs sm:text-sm"></span>
                     </button>
                     <button
                       className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
@@ -956,7 +956,7 @@ export default function Translator() {
                       title="Download as text file"
                     >
                       <ArrowDownTrayIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm">Save</span>
+                      <span className="text-xs sm:text-sm"></span>
                     </button>
                     <button 
                       className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
@@ -966,12 +966,12 @@ export default function Translator() {
                       {isTranslationPlaying ? (
                         <>
                           <StopIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                          <span className="text-xs sm:text-sm">Stop</span>
+                          <span className="text-xs sm:text-sm"></span>
                         </>
                       ) : (
                         <>
                           <SpeakerWaveIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                          <span className="text-xs sm:text-sm">Listen</span>
+                          <span className="text-xs sm:text-sm"></span>
                         </>
                       )}
                     </button>

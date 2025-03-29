@@ -19,7 +19,8 @@ let subscribers: ((toasts: ToastState[]) => void)[] = [];
 
 const defaultConfig = {
   duration: 3000,
-  position: 'bottom-right' as const
+  position: 'bottom-right' as const,
+  maxToasts: 5
 };
 
 // Helper functions for different toast types
@@ -40,6 +41,12 @@ const loading = (message: string, options?: Partial<ToastProps>) => createToast(
 const notify = (props: ToastProps) => {
   const id = toastCount++;
   const toast = { ...props, id };
+  
+  if (toasts.length >= defaultConfig.maxToasts) {
+    const oldestToast = toasts[0];
+    removeToast(oldestToast.id);
+  }
+  
   toasts.push(toast);
   subscribers.forEach(subscriber => subscriber([...toasts]));
 

@@ -19,7 +19,7 @@ interface Message {
 }
 
 export default function ConversationTranslator() {
-    const [myLanguage, setMyLanguage] = useTabState('conversationMyLanguage', 'vi')
+    const [myLanguage, setMyLanguage] = useTabState('conversationMyLanguage', 'auto')
     const [theirLanguage, setTheirLanguage] = useTabState('conversationTheirLanguage', 'en')
     const [myText, setMyText] = useState('')
     const [theirText, setTheirText] = useState('')
