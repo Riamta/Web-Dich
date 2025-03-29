@@ -1,5 +1,3 @@
-'use client'
-
 import FlirtingChat from '@/components/FlirtingChat'
 export const metadata = {
     title: 'Hỗ Trợ Tán Gái - AI Tool',

@@ -1,5 +1,3 @@
-'use client'
-
 import SRTTranslation from '@/components/SRTTranslation';
 
 export const metadata = {

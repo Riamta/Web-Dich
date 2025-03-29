@@ -1,5 +1,5 @@
 ## Setup
-3. Create a \`.env.local\` file in the root directory and add your Gemini API key:
+Create a \`.env.local\` file in the root directory and add your Gemini API key:
 \`\`\`
 
 NEXT_PUBLIC_GEMINI_API_KEY=

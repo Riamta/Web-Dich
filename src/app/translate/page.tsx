@@ -1,5 +1,3 @@
-'use client'
-
 import Translator from '@/components/Translator'
 
 export const metadata = {
