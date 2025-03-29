@@ -15,7 +15,7 @@ export const FALLBACK_MODELS = ['deepseek/deepseek-chat', 'thedrummer/anubis-pro
 export const LOCAL_AI_MODELS = [
     { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Powerful and fast translation' },
     { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', description: '' },
-    { id: 'gemini-2.5-pro-exp-03-25', name: 'Gemini 2.5 Pro Exp 03-25', description: 'Slow but good' },
+    // { id: 'gemini-2.5-pro-exp-03-25', name: 'Gemini 2.5 Pro Exp 03-25', description: 'Slow but good' },
     { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'Lightweight and efficient' },
 ] as const
 

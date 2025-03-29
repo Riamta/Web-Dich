@@ -140,6 +140,15 @@ class AIService {
                     maxOutputTokens: 8192
                 };
 
+                if (this.config.model === 'gemini-2.5-pro-exp-03-25') {
+                    generationConfig = {
+                        temperature: 0.7,
+                        topP: 0.95,
+                        topK: 64,
+                        maxOutputTokens: 65536
+                    };
+                }
+
                 const chatSession = geminiModel.startChat({
                     generationConfig,
                     history: []
