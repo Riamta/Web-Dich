@@ -25,7 +25,13 @@ import { useDebounce } from '@/hooks/useDebounce'
 
 export default function Translator() {
   const [mounted, setMounted] = useState(false)
+  
+  // Text tab state
   const [sourceText, setSourceText] = useState('')
+  const [textTranslatedText, setTextTranslatedText] = useState('')
+  const [textTranslated, setTextTranslated] = useState(false)
+  
+  // Shared state
   const [translatedText, setTranslatedText] = useState('')
   const [sourceLanguage, setSourceLanguage] = useTabState('sourceLanguage', 'auto')
   const [targetLanguage, setTargetLanguage] = useTabState('targetLanguage', 'vi')
@@ -39,26 +45,34 @@ export default function Translator() {
   const translatedTextRef = useRef<HTMLDivElement>(null)
   const [isSourcePlaying, setIsSourcePlaying] = useState(false)
   const [isTranslationPlaying, setIsTranslationPlaying] = useState(false)
+  
+  // Image tab state
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageTranslatedText, setImageTranslatedText] = useState<string>('')
+  const [imageTranslated, setImageTranslated] = useState(false)
+  
+  // File tab state
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
+  const [translatedFiles, setTranslatedFiles] = useState<{name: string, content: string}[]>([])
+  const [filesTranslated, setFilesTranslated] = useState(false)
+  
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [activeTab, setActiveTab] = useState<'text' | 'image' | 'file'>('text')
   const [isDragging, setIsDragging] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [fileContent, setFileContent] = useState<string>('')
   const [fileName, setFileName] = useState<string>('')
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
-  const [translatedFiles, setTranslatedFiles] = useState<{name: string, content: string}[]>([])
-  const debouncedSourceText = useDebounce(sourceText, 500); // 0.25 second delay
+  const debouncedSourceText = useDebounce(sourceText, 500); // 0.5 second delay
   const [isPasteEnabled, setIsPasteEnabled] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
   // Add effect for auto-translation when image is pasted
   useEffect(() => {
-    if (activeTab === 'image' && selectedImage) {
+    if (activeTab === 'image' && selectedImage && !imageTranslated) {
       handleImageTranslation();
     }
-  }, [selectedImage, activeTab]);
+  }, [selectedImage, activeTab, imageTranslated]);
 
   // Supported file types
   const SUPPORTED_FILE_TYPES = {
@@ -106,10 +120,13 @@ export default function Translator() {
 
   // Add effect for auto-translation
   useEffect(() => {
-    if (debouncedSourceText.trim() && activeTab === 'text') {
+    if (debouncedSourceText.trim() && activeTab === 'text' && !textTranslated) {
       handleTranslation();
+    } else if (debouncedSourceText !== sourceText) {
+      // Text is being edited, reset translated flag
+      setTextTranslated(false);
     }
-  }, [debouncedSourceText, activeTab]);
+  }, [debouncedSourceText, activeTab, textTranslated, sourceText]);
 
   // Add effect to handle paste events globally
   useEffect(() => {
@@ -131,6 +148,7 @@ export default function Translator() {
             }
             setSelectedImage(file);
             setImagePreview(URL.createObjectURL(file));
+            setImageTranslated(false); // Reset when pasting a new image
             setError(null);
             return;
           }
@@ -142,10 +160,37 @@ export default function Translator() {
     return () => window.removeEventListener('paste', handleGlobalPaste);
   }, [activeTab, isPasteEnabled]);
 
+  // Effect to handle language or tone changes and update the translation if needed
+  useEffect(() => {
+    // Reset translation flags when language or tone changes
+    setTextTranslated(false);
+    setImageTranslated(false);
+    setFilesTranslated(false);
+    
+    // Only trigger retranslation if we have existing content
+    if (!isLoading) {
+      if (activeTab === 'text' && sourceText.trim()) {
+        handleTranslation();
+      } else if (activeTab === 'image' && selectedImage) {
+        handleImageTranslation();
+      } else if (activeTab === 'file' && uploadedFiles.length > 0) {
+        handleTranslation();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetLanguage, translationTone]);
+
   const handleTranslation = async () => {
     if (activeTab === 'file' && uploadedFiles.length === 0) return;
     if (activeTab === 'text' && !sourceText.trim()) return;
     if (activeTab === 'image' && !selectedImage) return;
+
+    // Check if already translated for this tab
+    if ((activeTab === 'text' && textTranslated) ||
+        (activeTab === 'image' && imageTranslated) ||
+        (activeTab === 'file' && filesTranslated)) {
+      return;
+    }
 
     // Don't show loading state for auto-translation
     if (debouncedSourceText === sourceText) {
@@ -172,13 +217,15 @@ export default function Translator() {
           })
         );
         setTranslatedFiles(translatedContents);
+        setFilesTranslated(true);
       } else if (activeTab === 'image') {
-        // Existing image translation code
-        // ... existing image translation code ...
+        await handleImageTranslation();
       } else {
         const result = await aiService.translate(sourceText, targetLanguage, true, translationTone);
         const processedText = dictionaryService.applyDictionary(result);
+        setTextTranslatedText(processedText);
         setTranslatedText(processedText);
+        setTextTranslated(true);
       }
     } catch (error) {
       console.error('Translation error:', error);
@@ -204,6 +251,7 @@ export default function Translator() {
     try {
       const text = await navigator.clipboard.readText();
       setSourceText(text);
+      setTextTranslated(false); // Reset when pasting new text
     } catch (err) {
       console.error('Failed to paste text:', err);
     }
@@ -222,6 +270,7 @@ export default function Translator() {
           }
           setSelectedImage(file);
           setImagePreview(URL.createObjectURL(file));
+          setImageTranslated(false); // Reset when pasting a new image
           setError(null);
           return;
         }
@@ -252,6 +301,7 @@ export default function Translator() {
     }
 
     setUploadedFiles(prev => [...prev, ...files]);
+    setFilesTranslated(false); // Reset translated state when new files are uploaded
     setError(null);
   };
 
@@ -314,11 +364,18 @@ export default function Translator() {
 
     setSelectedImage(file);
     setImagePreview(URL.createObjectURL(file));
+    setImageTranslated(false); // Reset translated state when a new image is uploaded
     setError(null);
   };
 
   const handleImageTranslation = async () => {
     if (!selectedImage) return;
+    
+    // If already translated, just update the display
+    if (imageTranslated) {
+      setTranslatedText(imageTranslatedText);
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -345,40 +402,44 @@ export default function Translator() {
         }
       );
 
+      setImageTranslatedText(result);
       setTranslatedText(result);
+      setImageTranslated(true);
+      return result; // Return the result so it can be used by the caller
     } catch (error) {
       console.error('Image translation error:', error);
       setError(error instanceof Error ? error.message : 'Failed to translate image');
+      throw error; // Re-throw to be caught by the caller
     } finally {
-      setIsLoading(false);
+      // Always reset loading state
+      if (activeTab !== 'text' || debouncedSourceText === sourceText) {
+        setIsLoading(false);
+      }
     }
   };
 
-  // Update tab switching handler
+  // Update tab switching handler to preserve data when switching tabs
   const handleTabSwitch = (tab: 'text' | 'image' | 'file') => {
+    if (tab === activeTab) return; // Don't do anything if switching to the same tab
+    
     setActiveTab(tab);
     // Enable paste for image tab
     setIsPasteEnabled(tab === 'image');
     
-    // Clear data when switching tabs
+    // Clear any previous error
+    setError(null);
+    
+    // Reset loading state
+    setIsLoading(false);
+    
+    // Update the translated text display based on active tab
+    // without triggering new translations
     if (tab === 'text') {
-      setSelectedImage(null);
-      setImagePreview(null);
-      setSelectedFile(null);
-      setFileContent('');
-      setFileName('');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      setTranslatedText(textTranslatedText);
     } else if (tab === 'image') {
-      setSourceText('');
-      setSelectedFile(null);
-      setFileContent('');
-      setFileName('');
+      setTranslatedText(imageTranslatedText);
     } else {
-      setSourceText('');
-      setSelectedImage(null);
-      setImagePreview(null);
+      // File tab has its own display logic
     }
   };
 
@@ -464,6 +525,7 @@ export default function Translator() {
 
       setSelectedImage(file);
       setImagePreview(URL.createObjectURL(file));
+      setImageTranslated(false); // Reset when a new image is dropped
     } else if (activeTab === 'file') {
       // Filter out unsupported files
       const supportedFiles = files.filter(file => isFileTypeSupported(file));
@@ -475,6 +537,7 @@ export default function Translator() {
 
       if (supportedFiles.length > 0) {
         setUploadedFiles(prev => [...prev, ...supportedFiles]);
+        setFilesTranslated(false); // Reset when new files are dropped
       }
     } else {
       // Handle text file drop for text tab
@@ -487,6 +550,7 @@ export default function Translator() {
       try {
         const text = await file.text();
         setSourceText(text);
+        setTextTranslated(false); // Reset when a new text file is dropped
       } catch (error) {
         console.error('Error reading file:', error);
         setError('Error reading file. Please try again.');
@@ -535,6 +599,7 @@ export default function Translator() {
     const textarea = e.target;
     const text = e.target.value;
     setSourceText(text);
+    setTextTranslated(false); // Reset translated flag when text changes
 
     if (!text.trim()) {
       // Reset height when no text
@@ -655,7 +720,22 @@ export default function Translator() {
 
           <div className="flex items-center gap-2">
             <button
-              onClick={activeTab === 'image' ? handleImageTranslation : handleTranslation}
+              onClick={() => {
+                // Force translation regardless of current state when button is clicked
+                if (activeTab === 'text') {
+                  setTextTranslated(false);
+                } else if (activeTab === 'image') {
+                  setImageTranslated(false);
+                } else if (activeTab === 'file') {
+                  setFilesTranslated(false);
+                }
+                
+                if (activeTab === 'image') {
+                  handleImageTranslation();
+                } else {
+                  handleTranslation();
+                }
+              }}
               disabled={isTranslateButtonDisabled()}
               className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-white text-sm sm:text-base font-medium transition-all ${
                 isTranslateButtonDisabled()
