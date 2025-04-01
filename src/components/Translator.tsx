@@ -38,6 +38,8 @@ export default function Translator() {
   const [translationTone, setTranslationTone] = useTabState('translationTone', 'normal')
   const [useMarkdown, setUseMarkdown] = useTabState('useMarkdown', false)
   const [useFormat, setUseFormat] = useTabState('useFormat', false)
+  const [useMarkdownFormat, setUseMarkdownFormat] = useTabState('useMarkdownFormat', false)
+  const [useMarkdownDisplay, setUseMarkdownDisplay] = useTabState('useMarkdownDisplay', false)
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -72,7 +74,7 @@ export default function Translator() {
   // Add effect for auto-translation when image is pasted
   useEffect(() => {
     if (activeTab === 'image' && selectedImage && !imageTranslated) {
-      handleImageTranslation(useMarkdown, useFormat);
+      handleImageTranslation(useMarkdownFormat, useFormat);
     }
   }, [selectedImage, activeTab, imageTranslated]);
 
@@ -174,7 +176,7 @@ export default function Translator() {
       if (activeTab === 'text' && sourceText.trim()) {
         handleTranslation();
       } else if (activeTab === 'image' && selectedImage) {
-        handleImageTranslation(useMarkdown, useFormat);
+        handleImageTranslation(useMarkdownFormat, useFormat);
       } else if (activeTab === 'file' && uploadedFiles.length > 0) {
         handleTranslation();
       }
@@ -221,7 +223,7 @@ export default function Translator() {
         setTranslatedFiles(translatedContents);
         setFilesTranslated(true);
       } else if (activeTab === 'image') {
-        await handleImageTranslation(useMarkdown, useFormat);
+        await handleImageTranslation(useMarkdownFormat, useFormat);
       } else {
         const result = await aiService.translate(sourceText, targetLanguage, true, translationTone, undefined, useFormat, useMarkdown);
         const processedText = dictionaryService.applyDictionary(result);
@@ -732,7 +734,7 @@ export default function Translator() {
                 }
 
                 if (activeTab === 'image') {
-                  handleImageTranslation(useMarkdown, useFormat);
+                  handleImageTranslation(useMarkdownFormat, useFormat);
                 } else {
                   handleTranslation();
                 }
@@ -747,15 +749,15 @@ export default function Translator() {
             </button>
 
             <button
-              onClick={() => setUseMarkdown(!useMarkdown)}
-              className={`hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${useMarkdown
+              onClick={() => setUseMarkdownFormat(!useMarkdownFormat)}
+              className={`hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${useMarkdownFormat
                   ? 'bg-primary/10 text-primary border border-primary/20'
                   : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                 }`}
-              title="Toggle Markdown rendering"
+              title="Toggle Markdown formatting"
             >
               <MdTextFields className="h-4 w-4" />
-              Markdown
+              Markdown Format
             </button>
 
             <button
@@ -781,103 +783,6 @@ export default function Translator() {
                 <span className="text-sm font-medium text-gray-500">
                   {activeTab === 'text' ? 'Source Text' : activeTab === 'image' ? 'Source Image' : 'Source File'}
                 </span>
-                {activeTab === 'text' && (
-                  <button
-                    onClick={() => setUseMarkdown(!useMarkdown)}
-                    className={`sm:hidden flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all ${useMarkdown
-                        ? 'bg-primary/10 text-primary border border-primary/20'
-                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                      }`}
-                    title="Toggle Markdown rendering"
-                  >
-                    <MdTextFields className="h-3 w-3" />
-                    MD
-                  </button>
-                )}
-              </div>
-              <div className="flex items-center gap-1">
-                {activeTab === 'file' ? (
-                  <>
-                    <label
-                      htmlFor="document-upload"
-                      className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors flex items-center gap-1"
-                      title="Upload document"
-                    >
-                      <DocumentArrowUpIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm"></span>
-                    </label>
-                    <input
-                      type="file"
-                      onChange={handleFileUpload}
-                      accept={Object.values(SUPPORTED_FILE_TYPES).join(',')}
-                      className="hidden"
-                      id="document-upload"
-                      ref={fileInputRef}
-                    />
-                  </>
-                ) : activeTab === 'text' ? (
-                  <>
-                    <button
-                      className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
-                      onClick={handleTextPaste}
-                      title="Paste from clipboard"
-                    >
-                      <MdContentPaste className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm"></span>
-                    </button>
-                    <button
-                      className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
-                      onClick={() => handleCopy(sourceText)}
-                      title="Copy to clipboard"
-                    >
-                      <ClipboardDocumentIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm"></span>
-                    </button>
-                    <input
-                      type="file"
-                      onChange={handleFileUpload}
-                      accept=".txt,.docx"
-                      className="hidden"
-                      id="file-upload"
-                    />
-                  </>
-                ) : (
-                  <>
-                    <label
-                      htmlFor="image-upload"
-                      className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors flex items-center gap-1"
-                      title="Upload image"
-                    >
-                      <DocumentArrowUpIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm"></span>
-                    </label>
-                    <input
-                      type="file"
-                      onChange={handleImageUpload}
-                      accept="image/*"
-                      className="hidden"
-                      id="image-upload"
-                      ref={fileInputRef}
-                    />
-                  </>
-                )}
-                <button
-                  className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
-                  onClick={() => handleSpeech(activeTab === 'text' ? sourceText : '', sourceLanguage, true)}
-                  title={isSourcePlaying ? "Stop" : "Listen to source text"}
-                >
-                  {isSourcePlaying ? (
-                    <>
-                      <StopIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm"></span>
-                    </>
-                  ) : (
-                    <>
-                      <SpeakerWaveIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                      <span className="text-xs sm:text-sm"></span>
-                    </>
-                  )}
-                </button>
               </div>
             </div>
 
@@ -1048,6 +953,18 @@ export default function Translator() {
                       <span className="text-xs sm:text-sm"></span>
                     </button>
                     <button
+                      className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 ${
+                        useMarkdownDisplay 
+                          ? 'text-red-600 hover:text-red-700 hover:bg-red-50' 
+                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                      }`}
+                      onClick={() => setUseMarkdownDisplay(!useMarkdownDisplay)}
+                      title={useMarkdownDisplay ? "Chuyển sang hiển thị văn bản thường" : "Chuyển sang hiển thị markdown"}
+                    >
+                      <MdTextFields className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
+                      <span className="text-xs sm:text-sm"></span>
+                    </button>
+                    <button
                       className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
                       onClick={() => handleSpeech(translatedText, targetLanguage, false)}
                       title={isTranslationPlaying ? "Stop" : "Listen to translation"}
@@ -1135,7 +1052,7 @@ export default function Translator() {
                 )
               ) : translatedText ? (
                 <div className="prose max-w-none text-gray-800 text-base">
-                  {useMarkdown ? (
+                  {useMarkdownDisplay ? (
                     <ReactMarkdown>{translatedText}</ReactMarkdown>
                   ) : (
                     <div className="whitespace-pre-wrap">{translatedText}</div>

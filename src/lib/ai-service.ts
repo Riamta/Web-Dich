@@ -209,7 +209,8 @@ class AIService {
         tone: string = 'normal',
         onProgress?: (current: number, total: number) => void,
         useFormat: boolean = false,
-        useMarkdown: boolean = false
+        useMarkdownFormat: boolean = false,
+        useMarkdownDisplay: boolean = false
     ): Promise<string> {
         // Kiểm tra text trống
         if (!text.trim()) {
@@ -228,7 +229,7 @@ class AIService {
         // Nếu văn bản ngắn, xử lý trực tiếp
         if (text.length <= MAX_CHUNK_LENGTH) {
             onProgress?.(1, 1);
-            const prompt = this.createTranslationPrompt(text, targetLanguage, preserveContext, { tone, useFormat, useMarkdown });
+            const prompt = this.createTranslationPrompt(text, targetLanguage, preserveContext, { tone, useFormat, useMarkdownFormat });
             const result = await this.processWithAI(prompt);
             return dictionaryService.applyDictionary(result);
         }
@@ -326,6 +327,53 @@ class AIService {
         return translatedChunks.join('\n\n');
     }
 
+    private createMarkdownPrompt(useMarkdown: boolean, useFormat: boolean, isImage: boolean = false): string {
+        if (!useFormat) return '';
+
+        let prompt = `
+- Format the text for better readability:
+  + Preserve original meaning and content
+  + Ensure consistency in formatting
+  + Use appropriate spacing and line breaks
+  + Structure the content logically`;
+
+        if (useMarkdown) {
+            prompt += `
+- CRITICAL: The response MUST be formatted using markdown syntax:
+  + Use **bold** for important terms and emphasis
+  + Use *italics* for special terms and foreign words
+  + Use # ## ### for headings and section hierarchy
+  + Use ordered lists (1. 2. 3.) for sequential items
+  + Use unordered lists (- or *) for non-sequential items
+  + Use > for quotes and blockquotes
+  + Use \`code\` for technical terms and code snippets
+  + Use --- or === for horizontal dividers
+  + Use tables (| Header | Header |) when appropriate
+  + Use [link text](url) for links
+  + Use ![alt text](image-url) for images
+  + Use ~~strikethrough~~ for deleted or corrected text
+  + Use superscript^text^ for footnotes
+  + Use subscript~text~ for chemical formulas
+  + Use >!spoiler!< for spoiler text
+  + Use Discord-style markdown when appropriate
+- The response MUST be properly formatted markdown
+- Do not include any explanations about markdown formatting
+- Do not include any markdown syntax guides or examples
+- Just return the translated and markdown-formatted text`;
+
+            if (isImage) {
+                prompt += `
+- Preserve the original text structure and hierarchy
+- Format headings and sections appropriately based on visual hierarchy in the image`;
+            } else {
+                prompt += `
+- If the input text contains markdown, preserve and translate the markdown syntax appropriately`;
+            }
+        }
+
+        return prompt;
+    }
+
     private createTranslationPrompt(
         text: string,
         targetLanguage: string,
@@ -338,7 +386,7 @@ class AIService {
             currentChunk?: number;
             tone?: string;
             useFormat?: boolean;
-            useMarkdown?: boolean;
+            useMarkdownFormat?: boolean;
         }
     ): string {
         const translationTone = TRANSLATION_TONES[options?.tone || 'normal'];
@@ -354,7 +402,6 @@ ${options?.totalChunks ? `\nPart ${options.currentChunk}/${options.totalChunks}`
 
 Requirements:
 - Translate accurately while ensuring natural and coherent flow
-- Preserve formatting (paragraphs, emphasis)
 - Maintain consistency in terminology and style
 - Return only the translation, no explanations or notes
 - Ensure the translation is easy to understand`;
@@ -363,25 +410,68 @@ Requirements:
             prompt += `
 - Format the text for better readability:
   + Preserve original meaning and content
-  + Ensure consistency in formatting`;
-
-            if (options?.useMarkdown) {
-                prompt += `
-- Use markdown to format the text for better readability:
-  + Use **bold** for important parts
-  + Use *italics* for special terms
-  + Use # ## ### for headings and hierarchy
-  + Use ordered lists (1. 2. 3.) and unordered lists (- or *)
-  + Use > for quotes
-  + Use \`code\` for technical terms
-  + Use Discord-style markdown
-- Use markdown to format the text for better readability
-- Use Discord-style markdown`;
-            }
+  + Ensure consistency in formatting
+  + Use appropriate spacing and line breaks
+  + Structure the content logically`;
+        } else {
+            prompt += `
+- CRITICAL: Preserve ALL original formatting:
+  + Keep exact same line breaks and spacing
+  + Maintain original paragraph structure
+  + Preserve all indentation and alignment
+  + Keep original text emphasis and styling
+  + Do not modify any formatting elements`;
         }
+
+        prompt += this.createMarkdownPrompt(options?.useMarkdownFormat || false, options?.useFormat || false);
+
         console.log(prompt);
         prompt += `\n\nText to translate:\n${text}`;
 
+        return prompt;
+    }
+
+    private createImageTranslationPrompt(
+        targetLanguage: string,
+        preserveContext: boolean,
+        tone: string,
+        useMarkdown: boolean,
+        useFormat: boolean
+    ): string {
+        const translationTone = TRANSLATION_TONES[tone];
+        let prompt = `Vui lòng dịch các văn bản chính và quan trọng trong hình ảnh sang ${targetLanguage}.
+
+Translation Style: ${translationTone.style}
+
+Requirements:
+- Focus ONLY on translating main and important text content
+- Ignore small, decorative, or unimportant text (like watermarks, timestamps, minor UI elements,phone numbers,etc)
+- Ignore text that is less than approximately 12px in size
+- Maintain the original context and meaning of important text
+- Only return the translated text
+- Do not add any explanations or comments
+- If there's no significant text in the image, respond with "No significant text found in image"`;
+
+        if (useFormat) {
+            prompt += `
+- Format the text for better readability:
+  + Add appropriate line breaks and spacing
+  + Clearly separate paragraphs
+  + Maintain the original meaning and content
+  + Ensure consistency in formatting`;
+        } else {
+            prompt += `
+- CRITICAL: Preserve ALL original formatting:
+  + Keep exact same line breaks and spacing
+  + Maintain original paragraph structure
+  + Preserve all indentation and alignment
+  + Keep original text emphasis and styling
+  + Do not modify any formatting elements`;
+        }
+
+        prompt += this.createMarkdownPrompt(useMarkdown, useFormat, true);
+
+        console.log(prompt);
         return prompt;
     }
 
@@ -765,57 +855,6 @@ ${text}`;
             });
             throw new Error('Failed to translate image');
         }
-    }
-
-    private createImageTranslationPrompt(
-        targetLanguage: string,
-        preserveContext: boolean,
-        tone: string,
-        useMarkdown: boolean,
-        useFormat: boolean
-    ): string {
-        const translationTone = TRANSLATION_TONES[tone];
-
-        let prompt = `Vui lòng dịch các văn bản chính và quan trọng trong hình ảnh sang ${targetLanguage}.
-
-Translation Style: ${translationTone.style}
-
-Requirements:
-- Focus ONLY on translating main and important text content
-- Ignore small, decorative, or unimportant text (like watermarks, timestamps, minor UI elements,phone numbers,etc)
-- Ignore text that is less than approximately 12px in size
-- Maintain the original context and meaning of important text
-- Keep the same formatting and layout for translated text
-- Only return the translated text
-- Do not add any explanations or comments
-- If there's no significant text in the image, respond with "No significant text found in image"
-
-Please provide translations only for the main, important text content in a clear, structured format.`;
-
-        if (useFormat) {
-            prompt += `
-- Format the text for better readability:
-  + Add appropriate line breaks and spacing
-  + Clearly separate paragraphs
-  + Maintain the original meaning and content
-  + Ensure consistency in formatting`;
-
-            if (useMarkdown) {
-                prompt += `
-- Use markdown to format the text for better readability:
-  + Use **bold** or __bold__ for important parts
-  + Use *italics* or _italics_ for special terms
-  + Use # ## ### for headings and hierarchy
-  + Use numbered lists (1. 2. 3.) and bullet points (• or -)
-  + Use > for quotes and block quotes
-  + Use \`code\` for technical terms or code snippets
-  + Use ~~strikethrough~~ for deleted or corrected text
-  + Use === or --- for horizontal dividers
-  + Support for emoji :smile: :thumbsup:`;
-            }
-        }
-        console.log(prompt);
-        return prompt;
     }
 
     async analyzeImage(
