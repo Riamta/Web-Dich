@@ -776,7 +776,7 @@ ${text}`;
     ): string {
         const translationTone = TRANSLATION_TONES[tone];
 
-        let prompt = `You are an expert translator and image analyzer. Please analyze the image and translate significant text content into ${targetLanguage}.
+        let prompt = `Vui lòng dịch các văn bản chính và quan trọng trong hình ảnh sang ${targetLanguage}.
 
 Translation Style: ${translationTone.style}
 
