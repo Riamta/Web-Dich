@@ -802,7 +802,7 @@ Please provide translations only for the main, important text content in a clear
 
             if (useMarkdown) {
                 prompt += `
-- 100% use Discord-style markdown to format the text for better readability:
+- Use markdown to format the text for better readability:
   + Use **bold** or __bold__ for important parts
   + Use *italics* or _italics_ for special terms
   + Use # ## ### for headings and hierarchy
