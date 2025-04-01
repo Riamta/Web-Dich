@@ -5,9 +5,9 @@ import { useTabState } from '@/hooks/useTabState'
 import { aiService } from '@/lib/ai-service'
 import { TRANSLATION_TONES } from '@/lib/ai-service'
 import { dictionaryService } from '@/lib/dictionary-service'
-import { 
-  ArrowsRightLeftIcon, 
-  ClipboardDocumentIcon, 
+import {
+  ArrowsRightLeftIcon,
+  ClipboardDocumentIcon,
   ArrowDownTrayIcon,
   SpeakerWaveIcon,
   DocumentArrowUpIcon,
@@ -25,12 +25,12 @@ import { useDebounce } from '@/hooks/useDebounce'
 
 export default function Translator() {
   const [mounted, setMounted] = useState(false)
-  
+
   // Text tab state
   const [sourceText, setSourceText] = useState('')
   const [textTranslatedText, setTextTranslatedText] = useState('')
   const [textTranslated, setTextTranslated] = useState(false)
-  
+
   // Shared state
   const [translatedText, setTranslatedText] = useState('')
   const [sourceLanguage, setSourceLanguage] = useTabState('sourceLanguage', 'auto')
@@ -38,7 +38,7 @@ export default function Translator() {
   const [translationTone, setTranslationTone] = useTabState('translationTone', 'normal')
   const [useMarkdown, setUseMarkdown] = useTabState('useMarkdown', false)
   const [useFormat, setUseFormat] = useTabState('useFormat', false)
-  
+
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copySuccess, setCopySuccess] = useState(false)
@@ -47,18 +47,18 @@ export default function Translator() {
   const translatedTextRef = useRef<HTMLDivElement>(null)
   const [isSourcePlaying, setIsSourcePlaying] = useState(false)
   const [isTranslationPlaying, setIsTranslationPlaying] = useState(false)
-  
+
   // Image tab state
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageTranslatedText, setImageTranslatedText] = useState<string>('')
   const [imageTranslated, setImageTranslated] = useState(false)
-  
+
   // File tab state
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
-  const [translatedFiles, setTranslatedFiles] = useState<{name: string, content: string}[]>([])
+  const [translatedFiles, setTranslatedFiles] = useState<{ name: string, content: string }[]>([])
   const [filesTranslated, setFilesTranslated] = useState(false)
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [activeTab, setActiveTab] = useState<'text' | 'image' | 'file'>('text')
   const [isDragging, setIsDragging] = useState(false)
@@ -72,7 +72,7 @@ export default function Translator() {
   // Add effect for auto-translation when image is pasted
   useEffect(() => {
     if (activeTab === 'image' && selectedImage && !imageTranslated) {
-      handleImageTranslation();
+      handleImageTranslation(useMarkdown, useFormat);
     }
   }, [selectedImage, activeTab, imageTranslated]);
 
@@ -168,13 +168,13 @@ export default function Translator() {
     setTextTranslated(false);
     setImageTranslated(false);
     setFilesTranslated(false);
-    
+
     // Only trigger retranslation if we have existing content
     if (!isLoading) {
       if (activeTab === 'text' && sourceText.trim()) {
         handleTranslation();
       } else if (activeTab === 'image' && selectedImage) {
-        handleImageTranslation();
+        handleImageTranslation(useMarkdown, useFormat);
       } else if (activeTab === 'file' && uploadedFiles.length > 0) {
         handleTranslation();
       }
@@ -189,8 +189,8 @@ export default function Translator() {
 
     // Check if already translated for this tab
     if ((activeTab === 'text' && textTranslated) ||
-        (activeTab === 'image' && imageTranslated) ||
-        (activeTab === 'file' && filesTranslated)) {
+      (activeTab === 'image' && imageTranslated) ||
+      (activeTab === 'file' && filesTranslated)) {
       return;
     }
 
@@ -221,7 +221,7 @@ export default function Translator() {
         setTranslatedFiles(translatedContents);
         setFilesTranslated(true);
       } else if (activeTab === 'image') {
-        await handleImageTranslation();
+        await handleImageTranslation(useMarkdown, useFormat);
       } else {
         const result = await aiService.translate(sourceText, targetLanguage, true, translationTone, undefined, useFormat, useMarkdown);
         const processedText = dictionaryService.applyDictionary(result);
@@ -316,14 +316,14 @@ export default function Translator() {
       setPlaying(false)
     } else {
       const utterance = new SpeechSynthesisUtterance(text)
-      
+
       // Xử lý ngôn ngữ nguồn
       if (lang === 'auto') {
         // Thử detect ngôn ngữ từ text hoặc fallback về en-US
         try {
           // Sử dụng 2 ký tự đầu tiên của đoạn text để detect ngôn ngữ
-          const detectedLang = text.trim().length >= 2 ? 
-            (text.charCodeAt(0) > 127 || text.charCodeAt(1) > 127 ? 'vi-VN' : 'en-US') 
+          const detectedLang = text.trim().length >= 2 ?
+            (text.charCodeAt(0) > 127 || text.charCodeAt(1) > 127 ? 'vi-VN' : 'en-US')
             : 'en-US';
           utterance.lang = detectedLang;
         } catch (e) {
@@ -370,9 +370,9 @@ export default function Translator() {
     setError(null);
   };
 
-  const handleImageTranslation = async () => {
+  const handleImageTranslation = async (useMarkdown: boolean, useFormat: boolean) => {
     if (!selectedImage) return;
-    
+
     // If already translated, just update the display
     if (imageTranslated) {
       setTranslatedText(imageTranslatedText);
@@ -400,8 +400,10 @@ export default function Translator() {
         {
           targetLanguage,
           preserveContext: true,
-          tone: translationTone
-        }
+          tone: translationTone,
+        },
+        useMarkdown,
+        useFormat
       );
 
       setImageTranslatedText(result);
@@ -423,17 +425,17 @@ export default function Translator() {
   // Update tab switching handler to preserve data when switching tabs
   const handleTabSwitch = (tab: 'text' | 'image' | 'file') => {
     if (tab === activeTab) return; // Don't do anything if switching to the same tab
-    
+
     setActiveTab(tab);
     // Enable paste for image tab
     setIsPasteEnabled(tab === 'image');
-    
+
     // Clear any previous error
     setError(null);
-    
+
     // Reset loading state
     setIsLoading(false);
-    
+
     // Update the translated text display based on active tab
     // without triggering new translations
     if (tab === 'text') {
@@ -454,7 +456,7 @@ export default function Translator() {
 
   const isTranslateButtonDisabled = () => {
     if (isLoading) return true;
-    
+
     switch (activeTab) {
       case 'text':
         return !sourceText.trim();
@@ -470,7 +472,7 @@ export default function Translator() {
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Only set dragging if we're dragging files
     if (e.dataTransfer.types.includes('Files')) {
       setIsDragging(true);
@@ -480,13 +482,13 @@ export default function Translator() {
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Only unset dragging if we're leaving the drop zone
     // and not entering a child element
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX;
     const y = e.clientY;
-    
+
     if (
       x <= rect.left ||
       x >= rect.right ||
@@ -581,7 +583,7 @@ export default function Translator() {
       translatedFiles.forEach(file => {
         zip.file(file.name, file.content);
       });
-      zip.generateAsync({type: "blob"}).then(content => {
+      zip.generateAsync({ type: "blob" }).then(content => {
         const url = URL.createObjectURL(content);
         const a = document.createElement('a');
         a.href = url;
@@ -626,33 +628,30 @@ export default function Translator() {
         <div className="flex border-b border-gray-200">
           <button
             onClick={() => handleTabSwitch('text')}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'text'
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'text'
                 ? 'text-primary border-b-2 border-primary'
                 : 'text-gray-500 hover:text-gray-700'
-            }`}
+              }`}
           >
             <DocumentTextIcon className="h-5 w-5" />
             Text
           </button>
           <button
             onClick={() => handleTabSwitch('image')}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'image'
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'image'
                 ? 'text-primary border-b-2 border-primary'
                 : 'text-gray-500 hover:text-gray-700'
-            }`}
+              }`}
           >
             <PhotoIcon className="h-5 w-5" />
             Image
           </button>
           <button
             onClick={() => handleTabSwitch('file')}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'file'
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'file'
                 ? 'text-primary border-b-2 border-primary'
                 : 'text-gray-500 hover:text-gray-700'
-            }`}
+              }`}
           >
             <DocumentArrowUpIcon className="h-5 w-5" />
             File
@@ -677,7 +676,7 @@ export default function Translator() {
               </select>
             </div>
 
-            <button 
+            <button
               className="p-2 sm:p-2.5 hover:bg-gray-100 rounded-xl transition-colors border border-transparent hover:border-gray-200 shrink-0"
               onClick={() => {
                 const temp = sourceLanguage
@@ -731,30 +730,28 @@ export default function Translator() {
                 } else if (activeTab === 'file') {
                   setFilesTranslated(false);
                 }
-                
+
                 if (activeTab === 'image') {
-                  handleImageTranslation();
+                  handleImageTranslation(useMarkdown, useFormat);
                 } else {
                   handleTranslation();
                 }
               }}
               disabled={isTranslateButtonDisabled()}
-              className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-white text-sm sm:text-base font-medium transition-all ${
-                isTranslateButtonDisabled()
+              className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-white text-sm sm:text-base font-medium transition-all ${isTranslateButtonDisabled()
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md'
-              }`}
+                }`}
             >
               {isLoading ? 'Translating...' : 'Translate'}
             </button>
 
             <button
               onClick={() => setUseMarkdown(!useMarkdown)}
-              className={`hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                useMarkdown 
-                  ? 'bg-primary/10 text-primary border border-primary/20' 
+              className={`hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${useMarkdown
+                  ? 'bg-primary/10 text-primary border border-primary/20'
                   : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-              }`}
+                }`}
               title="Toggle Markdown rendering"
             >
               <MdTextFields className="h-4 w-4" />
@@ -763,11 +760,10 @@ export default function Translator() {
 
             <button
               onClick={() => setUseFormat(!useFormat)}
-              className={`hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                useFormat 
-                  ? 'bg-primary/10 text-primary border border-primary/20' 
+              className={`hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${useFormat
+                  ? 'bg-primary/10 text-primary border border-primary/20'
                   : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-              }`}
+                }`}
               title="Toggle text formatting"
             >
               <SparklesIcon className="h-4 w-4" />
@@ -788,11 +784,10 @@ export default function Translator() {
                 {activeTab === 'text' && (
                   <button
                     onClick={() => setUseMarkdown(!useMarkdown)}
-                    className={`sm:hidden flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all ${
-                      useMarkdown 
-                        ? 'bg-primary/10 text-primary border border-primary/20' 
+                    className={`sm:hidden flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all ${useMarkdown
+                        ? 'bg-primary/10 text-primary border border-primary/20'
                         : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                    }`}
+                      }`}
                     title="Toggle Markdown rendering"
                   >
                     <MdTextFields className="h-3 w-3" />
@@ -803,7 +798,7 @@ export default function Translator() {
               <div className="flex items-center gap-1">
                 {activeTab === 'file' ? (
                   <>
-                    <label 
+                    <label
                       htmlFor="document-upload"
                       className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors flex items-center gap-1"
                       title="Upload document"
@@ -822,7 +817,7 @@ export default function Translator() {
                   </>
                 ) : activeTab === 'text' ? (
                   <>
-                    <button 
+                    <button
                       className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
                       onClick={handleTextPaste}
                       title="Paste from clipboard"
@@ -830,7 +825,7 @@ export default function Translator() {
                       <MdContentPaste className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
                       <span className="text-xs sm:text-sm"></span>
                     </button>
-                    <button 
+                    <button
                       className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
                       onClick={() => handleCopy(sourceText)}
                       title="Copy to clipboard"
@@ -848,7 +843,7 @@ export default function Translator() {
                   </>
                 ) : (
                   <>
-                    <label 
+                    <label
                       htmlFor="image-upload"
                       className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors flex items-center gap-1"
                       title="Upload image"
@@ -866,7 +861,7 @@ export default function Translator() {
                     />
                   </>
                 )}
-                <button 
+                <button
                   className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
                   onClick={() => handleSpeech(activeTab === 'text' ? sourceText : '', sourceLanguage, true)}
                   title={isSourcePlaying ? "Stop" : "Listen to source text"}
@@ -932,7 +927,7 @@ export default function Translator() {
                     </div>
                   </div>
                 ) : (
-                  <div 
+                  <div
                     className={`flex flex-col items-center justify-center h-full text-gray-400 gap-3 cursor-pointer hover:bg-gray-50/50 transition-colors ${isDragging ? 'bg-gray-100/80 border-2 border-dashed border-primary/50' : ''}`}
                     onClick={() => fileInputRef.current?.click()}
                   >
@@ -949,13 +944,12 @@ export default function Translator() {
                 )}
               </div>
             ) : activeTab === 'image' ? (
-              <div 
+              <div
                 ref={imageContainerRef}
-                className={`relative h-full cursor-pointer transition-colors ${
-                  isDragging 
-                    ? 'bg-gray-100/80 border-2 border-dashed border-primary/50' 
+                className={`relative h-full cursor-pointer transition-colors ${isDragging
+                    ? 'bg-gray-100/80 border-2 border-dashed border-primary/50'
                     : imagePreview ? '' : 'hover:bg-gray-50/50'
-                }`}
+                  }`}
                 onClick={handleImageContainerClick}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
@@ -1037,7 +1031,7 @@ export default function Translator() {
                   )
                 ) : (
                   <>
-                    <button 
+                    <button
                       className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
                       onClick={() => handleCopy(translatedText)}
                       title="Copy to clipboard"
@@ -1053,7 +1047,7 @@ export default function Translator() {
                       <ArrowDownTrayIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
                       <span className="text-xs sm:text-sm"></span>
                     </button>
-                    <button 
+                    <button
                       className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1"
                       onClick={() => handleSpeech(translatedText, targetLanguage, false)}
                       title={isTranslationPlaying ? "Stop" : "Listen to translation"}
@@ -1074,7 +1068,7 @@ export default function Translator() {
                 )}
               </div>
             </div>
-            <div 
+            <div
               ref={translatedTextRef}
               style={{ height: `${contentHeight}px` }}
               className="p-4 sm:p-6 overflow-y-auto min-h-[300px] sm:min-h-[500px]"
@@ -1093,8 +1087,8 @@ export default function Translator() {
                         {activeTab === 'image' ? 'Translating image...' : 'Translating text...'}
                       </p>
                       <p className="text-xs sm:text-sm text-gray-500">
-                        {activeTab === 'image' 
-                          ? 'AI is analyzing and translating text in the image' 
+                        {activeTab === 'image'
+                          ? 'AI is analyzing and translating text in the image'
                           : 'AI is processing your text translation'}
                       </p>
                     </div>
@@ -1159,8 +1153,8 @@ export default function Translator() {
                     )}
                   </div>
                   <span className="text-sm sm:text-base font-medium text-center">
-                    {activeTab === 'image' 
-                      ? 'Upload an image or paste from clipboard' 
+                    {activeTab === 'image'
+                      ? 'Upload an image or paste from clipboard'
                       : 'Enter text to translate'}
                   </span>
                   <span className="text-xs sm:text-sm text-gray-400 text-center">

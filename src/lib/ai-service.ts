@@ -343,46 +343,44 @@ class AIService {
     ): string {
         const translationTone = TRANSLATION_TONES[options?.tone || 'normal'];
 
-        let prompt = `Bạn là một chuyên gia dịch thuật. Hãy dịch đoạn văn sau sang ${targetLanguage}.
+        let prompt = `You are a translation expert. Please translate the following text to ${targetLanguage}.
 
-Phong cách: ${translationTone.style}
+Style: ${translationTone.style}
 
-Bối cảnh:
-${preserveContext ? '- Giữ nguyên ngữ cảnh, phong cách, giọng điệu và thuật ngữ gốc' : '- Tập trung vào sự rõ ràng và chính xác'}
-${options?.previousContext ? `\nNgữ cảnh trước đó:\n${options.previousContext}` : ''}
-${options?.totalChunks ? `\nPhần ${options.currentChunk}/${options.totalChunks}` : ''}
+Context:
+${preserveContext ? '- Maintain original context, style, tone, and terminology' : '- Focus on clarity and accuracy'}
+${options?.previousContext ? `\nPrevious context:\n${options.previousContext}` : ''}
+${options?.totalChunks ? `\nPart ${options.currentChunk}/${options.totalChunks}` : ''}
 
-Yêu cầu:
-- Dịch chính xác nhưng vẫn đảm bảo tự nhiên và mạch lạc
-- Giữ nguyên định dạng (đoạn văn, nhấn mạnh)
-- Duy trì tính nhất quán về thuật ngữ và phong cách
-- Chỉ trả về bản dịch, không giải thích thêm, không mở ngoặc chú thích hay gì cả
-- Đảm bảo chất lượng bản dịch dễ hiểu`;
+Requirements:
+- Translate accurately while ensuring natural and coherent flow
+- Preserve formatting (paragraphs, emphasis)
+- Maintain consistency in terminology and style
+- Return only the translation, no explanations or notes
+- Ensure the translation is easy to understand`;
 
         if (options?.useFormat) {
             prompt += `
-- Định dạng lại văn bản để dễ đọc hơn:
-  + Thêm xuống dòng và khoảng cách phù hợp
-  + Tách các đoạn văn rõ ràng
-  + Giữ nguyên ý nghĩa và nội dung gốc
-  + Đảm bảo tính nhất quán trong việc định dạng`;
+- Format the text for better readability:
+  + Preserve original meaning and content
+  + Ensure consistency in formatting`;
 
             if (options?.useMarkdown) {
                 prompt += `
-- Sử dụng markdown để định dạng lại văn bản cho dễ đọc hơn:
-  + Sử dụng **in đậm** cho các phần quan trọng
-  + Sử dụng *in nghiêng* cho các thuật ngữ đặc biệt
-  + Sử dụng # ## ### cho các tiêu đề và phân cấp
-  + Sử dụng danh sách có thứ tự (1. 2. 3.) và không thứ tự (- hoặc *)
-  + Sử dụng > cho các trích dẫn
-  + Sử dụng \`code\` cho các thuật ngữ kỹ thuật
-  + Sử dụng markdown theo phong cách Discord
-- Sử dụng markdown để định dạng lại văn bản cho dễ đọc hơn
-- Sử dụng markdown theo phong cách Discord`;
+- Use markdown to format the text for better readability:
+  + Use **bold** for important parts
+  + Use *italics* for special terms
+  + Use # ## ### for headings and hierarchy
+  + Use ordered lists (1. 2. 3.) and unordered lists (- or *)
+  + Use > for quotes
+  + Use \`code\` for technical terms
+  + Use Discord-style markdown
+- Use markdown to format the text for better readability
+- Use Discord-style markdown`;
             }
         }
         console.log(prompt);
-        prompt += `\n\nVăn bản cần dịch:\n${text}`;
+        prompt += `\n\nText to translate:\n${text}`;
 
         return prompt;
     }
@@ -727,7 +725,9 @@ ${text}`;
     async translateImage(
         imageData: string,
         mimeType: string,
-        options: ImageTranslationOptions
+        options: ImageTranslationOptions,
+        useMarkdown: boolean,
+        useFormat: boolean
     ): Promise<string> {
         try {
             const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
@@ -742,9 +742,10 @@ ${text}`;
             const prompt = this.createImageTranslationPrompt(
                 options.targetLanguage,
                 options.preserveContext,
-                options.tone
+                options.tone,
+                useMarkdown,
+                useFormat
             );
-
             const imagePart = {
                 inlineData: {
                     data: imageData,
@@ -769,11 +770,13 @@ ${text}`;
     private createImageTranslationPrompt(
         targetLanguage: string,
         preserveContext: boolean,
-        tone: string
+        tone: string,
+        useMarkdown: boolean,
+        useFormat: boolean
     ): string {
         const translationTone = TRANSLATION_TONES[tone];
 
-        return `You are an expert translator and image analyzer. Please analyze the image and translate significant text content into ${targetLanguage}.
+        let prompt = `You are an expert translator and image analyzer. Please analyze the image and translate significant text content into ${targetLanguage}.
 
 Translation Style: ${translationTone.style}
 
@@ -788,6 +791,31 @@ Requirements:
 - If there's no significant text in the image, respond with "No significant text found in image"
 
 Please provide translations only for the main, important text content in a clear, structured format.`;
+
+        if (useFormat) {
+            prompt += `
+- Format the text for better readability:
+  + Add appropriate line breaks and spacing
+  + Clearly separate paragraphs
+  + Maintain the original meaning and content
+  + Ensure consistency in formatting`;
+
+            if (useMarkdown) {
+                prompt += `
+- 100% use Discord-style markdown to format the text for better readability:
+  + Use **bold** or __bold__ for important parts
+  + Use *italics* or _italics_ for special terms
+  + Use # ## ### for headings and hierarchy
+  + Use numbered lists (1. 2. 3.) and bullet points (• or -)
+  + Use > for quotes and block quotes
+  + Use \`code\` for technical terms or code snippets
+  + Use ~~strikethrough~~ for deleted or corrected text
+  + Use === or --- for horizontal dividers
+  + Support for emoji :smile: :thumbsup:`;
+            }
+        }
+        console.log(prompt);
+        return prompt;
     }
 
     async analyzeImage(
@@ -824,7 +852,7 @@ Please provide translations only for the main, important text content in a clear
     }
 
     async analyzeMultipleImages(
-        images: Array<{data: string, mimeType: string}>,
+        images: Array<{ data: string, mimeType: string }>,
         question: string
     ): Promise<string> {
         try {
