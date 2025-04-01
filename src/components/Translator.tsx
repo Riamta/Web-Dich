@@ -36,9 +36,11 @@ export default function Translator() {
   const [sourceLanguage, setSourceLanguage] = useTabState('sourceLanguage', 'auto')
   const [targetLanguage, setTargetLanguage] = useTabState('targetLanguage', 'vi')
   const [translationTone, setTranslationTone] = useTabState('translationTone', 'normal')
+  const [useMarkdown, setUseMarkdown] = useTabState('useMarkdown', false)
+  const [useFormat, setUseFormat] = useTabState('useFormat', false)
+  
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [useMarkdown, setUseMarkdown] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const [contentHeight, setContentHeight] = useState<number>(500)
   const sourceTextRef = useRef<HTMLTextAreaElement>(null)
@@ -205,7 +207,7 @@ export default function Translator() {
             let content = '';
             if (file.type === 'text/plain' || file.type === 'text/markdown' || file.type === 'application/json') {
               const text = await file.text();
-              content = await aiService.translate(text, targetLanguage, true, translationTone);
+              content = await aiService.translate(text, targetLanguage, true, translationTone, undefined, useFormat, useMarkdown);
             } else {
               // Handle other file types in the future
               content = 'File type not supported for translation yet';
@@ -221,7 +223,7 @@ export default function Translator() {
       } else if (activeTab === 'image') {
         await handleImageTranslation();
       } else {
-        const result = await aiService.translate(sourceText, targetLanguage, true, translationTone);
+        const result = await aiService.translate(sourceText, targetLanguage, true, translationTone, undefined, useFormat, useMarkdown);
         const processedText = dictionaryService.applyDictionary(result);
         setTextTranslatedText(processedText);
         setTranslatedText(processedText);
@@ -757,6 +759,19 @@ export default function Translator() {
             >
               <MdTextFields className="h-4 w-4" />
               Markdown
+            </button>
+
+            <button
+              onClick={() => setUseFormat(!useFormat)}
+              className={`hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                useFormat 
+                  ? 'bg-primary/10 text-primary border border-primary/20' 
+                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+              }`}
+              title="Toggle text formatting"
+            >
+              <SparklesIcon className="h-4 w-4" />
+              Format
             </button>
           </div>
         </div>

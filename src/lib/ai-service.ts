@@ -207,7 +207,9 @@ class AIService {
         targetLanguage: string,
         preserveContext: boolean,
         tone: string = 'normal',
-        onProgress?: (current: number, total: number) => void
+        onProgress?: (current: number, total: number) => void,
+        useFormat: boolean = false,
+        useMarkdown: boolean = false
     ): Promise<string> {
         // Kiểm tra text trống
         if (!text.trim()) {
@@ -226,7 +228,7 @@ class AIService {
         // Nếu văn bản ngắn, xử lý trực tiếp
         if (text.length <= MAX_CHUNK_LENGTH) {
             onProgress?.(1, 1);
-            const prompt = this.createTranslationPrompt(text, targetLanguage, preserveContext, { tone });
+            const prompt = this.createTranslationPrompt(text, targetLanguage, preserveContext, { tone, useFormat, useMarkdown });
             const result = await this.processWithAI(prompt);
             return dictionaryService.applyDictionary(result);
         }
@@ -286,7 +288,8 @@ class AIService {
                     isLastChunk,
                     totalChunks: chunks.length,
                     currentChunk: i + 1,
-                    tone
+                    tone,
+                    useFormat
                 }
             );
 
@@ -307,7 +310,7 @@ class AIService {
                 let subTranslated = '';
                 for (const subChunk of subChunks) {
                     try {
-                        const subPrompt = this.createTranslationPrompt(subChunk, targetLanguage, preserveContext, { tone });
+                        const subPrompt = this.createTranslationPrompt(subChunk, targetLanguage, preserveContext, { tone, useFormat });
                         const subResult = await this.processWithAI(subPrompt);
                         subTranslated += subResult + ' ';
                     } catch (e) {
@@ -334,6 +337,8 @@ class AIService {
             totalChunks?: number;
             currentChunk?: number;
             tone?: string;
+            useFormat?: boolean;
+            useMarkdown?: boolean;
         }
     ): string {
         const translationTone = TRANSLATION_TONES[options?.tone || 'normal'];
@@ -352,9 +357,32 @@ Yêu cầu:
 - Giữ nguyên định dạng (đoạn văn, nhấn mạnh)
 - Duy trì tính nhất quán về thuật ngữ và phong cách
 - Chỉ trả về bản dịch, không giải thích thêm, không mở ngoặc chú thích hay gì cả
-- Đảm bảo chất lượng bản dịch dễ hiểu
-Văn bản cần dịch:
-${text}`;
+- Đảm bảo chất lượng bản dịch dễ hiểu`;
+
+        if (options?.useFormat) {
+            prompt += `
+- Định dạng lại văn bản để dễ đọc hơn:
+  + Thêm xuống dòng và khoảng cách phù hợp
+  + Tách các đoạn văn rõ ràng
+  + Giữ nguyên ý nghĩa và nội dung gốc
+  + Đảm bảo tính nhất quán trong việc định dạng`;
+
+            if (options?.useMarkdown) {
+                prompt += `
+- Sử dụng markdown để định dạng lại văn bản cho dễ đọc hơn:
+  + Sử dụng **in đậm** cho các phần quan trọng
+  + Sử dụng *in nghiêng* cho các thuật ngữ đặc biệt
+  + Sử dụng # ## ### cho các tiêu đề và phân cấp
+  + Sử dụng danh sách có thứ tự (1. 2. 3.) và không thứ tự (- hoặc *)
+  + Sử dụng > cho các trích dẫn
+  + Sử dụng \`code\` cho các thuật ngữ kỹ thuật
+  + Sử dụng markdown theo phong cách Discord
+- Sử dụng markdown để định dạng lại văn bản cho dễ đọc hơn
+- Sử dụng markdown theo phong cách Discord`;
+            }
+        }
+        console.log(prompt);
+        prompt += `\n\nVăn bản cần dịch:\n${text}`;
 
         return prompt;
     }
