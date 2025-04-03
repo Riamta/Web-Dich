@@ -1,109 +1,81 @@
 import { NextResponse } from 'next/server';
 import { summarizeService } from '@/lib/summarize-service';
 
+interface SummarizeRequest {
+    text?: string;
+    files?: Array<{
+        name: string;
+        type: string;
+        data: string;
+    }>;
+    language: string;
+    type: string;
+    preserveContext?: boolean;
+    useFormat?: boolean;
+    useMarkdown?: boolean;
+}
+
 export async function POST(request: Request) {
-  try {
-    const contentType = request.headers.get('content-type');
-    console.log('📥 Received request with content-type:', contentType);
-    
-    const data = await request.json();
-    
-    if (data.files) {
-      // Handle files (base64 data)
-      const files = data.files;
-      const language = data.language;
-      const type = data.type;
+    try {
+        const data: SummarizeRequest = await request.json();
+        console.log('📤 Received request:', {
+            hasText: !!data.text,
+            hasFiles: !!data.files,
+            fileCount: data.files?.length,
+            language: data.language,
+            type: data.type
+        });
 
-      console.log('📥 Files data:', {
-        fileCount: files.length,
-        fileTypes: files.map(f => f.type),
-        fileNames: files.map(f => f.name),
-        language,
-        type
-      });
+        if (data.text) {
+            console.log('📤 Sending text for summarization...');
+            const summary = await summarizeService.summarize(
+                data.text,
+                data.language,
+                data.type
+            );
+            console.log('📥 Received summary:', {
+                status: 'success',
+                length: summary.length,
+                type: data.type
+            });
+            return NextResponse.json({ summary });
+        }
 
-      if (!files || files.length === 0) {
+        if (data.files && data.files.length > 0) {
+            console.log('📤 Processing files for summarization...');
+            const summarizedContents = await summarizeService.summarizeFiles(
+                data.files,
+                {
+                    language: data.language,
+                    type: data.type,
+                    preserveContext: data.preserveContext,
+                    useFormat: data.useFormat,
+                    useMarkdown: data.useMarkdown
+                }
+            );
+
+            console.log('📥 Received file summarization:', {
+                status: 'success',
+                fileCount: summarizedContents.length,
+                type: data.type
+            });
+
+            return NextResponse.json({ summarizedContents });
+        }
+
         return NextResponse.json(
-          { error: 'Files are required' },
-          { status: 400 }
+            { error: 'No text or files provided for summarization' },
+            { status: 400 }
         );
-      }
-
-      try {
-        console.log('📤 Sending files for summarization...', { 
-          fileCount: files.length,
-          types: files.map(f => f.type),
-          type 
+    } catch (error) {
+        console.error('❌ Summarization error:', {
+            timestamp: new Date().toISOString(),
+            error: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined
         });
-
-        const summaries = await summarizeService.summarizeFiles(files, {
-          language,
-          type,
-          preserveContext: true,
-          useFormat: true,
-          useMarkdown: true
-        });
-
-        console.log('📥 Received file summarization:', {
-          status: 'success',
-          fileCount: summaries.length,
-          type
-        });
-
-        return NextResponse.json({ summaries });
-      } catch (error) {
-        console.error('❌ File summarization error:', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined,
-          timestamp: new Date().toISOString()
-        });
-        throw error;
-      }
-    } else if (data.text) {
-      // Handle text
-      const { text, language, type } = data;
-
-      if (!text) {
         return NextResponse.json(
-          { error: 'Text is required' },
-          { status: 400 }
+            { error: 'Failed to process summarization request' },
+            { status: 500 }
         );
-      }
-
-      try {
-        console.log('📤 Sending text for summarization...', { type });
-        const summary = await summarizeService.summarize(text, language, type);
-
-        console.log('📥 Received text summarization:', {
-          status: 'success',
-          responseLength: summary.length,
-          type
-        });
-
-        return NextResponse.json({ summary });
-      } catch (error) {
-        console.error('❌ Text summarization error:', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined,
-          timestamp: new Date().toISOString()
-        });
-        throw error;
-      }
-    } else {
-      return NextResponse.json(
-        { error: 'Either text or files are required' },
-        { status: 400 }
-      );
     }
-  } catch (error) {
-    console.error('Error in summarize API:', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      timestamp: new Date().toISOString()
-    });
-    return NextResponse.json(
-      { error: 'Failed to summarize content' },
-      { status: 500 }
-    );
-  }
 } 
