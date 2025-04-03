@@ -7,19 +7,24 @@ import ReactMarkdown from 'react-markdown';
 import { useTabState } from '../hooks/useTabState';
 import { Tooltip } from 'react-tooltip';
 import { SUPPORTED_LANGUAGES } from '@/constants/languages';
+import { toast } from 'react-hot-toast';
 
 export default function TextSummarization() {
     const [mounted, setMounted] = useState(false);
-    const [inputText, setInputText] = useState('');
-    const [summary, setSummary] = useState('');
-    const [selectedLanguage, setSelectedLanguage] = useTabState('summarizeLanguage', 'vi');
-    const [summaryType, setSummaryType] = useTabState('summarizeType', 'concise');
+    const [text, setText] = useState('');
+    const [files, setFiles] = useState<File[]>([]);
+    const [summary, setSummary] = useState<string>('');
+    const [fileSummaries, setFileSummaries] = useState<Array<{ name: string; content: string }>>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [selectedLanguage, setSelectedLanguage] = useTabState('summarizeLanguage', 'vi');
+    const [summaryType, setSummaryType] = useTabState('summarizeType', 'concise');
+    const [preserveContext, setPreserveContext] = useState(false);
+    const [useFormat, setUseFormat] = useState(true);
+    const [useMarkdown, setUseMarkdown] = useState(false);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editedSummary, setEditedSummary] = useState('');
-    const [files, setFiles] = useState<File[]>([]);
-    const [fileSummaries, setFileSummaries] = useState<{ name: string; content: string }[]>([]);
     const [showFileUpload, setShowFileUpload] = useState(false);
     const [progress, setProgress] = useState(0);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -28,7 +33,7 @@ export default function TextSummarization() {
     useEffect(() => {
         setMounted(true);
         if (window.performance && window.performance.navigation.type === window.performance.navigation.TYPE_RELOAD) {
-            setInputText('');
+            setText('');
             setSummary('');
             setFiles([]);
             setFileSummaries([]);
@@ -53,7 +58,7 @@ export default function TextSummarization() {
     };
 
     const handleClearText = () => {
-        setInputText('');
+        setText('');
         setFiles([]);
         setFileSummaries([]);
     };
@@ -120,18 +125,20 @@ export default function TextSummarization() {
     };
 
     const handleSummarize = async () => {
-        if (!inputText.trim() && files.length === 0) return;
+        if (!text.trim() && files.length === 0) {
+            toast.error('Vui lòng nhập văn bản hoặc chọn file để tóm tắt');
+            return;
+        }
 
         setIsLoading(true);
         setError(null);
-        setProgress(0);
+        setSummary('');
 
         try {
-            if (files.length > 0) {
-                console.log('🚀 Sending files for summarization...');
-                
+            let response;
+            if (files && files.length > 0) {
                 // Convert files to base64
-                const fileData = await Promise.all(
+                const base64Files = await Promise.all(
                     files.map(async (file) => {
                         const base64 = await fileToBase64(file);
                         return {
@@ -142,48 +149,54 @@ export default function TextSummarization() {
                     })
                 );
 
-                const response = await fetch('/api/summarize', {
+                response = await fetch('/api/summarize', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ 
-                        files: fileData,
+                    body: JSON.stringify({
+                        files: base64Files,
                         language: selectedLanguage,
-                        type: summaryType 
+                        type: summaryType,
+                        preserveContext,
+                        useFormat,
+                        useMarkdown
                     }),
                 });
-
-                if (!response.ok) {
-                    throw new Error('Failed to summarize files');
-                }
-
-                const data = await response.json();
-                setFileSummaries(data.summaries);
-            } else if (inputText.trim()) {
-                console.log('🚀 Sending text for summarization...');
-                const response = await fetch('/api/summarize', {
+            } else {
+                response = await fetch('/api/summarize', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ 
-                        text: inputText, 
+                    body: JSON.stringify({
+                        text,
                         language: selectedLanguage,
-                        type: summaryType 
+                        type: summaryType,
+                        preserveContext,
+                        useFormat,
+                        useMarkdown
                     }),
                 });
+            }
 
-                if (!response.ok) {
-                    throw new Error('Failed to summarize text');
-                }
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to summarize content');
+            }
 
-                const data = await response.json();
-                setSummary(data.summary);
+            const data = await response.json();
+            
+            if (files && files.length > 0) {
+                setFileSummaries(data.summarizedContents || []);
+                setSummary(data.summarizedContents?.[0]?.content || '');
+            } else {
+                setSummary(data.summary || '');
             }
             scrollToResults();
-        } catch (error) {
-            setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi tóm tắt');
+        } catch (err) {
+            console.error('Summarization error:', err);
+            setError(err instanceof Error ? err.message : 'An error occurred while summarizing');
             setSummary('');
             setFileSummaries([]);
         } finally {
@@ -263,7 +276,7 @@ export default function TextSummarization() {
                             >
                                 <FolderArrowDownIcon className="h-5 w-5 text-gray-500" />
                             </button>
-                            {(inputText || files.length > 0) && (
+                            {(text || files.length > 0) && (
                                 <button
                                     onClick={handleClearText}
                                     className="p-2 hover:bg-red-50 rounded-full transition-colors duration-200"
@@ -347,8 +360,8 @@ export default function TextSummarization() {
 
                     <div className="relative">
                         <textarea
-                            value={inputText}
-                            onChange={(e) => setInputText(e.target.value)}
+                            value={text}
+                            onChange={(e) => setText(e.target.value)}
                             onPaste={handlePaste}
                             placeholder="Nhập hoặc dán văn bản/ảnh cần tóm tắt vào đây..."
                             className="w-full h-[400px] p-4 text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none bg-gray-50/50"
@@ -400,9 +413,9 @@ export default function TextSummarization() {
 
                     <button
                         onClick={handleSummarize}
-                        disabled={isLoading || (!inputText.trim() && files.length === 0)}
+                        disabled={isLoading || (!text.trim() && files.length === 0)}
                         className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-                            isLoading || (!inputText.trim() && files.length === 0)
+                            isLoading || (!text.trim() && files.length === 0)
                                 ? 'bg-gray-400 cursor-not-allowed'
                                 : 'bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md'
                         }`}
