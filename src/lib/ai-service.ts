@@ -1,6 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createOpenRouterClient, isOpenRouterModel } from './api-config';
-import { dictionaryService } from './dictionary-service';
 import { OpenAI } from 'openai';
 
 interface AIServiceConfig {
@@ -44,19 +43,6 @@ export const TRANSLATION_TONES: Record<string, TranslationTone> = {
         description: 'Tối ưu cho dịch văn bản khoa học và chuyên ngành',
         style: 'Technical and specialized language with precise terminology, complex sentence structures, and detailed explanations'
     }
-}
-
-interface EnhancementOptions {
-    improveStyle: boolean
-    formalLevel: 'casual' | 'neutral' | 'formal'
-    tone: 'friendly' | 'professional' | 'academic'
-    preserveContext: boolean
-}
-
-interface ImageTranslationOptions {
-    targetLanguage: string;
-    preserveContext: boolean;
-    tone: string;
 }
 
 class AIService {
@@ -201,484 +187,6 @@ class AIService {
         }
     }
 
-    // Translation specific method
-    async translate(
-        text: string,
-        targetLanguage: string,
-        preserveContext: boolean,
-        tone: string = 'normal',
-        onProgress?: (current: number, total: number) => void,
-        useFormat: boolean = false,
-        useMarkdownFormat: boolean = false,
-        useMarkdownDisplay: boolean = false
-    ): Promise<string> {
-        // Kiểm tra text trống
-        if (!text.trim()) {
-            return '';
-        }
-
-        // Tối ưu kích thước chunk dựa trên model
-        const MAX_CHUNK_LENGTH = 3000;
-
-        // Chuẩn hóa xuống dòng
-        const normalizedText = text.replace(/\r\n/g, '\n');
-
-        // Tách văn bản thành các đoạn dựa trên xuống dòng kép
-        const paragraphs = normalizedText.split(/\n\s*\n/).filter(p => p.trim());
-
-        // Nếu văn bản ngắn, xử lý trực tiếp
-        if (text.length <= MAX_CHUNK_LENGTH) {
-            onProgress?.(1, 1);
-            const prompt = this.createTranslationPrompt(text, targetLanguage, preserveContext, { tone, useFormat, useMarkdownFormat });
-            const result = await this.processWithAI(prompt);
-            return dictionaryService.applyDictionary(result);
-        }
-
-        // Nhóm các đoạn thành các chunk
-        const chunks: string[] = [];
-        let currentChunk = '';
-
-        for (const paragraph of paragraphs) {
-            // Nếu đoạn quá dài, chia nhỏ thành các câu
-            if (paragraph.length > MAX_CHUNK_LENGTH) {
-                const sentences = paragraph.match(/[^.!?]+[.!?]+/g) || [paragraph];
-                for (const sentence of sentences) {
-                    if (currentChunk.length + sentence.length > MAX_CHUNK_LENGTH && currentChunk) {
-                        chunks.push(currentChunk.trim());
-                        currentChunk = sentence;
-                    } else {
-                        currentChunk = currentChunk ? `${currentChunk} ${sentence}` : sentence;
-                    }
-                }
-            }
-            // Nếu không, thêm cả đoạn vào chunk
-            else {
-                if (currentChunk.length + paragraph.length > MAX_CHUNK_LENGTH) {
-                    chunks.push(currentChunk.trim());
-                    currentChunk = paragraph;
-                } else {
-                    currentChunk = currentChunk ? `${currentChunk}\n\n${paragraph}` : paragraph;
-                }
-            }
-        }
-
-        // Thêm chunk cuối cùng nếu còn
-        if (currentChunk) {
-            chunks.push(currentChunk.trim());
-        }
-
-        // Dịch từng chunk
-        const translatedChunks: string[] = [];
-        let previousContext = '';
-
-        for (let i = 0; i < chunks.length; i++) {
-            onProgress?.(i + 1, chunks.length);
-
-            const chunk = chunks[i];
-            const isFirstChunk = i === 0;
-            const isLastChunk = i === chunks.length - 1;
-
-            // Tạo prompt với context
-            let prompt = this.createTranslationPrompt(
-                chunk,
-                targetLanguage,
-                preserveContext,
-                {
-                    previousContext: isFirstChunk ? '' : previousContext,
-                    isFirstChunk,
-                    isLastChunk,
-                    totalChunks: chunks.length,
-                    currentChunk: i + 1,
-                    tone,
-                    useFormat
-                }
-            );
-
-            try {
-                const result = await this.processWithAI(prompt);
-                const processedResult = await dictionaryService.applyDictionary(result);
-                translatedChunks.push(processedResult);
-
-                // Lưu context cho chunk tiếp theo
-                previousContext = processedResult.slice(-200); // Lấy 200 ký tự cuối làm context
-
-                // Log tiến độ
-                console.log(`✓ Completed chunk ${i + 1}/${chunks.length}`);
-            } catch (error) {
-                console.error(`Error translating chunk ${i + 1}:`, error);
-                // Nếu lỗi, thử lại với chunk nhỏ hơn
-                const subChunks = chunk.split(/[.!?] /).filter(Boolean);
-                let subTranslated = '';
-                for (const subChunk of subChunks) {
-                    try {
-                        const subPrompt = this.createTranslationPrompt(subChunk, targetLanguage, preserveContext, { tone, useFormat });
-                        const subResult = await this.processWithAI(subPrompt);
-                        subTranslated += subResult + ' ';
-                    } catch (e) {
-                        console.error('Sub-chunk translation failed:', e);
-                        subTranslated += subChunk + ' '; // Giữ nguyên text gốc nếu lỗi
-                    }
-                }
-                translatedChunks.push(subTranslated.trim());
-            }
-        }
-
-        // Kết hợp các chunk đã dịch
-        return translatedChunks.join('\n\n');
-    }
-
-    private createMarkdownPrompt(useMarkdown: boolean, useFormat: boolean, isImage: boolean = false): string {
-        if (!useFormat) return '';
-
-        let prompt = `
-- Format the text for better readability:
-  + Preserve original meaning and content
-  + Ensure consistency in formatting
-  + Use appropriate spacing and line breaks
-  + Structure the content logically`;
-
-        if (useMarkdown) {
-            prompt += `
-- CRITICAL: The response MUST be formatted using markdown syntax:
-  + Use **bold** for important terms and emphasis
-  + Use *italics* for special terms and foreign words
-  + Use # ## ### for headings and section hierarchy
-  + Use ordered lists (1. 2. 3.) for sequential items
-  + Use unordered lists (- or *) for non-sequential items
-  + Use > for quotes and blockquotes
-  + Use \`code\` for technical terms and code snippets
-  + Use --- or === for horizontal dividers
-  + Use tables (| Header | Header |) when appropriate
-  + Use [link text](url) for links
-  + Use ![alt text](image-url) for images
-  + Use ~~strikethrough~~ for deleted or corrected text
-  + Use superscript^text^ for footnotes
-  + Use subscript~text~ for chemical formulas
-  + Use >!spoiler!< for spoiler text
-  + Use Discord-style markdown when appropriate
-- The response MUST be properly formatted markdown
-- Do not include any explanations about markdown formatting
-- Do not include any markdown syntax guides or examples
-- Just return the translated and markdown-formatted text`;
-
-            if (isImage) {
-                prompt += `
-- Preserve the original text structure and hierarchy
-- Format headings and sections appropriately based on visual hierarchy in the image`;
-            } else {
-                prompt += `
-- If the input text contains markdown, preserve and translate the markdown syntax appropriately`;
-            }
-        }
-
-        return prompt;
-    }
-
-    private createTranslationPrompt(
-        text: string,
-        targetLanguage: string,
-        preserveContext: boolean,
-        options?: {
-            previousContext?: string;
-            isFirstChunk?: boolean;
-            isLastChunk?: boolean;
-            totalChunks?: number;
-            currentChunk?: number;
-            tone?: string;
-            useFormat?: boolean;
-            useMarkdownFormat?: boolean;
-        }
-    ): string {
-        const translationTone = TRANSLATION_TONES[options?.tone || 'normal'];
-
-        let prompt = `You are a translation expert. Please translate the following text to ${targetLanguage}.
-
-Style: ${translationTone.style}
-
-Context:
-${preserveContext ? '- Maintain original context, style, tone, and terminology' : '- Focus on clarity and accuracy'}
-${options?.previousContext ? `\nPrevious context:\n${options.previousContext}` : ''}
-${options?.totalChunks ? `\nPart ${options.currentChunk}/${options.totalChunks}` : ''}
-
-Requirements:
-- Translate accurately while ensuring natural and coherent flow
-- Maintain consistency in terminology and style
-- Return only the translation, no explanations or notes
-- Ensure the translation is easy to understand`;
-
-        if (options?.useFormat) {
-            prompt += `
-- Format the text for better readability:
-  + Preserve original meaning and content
-  + Ensure consistency in formatting
-  + Use appropriate spacing and line breaks
-  + Structure the content logically`;
-        } else {
-            prompt += `
-- CRITICAL: Preserve ALL original formatting:
-  + Keep exact same line breaks and spacing
-  + Maintain original paragraph structure
-  + Preserve all indentation and alignment
-  + Keep original text emphasis and styling
-  + Do not modify any formatting elements`;
-        }
-
-        prompt += this.createMarkdownPrompt(options?.useMarkdownFormat || false, options?.useFormat || false);
-
-        console.log(prompt);
-        prompt += `\n\nText to translate:\n${text}`;
-
-        return prompt;
-    }
-
-    private createImageTranslationPrompt(
-        targetLanguage: string,
-        preserveContext: boolean,
-        tone: string,
-        useMarkdown: boolean,
-        useFormat: boolean
-    ): string {
-        const translationTone = TRANSLATION_TONES[tone];
-        let prompt = `Vui lòng dịch các văn bản chính và quan trọng trong hình ảnh sang ${targetLanguage}.
-
-Translation Style: ${translationTone.style}
-
-Requirements:
-- Focus ONLY on translating main and important text content
-- Ignore small, decorative, or unimportant text (like watermarks, timestamps, minor UI elements,phone numbers,etc)
-- Ignore text that is less than approximately 12px in size
-- Maintain the original context and meaning of important text
-- Only return the translated text
-- Do not add any explanations or comments
-- If there's no significant text in the image, respond with "No significant text found in image"`;
-
-        if (useFormat) {
-            prompt += `
-- Format the text for better readability:
-  + Add appropriate line breaks and spacing
-  + Clearly separate paragraphs
-  + Maintain the original meaning and content
-  + Ensure consistency in formatting`;
-        } else {
-            prompt += `
-- CRITICAL: Preserve ALL original formatting:
-  + Keep exact same line breaks and spacing
-  + Maintain original paragraph structure
-  + Preserve all indentation and alignment
-  + Keep original text emphasis and styling
-  + Do not modify any formatting elements`;
-        }
-
-        prompt += this.createMarkdownPrompt(useMarkdown, useFormat, true);
-
-        console.log(prompt);
-        return prompt;
-    }
-
-    private splitTextIntoChunks(text: string, maxLength: number): string[] {
-        const chunks: string[] = [];
-        let currentChunk = '';
-        let currentLength = 0;
-
-        // Helper function to calculate effective length considering Chinese characters
-        const getEffectiveLength = (text: string): number => {
-            let length = 0;
-            for (let i = 0; i < text.length; i++) {
-                // Check if character is Chinese (CJK Unified Ideographs range)
-                if (/[\u4e00-\u9fff]/.test(text[i])) {
-                    length += 4; // Chinese character counts as 4 characters
-                } else {
-                    length += 1;
-                }
-            }
-            return length;
-        };
-
-        // Split text into sentences
-        const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-
-        for (const sentence of sentences) {
-            const sentenceEffectiveLength = getEffectiveLength(sentence);
-
-            // If current chunk is empty, always add the sentence regardless of length
-            if (currentChunk === '') {
-                currentChunk = sentence;
-                currentLength = sentenceEffectiveLength;
-                continue;
-            }
-
-            // If adding this sentence would exceed maxLength
-            if (currentLength + sentenceEffectiveLength > maxLength) {
-                chunks.push(currentChunk.trim());
-                currentChunk = sentence;
-                currentLength = sentenceEffectiveLength;
-            } else {
-                currentChunk += sentence;
-                currentLength += sentenceEffectiveLength;
-            }
-        }
-
-        // Add the last chunk if it's not empty
-        if (currentChunk.trim().length > 0) {
-            chunks.push(currentChunk.trim());
-        }
-
-        return chunks;
-    }
-
-    // Content type detection for better summarization
-    private detectContentType(text: string): 'article' | 'technical' | 'narrative' | 'conversation' {
-        const technicalPatterns = /(algorithm|implementation|function|class|method|api|documentation|technical|specification)/i;
-        const conversationPatterns = /([""'].*?[""']:|^[A-Za-z]+:)/m;
-        const narrativePatterns = /(chapter|scene|character|plot|story|novel)/i;
-
-        if (technicalPatterns.test(text)) return 'technical';
-        if (conversationPatterns.test(text)) return 'conversation';
-        if (narrativePatterns.test(text)) return 'narrative';
-        return 'article';
-    }
-
-    // Enhanced summarization method
-    async summarize(text: string, language: string, type: string = 'concise'): Promise<string> {
-        // Handle empty text
-        if (!text.trim()) {
-            return '';
-        }
-
-        // Detect content type for better prompting
-        const contentType = this.detectContentType(text);
-
-        // Calculate optimal chunk size based on content length
-        const MAX_CHUNK_LENGTH = 4000;
-        let chunks: string[] = [];
-
-        if (text.length > MAX_CHUNK_LENGTH) {
-            chunks = this.splitTextIntoChunks(text, MAX_CHUNK_LENGTH);
-        } else {
-            chunks = [text];
-        }
-
-        // Process each chunk and combine results
-        const summaries: string[] = [];
-        for (const chunk of chunks) {
-            const prompt = this.createSummaryPrompt(chunk, language, type, contentType, chunks.length > 1);
-            const summary = await this.processWithAI(prompt);
-            summaries.push(summary);
-        }
-
-        // Combine and refine final summary if multiple chunks
-        if (summaries.length > 1) {
-            const combinedSummary = summaries.join('\n\n');
-            const finalPrompt = this.createFinalSummaryPrompt(combinedSummary, language, type);
-            return this.processWithAI(finalPrompt);
-        }
-
-        return summaries[0];
-    }
-
-    private createSummaryPrompt(
-        text: string,
-        language: string,
-        type: string,
-        contentType: string,
-        isChunked: boolean
-    ): string {
-        const basePrompt = `Hãy tóm tắt văn bản sau bằng ${language}.
-
-Yêu cầu chung:
-- Đảm bảo tính chính xác và mạch lạc
-- Giữ nguyên các thuật ngữ chuyên ngành quan trọng
-- Tập trung vào nội dung có giá trị thông tin cao
-- Sử dụng ngôn ngữ rõ ràng, dễ hiểu
-${isChunked ? '- Đây là một phần của văn bản dài hơn, hãy tập trung vào các điểm chính trong phần này' : ''}
-
-Loại nội dung: ${contentType}
-`;
-
-        switch (type) {
-            case 'concise':
-                return `${basePrompt}
-Yêu cầu cụ thể:
-- Tóm tắt ngắn gọn, súc tích
-- Độ dài khoảng 20-25% văn bản gốc
-- Tập trung vào những điểm quan trọng nhất
-
-Cấu trúc:
-## Tóm tắt tổng quan
-[Tóm tắt ngắn gọn trong 2-3 câu]
-
-## Các điểm chính
-- [Điểm chính 1]
-- [Điểm chính 2]
-${contentType === 'technical' ? '## Các khái niệm kỹ thuật quan trọng\n- [Khái niệm 1]\n- [Khái niệm 2]' : ''}
-
-Văn bản cần tóm tắt:
-${text}`;
-
-            case 'detailed':
-                return `${basePrompt}
-Yêu cầu cụ thể:
-- Phân tích chi tiết và có cấu trúc
-- Độ dài khoảng 40-50% văn bản gốc
-- Bảo toàn các chi tiết quan trọng và mối liên hệ
-
-Cấu trúc:
-## Tóm tắt tổng quan
-[Tóm tắt ngắn gọn nội dung chính]
-
-## Phân tích chi tiết
-[Phân tích có cấu trúc về các nội dung quan trọng]
-${contentType === 'narrative' ? '\n## Phát triển cốt truyện/nhân vật\n[Phân tích về diễn biến và phát triển]' : ''}
-${contentType === 'technical' ? '\n## Chi tiết kỹ thuật\n[Phân tích các khía cạnh kỹ thuật quan trọng]' : ''}
-
-## Kết luận và ý nghĩa
-[Kết luận và điểm nhấn chính]
-
-Văn bản cần tóm tắt:
-${text}`;
-
-            case 'bullet':
-                return `${basePrompt}
-Yêu cầu cụ thể:
-- Tóm tắt dưới dạng các điểm chính
-- Mỗi điểm ngắn gọn, rõ ràng
-- Sắp xếp theo thứ tự quan trọng
-
-Cấu trúc:
-## Tóm tắt ngắn gọn
-[Tóm tắt trong 1-2 câu]
-
-## Các điểm chính
-- [Điểm chính 1]
-- [Điểm chính 2]
-...
-
-## Chi tiết bổ sung
-${contentType === 'technical' ? '### Khái niệm kỹ thuật\n- [Khái niệm 1]\n- [Khái niệm 2]' : ''}
-${contentType === 'narrative' ? '### Diễn biến quan trọng\n- [Diễn biến 1]\n- [Diễn biến 2]' : ''}
-${contentType === 'conversation' ? '### Các quan điểm chính\n- [Quan điểm 1]\n- [Quan điểm 2]' : ''}
-
-Văn bản cần tóm tắt:
-${text}`;
-
-            default:
-                throw new Error('Unsupported summary type');
-        }
-    }
-
-    private createFinalSummaryPrompt(combinedSummary: string, language: string, type: string): string {
-        return `Hãy tổng hợp và tinh chỉnh các phần tóm tắt sau thành một bản tóm tắt hoàn chỉnh bằng ${language}.
-
-Yêu cầu:
-- Loại bỏ thông tin trùng lặp
-- Đảm bảo tính mạch lạc và liên kết giữa các phần
-- Giữ nguyên cấu trúc và định dạng
-- Tối ưu độ dài phù hợp với loại tóm tắt
-
-Các phần tóm tắt cần tổng hợp:
-${combinedSummary}`;
-    }
-
     // Parse SRT content
     private parseSRT(content: string): SRTEntry[] {
         // Normalize line endings and split into blocks
@@ -704,12 +212,14 @@ ${combinedSummary}`;
             return { id, timecode, text };
         }).filter((entry): entry is SRTEntry => entry !== null);
     }
+
     // Format SRT content
     private formatSRT(entries: SRTEntry[]): string {
         return entries.map(entry => {
             return `${entry.id}\n${entry.timecode}\n${entry.text}`;
         }).join('\n\n') + '\n';
     }
+
     // SRT translation method
     async translateSRT(
         content: string,
@@ -750,9 +260,6 @@ ${combinedSummary}`;
                 .map(line => line.trim())
                 .filter(line => line && !line.startsWith('-') && !line.startsWith('['))
                 .join('\n');
-
-            // Apply dictionary to the entire translated text
-            translatedText = await dictionaryService.applyDictionary(translatedText);
 
             // Split into lines after dictionary application
             const translatedLines = translatedText.split('\n');
@@ -812,182 +319,6 @@ ${text}`;
         }
     }
 
-    async translateImage(
-        imageData: string,
-        mimeType: string,
-        options: ImageTranslationOptions,
-        useMarkdown: boolean,
-        useFormat: boolean
-    ): Promise<string> {
-        try {
-            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-            if (!geminiKey) {
-                throw new Error('Gemini API key is not configured');
-            }
-
-            console.log('📤 Sending image translation request to Gemini...');
-            const genAI = new GoogleGenerativeAI(geminiKey);
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
-            const prompt = this.createImageTranslationPrompt(
-                options.targetLanguage,
-                options.preserveContext,
-                options.tone,
-                useMarkdown,
-                useFormat
-            );
-            const imagePart = {
-                inlineData: {
-                    data: imageData,
-                    mimeType
-                }
-            };
-
-            const result = await model.generateContent([prompt, imagePart]);
-            const translatedText = result.response.text();
-
-            // Apply dictionary if needed
-            return await dictionaryService.applyDictionary(translatedText);
-        } catch (error) {
-            console.error('❌ Image translation error:', {
-                error: error instanceof Error ? error.message : 'Unknown error',
-                timestamp: new Date().toISOString()
-            });
-            throw new Error('Failed to translate image');
-        }
-    }
-
-    async analyzeImage(
-        imageData: string,
-        mimeType: string,
-        question: string
-    ): Promise<string> {
-        try {
-            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-            if (!geminiKey) {
-                throw new Error('Gemini API key is not configured');
-            }
-
-            console.log('📤 Sending image analysis request to Gemini...');
-            const genAI = new GoogleGenerativeAI(geminiKey);
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
-            const imagePart = {
-                inlineData: {
-                    data: imageData,
-                    mimeType
-                }
-            };
-
-            const result = await model.generateContent([question, imagePart]);
-            return result.response.text();
-        } catch (error) {
-            console.error('❌ Image analysis error:', {
-                error: error instanceof Error ? error.message : 'Unknown error',
-                timestamp: new Date().toISOString()
-            });
-            throw new Error('Failed to analyze image');
-        }
-    }
-
-    async analyzeMultipleImages(
-        images: Array<{ data: string, mimeType: string }>,
-        question: string
-    ): Promise<string> {
-        try {
-            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-            if (!geminiKey) {
-                throw new Error('Gemini API key is not configured');
-            }
-
-            console.log('📤 Sending multiple images analysis request to Gemini...');
-            const genAI = new GoogleGenerativeAI(geminiKey);
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
-            const imageParts = images.map(image => ({
-                inlineData: {
-                    data: image.data,
-                    mimeType: image.mimeType
-                }
-            }));
-
-            const result = await model.generateContent([question, ...imageParts]);
-            return result.response.text();
-        } catch (error) {
-            console.error('❌ Multiple images analysis error:', {
-                error: error instanceof Error ? error.message : 'Unknown error',
-                timestamp: new Date().toISOString()
-            });
-            throw new Error('Failed to analyze multiple images');
-        }
-    }
-
-    async analyzeVideo(
-        videoData: string,
-        mimeType: string,
-        question: string
-    ): Promise<string> {
-        try {
-            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-            if (!geminiKey) {
-                throw new Error('Gemini API key is not configured');
-            }
-
-            console.log('📤 Sending video analysis request to Gemini...');
-            const genAI = new GoogleGenerativeAI(geminiKey);
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
-            const videoPart = {
-                inlineData: {
-                    data: videoData,
-                    mimeType
-                }
-            };
-
-            const result = await model.generateContent([question, videoPart]);
-            return result.response.text();
-        } catch (error) {
-            console.error('❌ Video analysis error:', {
-                error: error instanceof Error ? error.message : 'Unknown error',
-                timestamp: new Date().toISOString()
-            });
-            throw new Error('Failed to analyze video');
-        }
-    }
-
-    async analyzeAudio(
-        audioData: string,
-        mimeType: string,
-        question: string
-    ): Promise<string> {
-        try {
-            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-            if (!geminiKey) {
-                throw new Error('Gemini API key is not configured');
-            }
-
-            console.log('📤 Sending audio analysis request to Gemini...');
-            const genAI = new GoogleGenerativeAI(geminiKey);
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
-            const audioPart = {
-                inlineData: {
-                    data: audioData,
-                    mimeType
-                }
-            };
-
-            const result = await model.generateContent([question, audioPart]);
-            return result.response.text();
-        } catch (error) {
-            console.error('❌ Audio analysis error:', {
-                error: error instanceof Error ? error.message : 'Unknown error',
-                timestamp: new Date().toISOString()
-            });
-            throw new Error('Failed to analyze audio');
-        }
-    }
-
     async generateChatResponse(
         message: string,
         language: string,
@@ -1027,6 +358,57 @@ Hãy trả lời một cách tự nhiên:`;
             console.error('AI chat response error:', error);
             throw new Error('Failed to generate chat response');
         }
+    }
+
+    private splitTextIntoChunks(text: string, maxLength: number): string[] {
+        const chunks: string[] = [];
+        let currentChunk = '';
+        let currentLength = 0;
+
+        // Helper function to calculate effective length considering Chinese characters
+        const getEffectiveLength = (text: string): number => {
+            let length = 0;
+            for (let i = 0; i < text.length; i++) {
+                // Check if character is Chinese (CJK Unified Ideographs range)
+                if (/[\u4e00-\u9fff]/.test(text[i])) {
+                    length += 4; // Chinese character counts as 4 characters
+                } else {
+                    length += 1;
+                }
+            }
+            return length;
+        };
+
+        // Split text into sentences
+        const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+
+        for (const sentence of sentences) {
+            const sentenceEffectiveLength = getEffectiveLength(sentence);
+
+            // If current chunk is empty, always add the sentence regardless of length
+            if (currentChunk === '') {
+                currentChunk = sentence;
+                currentLength = sentenceEffectiveLength;
+                continue;
+            }
+
+            // If adding this sentence would exceed maxLength
+            if (currentLength + sentenceEffectiveLength > maxLength) {
+                chunks.push(currentChunk.trim());
+                currentChunk = sentence;
+                currentLength = sentenceEffectiveLength;
+            } else {
+                currentChunk += sentence;
+                currentLength += sentenceEffectiveLength;
+            }
+        }
+
+        // Add the last chunk if it's not empty
+        if (currentChunk.trim().length > 0) {
+            chunks.push(currentChunk.trim());
+        }
+
+        return chunks;
     }
 }
 

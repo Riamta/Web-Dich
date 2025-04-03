@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { DocumentArrowUpIcon } from '@heroicons/react/24/outline';
+import { DocumentArrowUpIcon, PhotoIcon, FolderArrowDownIcon } from '@heroicons/react/24/outline';
 import { MdContentCopy, MdEdit, MdClose, MdDelete, MdArrowDownward } from 'react-icons/md';
 import ReactMarkdown from 'react-markdown';
 import { useTabState } from '../hooks/useTabState';
@@ -18,6 +18,11 @@ export default function TextSummarization() {
     const [error, setError] = useState<string | null>(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editedSummary, setEditedSummary] = useState('');
+    const [files, setFiles] = useState<File[]>([]);
+    const [fileSummaries, setFileSummaries] = useState<{ name: string; content: string }[]>([]);
+    const [showFileUpload, setShowFileUpload] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const resultRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -25,6 +30,9 @@ export default function TextSummarization() {
         if (window.performance && window.performance.navigation.type === window.performance.navigation.TYPE_RELOAD) {
             setInputText('');
             setSummary('');
+            setFiles([]);
+            setFileSummaries([]);
+            setImagePreviews([]);
         }
     }, []);
 
@@ -46,41 +54,141 @@ export default function TextSummarization() {
 
     const handleClearText = () => {
         setInputText('');
+        setFiles([]);
+        setFileSummaries([]);
+    };
+
+    const createImagePreview = (file: File): Promise<string> => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                resolve(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const handlePaste = async (e: React.ClipboardEvent) => {
+        const items = e.clipboardData.items;
+        
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            
+            if (item.type.startsWith('image/')) {
+                e.preventDefault();
+                const file = item.getAsFile();
+                if (file) {
+                    const preview = await createImagePreview(file);
+                    setFiles(prev => [...prev, file]);
+                    setImagePreviews(prev => [...prev, preview]);
+                }
+                return;
+            }
+        }
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const newFiles = Array.from(e.target.files);
+            const newPreviews = await Promise.all(
+                newFiles.map(file => createImagePreview(file))
+            );
+            setFiles(prev => [...prev, ...newFiles]);
+            setImagePreviews(prev => [...prev, ...newPreviews]);
+            setShowFileUpload(false);
+        }
+    };
+
+    const handleRemoveFile = (index: number) => {
+        setFiles(prev => prev.filter((_, i) => i !== index));
+        setFileSummaries(prev => prev.filter((_, i) => i !== index));
+        setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const fileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                const base64String = reader.result as string;
+                // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
+                const base64 = base64String.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = error => reject(error);
+        });
     };
 
     const handleSummarize = async () => {
-        if (!inputText.trim()) return;
+        if (!inputText.trim() && files.length === 0) return;
 
         setIsLoading(true);
         setError(null);
+        setProgress(0);
+
         try {
-            console.log('🚀 Sending text for summarization...');
-            const response = await fetch('/api/summarize', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    text: inputText, 
-                    language: selectedLanguage,
-                    type: summaryType 
-                }),
-            });
+            if (files.length > 0) {
+                console.log('🚀 Sending files for summarization...');
+                
+                // Convert files to base64
+                const fileData = await Promise.all(
+                    files.map(async (file) => {
+                        const base64 = await fileToBase64(file);
+                        return {
+                            name: file.name,
+                            type: file.type,
+                            data: base64
+                        };
+                    })
+                );
 
-            if (!response.ok) {
-                console.error('❌ Error summarizing text:', response.statusText);
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to summarize text');
+                const response = await fetch('/api/summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        files: fileData,
+                        language: selectedLanguage,
+                        type: summaryType 
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to summarize files');
+                }
+
+                const data = await response.json();
+                setFileSummaries(data.summaries);
+            } else if (inputText.trim()) {
+                console.log('🚀 Sending text for summarization...');
+                const response = await fetch('/api/summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        text: inputText, 
+                        language: selectedLanguage,
+                        type: summaryType 
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to summarize text');
+                }
+
+                const data = await response.json();
+                setSummary(data.summary);
             }
-
-            const data = await response.json();
-            setSummary(data.summary);
             scrollToResults();
         } catch (error) {
-            setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi tóm tắt văn bản');
+            setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi tóm tắt');
             setSummary('');
+            setFileSummaries([]);
         } finally {
             setIsLoading(false);
+            setProgress(0);
         }
     };
 
@@ -124,7 +232,7 @@ export default function TextSummarization() {
                     <div className="flex items-center justify-between">
                         <label htmlFor="text" className="block text-sm font-medium text-gray-700 flex items-center gap-2">
                             <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
-                            Văn bản cần tóm tắt
+                            Nội dung cần tóm tắt
                         </label>
                         <div className="flex items-center gap-2">
                             <select
@@ -147,10 +255,18 @@ export default function TextSummarization() {
                                     </option>
                                 ))}
                             </select>
-                            {inputText && (
+                            <button
+                                onClick={() => setShowFileUpload(true)}
+                                className="p-2 hover:bg-gray-50 rounded-full transition-colors duration-200"
+                                data-tooltip-id="upload-tooltip"
+                                data-tooltip-content="Tải lên file"
+                            >
+                                <FolderArrowDownIcon className="h-5 w-5 text-gray-500" />
+                            </button>
+                            {(inputText || files.length > 0) && (
                                 <button
                                     onClick={handleClearText}
-                                    className="ml-2 p-2 hover:bg-red-50 rounded-full transition-colors duration-200"
+                                    className="p-2 hover:bg-red-50 rounded-full transition-colors duration-200"
                                     data-tooltip-id="clear-tooltip"
                                     data-tooltip-content="Xóa nội dung"
                                 >
@@ -160,14 +276,105 @@ export default function TextSummarization() {
                         </div>
                     </div>
 
+                    {/* File Upload Modal */}
+                    {showFileUpload && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-bold text-gray-800">Tải lên file</h3>
+                                    <button
+                                        onClick={() => setShowFileUpload(false)}
+                                        className="p-1 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                                    >
+                                        <MdClose className="h-6 w-6 text-gray-500" />
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                        <input
+                                            type="file"
+                                            multiple
+                                            onChange={handleFileChange}
+                                            className="hidden"
+                                            id="file-upload"
+                                            accept=".txt,.md,.json,image/*"
+                                        />
+                                        <label
+                                            htmlFor="file-upload"
+                                            className="cursor-pointer flex flex-col items-center gap-2"
+                                        >
+                                            <FolderArrowDownIcon className="h-12 w-12 text-gray-400" />
+                                            <span className="text-gray-600">Kéo thả file vào đây hoặc click để chọn</span>
+                                            <span className="text-sm text-gray-500">Hỗ trợ: .txt, .md, .json, hình ảnh</span>
+                                        </label>
+                                    </div>
+                                    {files.length > 0 && (
+                                        <div className="space-y-2">
+                                            <h4 className="font-medium text-gray-700">File đã chọn:</h4>
+                                            <div className="space-y-2">
+                                                {files.map((file, index) => (
+                                                    <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                                                        <div className="flex items-center gap-2">
+                                                            {file.type.startsWith('image/') ? (
+                                                                <div className="flex items-center gap-2">
+                                                                    <img 
+                                                                        src={imagePreviews[index]} 
+                                                                        alt={file.name}
+                                                                        className="w-8 h-8 object-cover rounded"
+                                                                    />
+                                                                    <PhotoIcon className="h-5 w-5 text-blue-500" />
+                                                                </div>
+                                                            ) : (
+                                                                <DocumentArrowUpIcon className="h-5 w-5 text-gray-500" />
+                                                            )}
+                                                            <span className="text-sm text-gray-700">{file.name}</span>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleRemoveFile(index)}
+                                                            className="p-1 hover:bg-red-50 rounded-full transition-colors duration-200"
+                                                        >
+                                                            <MdDelete className="h-5 w-5 text-red-500" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="relative">
                         <textarea
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
-                            placeholder="Nhập hoặc dán văn bản cần tóm tắt vào đây..."
+                            onPaste={handlePaste}
+                            placeholder="Nhập hoặc dán văn bản/ảnh cần tóm tắt vào đây..."
                             className="w-full h-[400px] p-4 text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none bg-gray-50/50"
                             disabled={isLoading}
                         />
+                        {files.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                {files.map((file, index) => (
+                                    file.type.startsWith('image/') && (
+                                        <div key={index} className="relative group">
+                                            <img 
+                                                src={imagePreviews[index]} 
+                                                alt={file.name}
+                                                className="w-20 h-20 object-cover rounded-lg"
+                                            />
+                                            <button
+                                                onClick={() => handleRemoveFile(index)}
+                                                className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                            >
+                                                <MdDelete className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    )
+                                ))}
+                            </div>
+                        )}
                         {isLoading && (
                             <div className="absolute inset-0 bg-gray-50/80 flex items-center justify-center">
                                 <div className="flex flex-col items-center gap-3">
@@ -178,6 +385,14 @@ export default function TextSummarization() {
                                         </div>
                                     </div>
                                     <span className="text-primary font-medium">Đang xử lý...</span>
+                                    {progress > 0 && (
+                                        <div className="w-48 bg-gray-200 rounded-full h-2">
+                                            <div
+                                                className="bg-primary h-2 rounded-full transition-all duration-300"
+                                                style={{ width: `${progress}%` }}
+                                            ></div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -185,9 +400,9 @@ export default function TextSummarization() {
 
                     <button
                         onClick={handleSummarize}
-                        disabled={isLoading || !inputText.trim()}
+                        disabled={isLoading || (!inputText.trim() && files.length === 0)}
                         className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-                            isLoading || !inputText.trim()
+                            isLoading || (!inputText.trim() && files.length === 0)
                                 ? 'bg-gray-400 cursor-not-allowed'
                                 : 'bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md'
                         }`}
@@ -206,7 +421,7 @@ export default function TextSummarization() {
                             </span>
                         ) : (
                             <>
-                                Tóm tắt văn bản
+                                Tóm tắt nội dung
                                 <MdArrowDownward className="h-5 w-5" />
                             </>
                         )}
@@ -255,6 +470,26 @@ export default function TextSummarization() {
                         <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
                             {error}
                         </div>
+                    ) : fileSummaries.length > 0 ? (
+                        <div className="space-y-6">
+                            {fileSummaries.map((fileSummary, index) => (
+                                <div key={index} className="border-b border-gray-200 pb-6 last:border-0">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-medium text-gray-800">{fileSummary.name}</h3>
+                                        <button
+                                            onClick={() => copyToClipboard(fileSummary.content)}
+                                            className="flex items-center gap-2 text-primary hover:text-primary/90 transition-colors duration-200"
+                                        >
+                                            <MdContentCopy className="h-5 w-5" />
+                                            <span className="hidden sm:inline">Sao chép</span>
+                                        </button>
+                                    </div>
+                                    <article className="prose prose-lg max-w-none prose-headings:font-bold prose-h2:text-2xl prose-h2:mb-4 prose-p:text-base prose-ul:text-base">
+                                        <ReactMarkdown>{fileSummary.content}</ReactMarkdown>
+                                    </article>
+                                </div>
+                            ))}
+                        </div>
                     ) : summary ? (
                         <article className="prose prose-lg max-w-none prose-headings:font-bold prose-h2:text-2xl prose-h2:mb-4 prose-p:text-base prose-ul:text-base">
                             <ReactMarkdown>{summary}</ReactMarkdown>
@@ -267,7 +502,7 @@ export default function TextSummarization() {
                                 </svg>
                             </div>
                             <p className="text-gray-500 mb-1">Chưa có nội dung tóm tắt</p>
-                            <p className="text-sm text-gray-400">Nhập văn bản và nhấn nút "Tóm tắt văn bản" để bắt đầu</p>
+                            <p className="text-sm text-gray-400">Nhập văn bản hoặc tải lên file và nhấn nút "Tóm tắt nội dung" để bắt đầu</p>
                         </div>
                     )}
                 </div>
@@ -277,6 +512,7 @@ export default function TextSummarization() {
             <Tooltip id="clear-tooltip" />
             <Tooltip id="edit-tooltip" />
             <Tooltip id="copy-tooltip" />
+            <Tooltip id="upload-tooltip" />
 
             {/* Edit Modal */}
             {showEditModal && (

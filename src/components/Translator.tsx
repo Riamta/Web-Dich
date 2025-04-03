@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useTabState } from '@/hooks/useTabState'
-import { aiService } from '@/lib/ai-service'
+import { translatorService } from '@/lib/translator-service'
 import { TRANSLATION_TONES } from '@/lib/ai-service'
 import { dictionaryService } from '@/lib/dictionary-service'
 import {
@@ -204,31 +204,33 @@ export default function Translator() {
 
     try {
       if (activeTab === 'file') {
-        const translatedContents = await Promise.all(
-          uploadedFiles.map(async (file) => {
-            let content = '';
-            if (file.type === 'text/plain' || file.type === 'text/markdown' || file.type === 'application/json') {
-              const text = await file.text();
-              content = await aiService.translate(text, targetLanguage, true, translationTone, undefined, useFormat, useMarkdown);
-            } else {
-              // Handle other file types in the future
-              content = 'File type not supported for translation yet';
-            }
-            return {
-              name: `translated_${file.name}`,
-              content
-            };
-          })
+        const translatedContents = await translatorService.translateFiles(
+          uploadedFiles,
+          {
+            targetLanguage,
+            preserveContext: true,
+            tone: translationTone,
+            useFormat,
+            useMarkdownFormat
+          }
         );
         setTranslatedFiles(translatedContents);
         setFilesTranslated(true);
       } else if (activeTab === 'image') {
         await handleImageTranslation(useMarkdownFormat, useFormat);
       } else {
-        const result = await aiService.translate(sourceText, targetLanguage, true, translationTone, undefined, useFormat, useMarkdown);
-        const processedText = dictionaryService.applyDictionary(result);
-        setTextTranslatedText(processedText);
-        setTranslatedText(processedText);
+        const result = await translatorService.translateText(
+          sourceText,
+          {
+            targetLanguage,
+            preserveContext: true,
+            tone: translationTone,
+            useFormat,
+            useMarkdownFormat
+          }
+        );
+        setTextTranslatedText(result);
+        setTranslatedText(result);
         setTextTranslated(true);
       }
     } catch (error) {
@@ -396,17 +398,15 @@ export default function Translator() {
       // Remove data URL prefix
       const base64Content = base64Data.split(',')[1];
 
-      const result = await aiService.translateImage(
-        base64Content,
-        selectedImage.type,
-        {
-          targetLanguage,
-          preserveContext: true,
-          tone: translationTone,
-        },
-        useMarkdown,
-        useFormat
-      );
+      const result = await translatorService.translateImage({
+        imageData: base64Content,
+        mimeType: selectedImage.type,
+        targetLanguage,
+        preserveContext: true,
+        tone: translationTone,
+        useFormat,
+        useMarkdownFormat: useMarkdown
+      });
 
       setImageTranslatedText(result);
       setTranslatedText(result);
