@@ -23,11 +23,11 @@ class TranslatorService {
         if (!useFormat) return '';
 
         let prompt = `
-- Format the text for better readability:
-  + Preserve original meaning and content
-  + Ensure consistency in formatting
-  + Use appropriate spacing and line breaks
-  + Structure the content logically`;
+- Định dạng văn bản để dễ đọc hơn:
+  + Giữ nguyên ý nghĩa và nội dung gốc
+  + Đảm bảo tính nhất quán trong định dạng
+  + Sử dụng khoảng cách và xuống dòng phù hợp
+  + Cấu trúc nội dung một cách hợp lý`;
 
         if (useMarkdown) {
             prompt += `
@@ -83,28 +83,28 @@ class TranslatorService {
     ): string {
         const translationTone = TRANSLATION_TONES[options?.tone || 'normal'];
 
-        let prompt = `You are a translation expert. Please translate the following text to ${targetLanguage}.
+        let prompt = `Bạn là một chuyên gia dịch thuật. Vui lòng dịch đoạn văn bản sau sang ${targetLanguage}.
 
-Style: ${translationTone.style}
+Phong cách: ${translationTone.style}
 
-Context:
-${preserveContext ? '- Maintain original context, style, tone, and terminology' : '- Focus on clarity and accuracy'}
-${options?.previousContext ? `\nPrevious context:\n${options.previousContext}` : ''}
-${options?.totalChunks ? `\nPart ${options.currentChunk}/${options.totalChunks}` : ''}
+Ngữ cảnh:
+${preserveContext ? '- Giữ nguyên ngữ cảnh, phong cách, giọng điệu và thuật ngữ gốc' : '- Tập trung vào sự rõ ràng và chính xác'}
+${options?.previousContext ? `\nNgữ cảnh trước đó:\n${options.previousContext}` : ''}
+${options?.totalChunks ? `\nPhần ${options.currentChunk}/${options.totalChunks}` : ''}
 
-Requirements:
-- Translate accurately while ensuring natural and coherent flow
-- Maintain consistency in terminology and style
-- Return only the translation, no explanations or notes
-- Ensure the translation is easy to understand`;
+Yêu cầu:
+- Dịch chính xác trong khi đảm bảo tính tự nhiên và mạch lạc
+- Duy trì tính nhất quán trong thuật ngữ và phong cách
+- Chỉ trả về bản dịch, không giải thích hoặc ghi chú
+- Đảm bảo bản dịch dễ hiểu`;
 
         if (options?.useFormat) {
             prompt += `
-- Format the text for better readability:
-  + Preserve original meaning and content
-  + Ensure consistency in formatting
-  + Use appropriate spacing and line breaks
-  + Structure the content logically`;
+- Định dạng văn bản để dễ đọc hơn:
+  + Giữ nguyên ý nghĩa và nội dung gốc
+  + Đảm bảo tính nhất quán trong định dạng
+  + Sử dụng khoảng cách và xuống dòng phù hợp
+  + Cấu trúc nội dung một cách hợp lý`;
         } else {
             prompt += `
 - CRITICAL: Preserve ALL original formatting:
@@ -145,7 +145,7 @@ Requirements:
 
         if (useFormat) {
             prompt += `
-- Format the text for better readability:
+- Định dạng văn bản để dễ đọc hơn:
   + Add appropriate line breaks and spacing
   + Clearly separate paragraphs
   + Maintain the original meaning and content
