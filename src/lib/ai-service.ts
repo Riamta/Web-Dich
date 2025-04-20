@@ -109,7 +109,7 @@ class AIService {
     }
 
     private async processWithLocalModel(prompt: string): Promise<string> {
-        if (this.config.model === 'gemini-2.0-flash' || this.config.model === 'gemini-2.0-flash-lite' || this.config.model === 'gemini-2.5-pro-exp-03-25') {
+        if (this.config.model.startsWith('gemini')) {
             const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
             if (!geminiKey) {
                 throw new Error('Gemini API key is not configured');
