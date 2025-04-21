@@ -34,7 +34,7 @@ export default function Translator() {
   // Shared state
   const [translatedText, setTranslatedText] = useState('')
   const [sourceLanguage, setSourceLanguage] = useTabState('sourceLanguage', 'auto')
-  const [targetLanguage, setTargetLanguage] = useTabState('targetLanguage', 'vi')
+  const [targetLanguage, setTargetLanguage] = useTabState('targetLanguage', 'vietnamese')
   const [translationTone, setTranslationTone] = useTabState('translationTone', 'normal')
   const [useMarkdown, setUseMarkdown] = useTabState('useMarkdown', false)
   const [useFormat, setUseFormat] = useTabState('useFormat', false)
@@ -695,7 +695,7 @@ export default function Translator() {
             <div className="relative group flex-1 sm:flex-none">
               <select
                 value={targetLanguage}
-                onChange={(e) => setTargetLanguage(e.target.value)}
+                onChange={(e) => setTargetLanguage(e.target.name)}
                 className="w-full sm:w-auto appearance-none pl-3 sm:pl-4 pr-8 sm:pr-10 py-2 sm:py-2.5 rounded-xl bg-white border border-gray-200 hover:border-primary/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm sm:text-base font-medium min-w-0 sm:min-w-[160px] cursor-pointer"
               >
                 {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
@@ -709,7 +709,7 @@ export default function Translator() {
             <div className="relative group flex-1 sm:flex-none">
               <select
                 value={translationTone}
-                onChange={(e) => setTranslationTone(e.target.value)}
+                onChange={(e) => setTranslationTone(e.target.name)}
                 className="w-full sm:w-auto appearance-none pl-3 sm:pl-4 pr-8 sm:pr-10 py-2 sm:py-2.5 rounded-xl bg-white border border-gray-200 hover:border-primary/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm sm:text-base font-medium min-w-0 sm:min-w-[160px] cursor-pointer"
               >
                 {Object.entries(TRANSLATION_TONES).map(([key, tone]) => (
