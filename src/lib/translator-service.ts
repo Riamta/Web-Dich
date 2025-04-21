@@ -161,7 +161,8 @@ Requirements:
         }
 
         prompt += this.createMarkdownPrompt(useMarkdown, useFormat, true);
-
+        console.log(prompt);
+        
         return prompt;
     }
 
