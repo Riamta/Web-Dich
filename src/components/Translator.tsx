@@ -34,7 +34,7 @@ export default function Translator() {
   // Shared state
   const [translatedText, setTranslatedText] = useState('')
   const [sourceLanguage, setSourceLanguage] = useTabState('sourceLanguage', 'auto')
-  const [targetLanguage, setTargetLanguage] = useTabState('targetLanguage', 'vietnamese')
+  const [targetLanguage, setTargetLanguage] = useTabState('targetLanguage', 'dđ')
   const [translationTone, setTranslationTone] = useTabState('translationTone', 'normal')
   const [useMarkdown, setUseMarkdown] = useTabState('useMarkdown', false)
   const [useFormat, setUseFormat] = useTabState('useFormat', false)

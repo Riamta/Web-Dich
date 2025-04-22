@@ -66,6 +66,12 @@ export default function Sidebar() {
       isExternal: false
     },
     {
+      name: 'Tạo tài khoản',
+      path: '/generator',
+      icon: <MdEdit className="w-5 h-5" />,
+      isExternal: false
+    },
+    {
       name: 'Chat với AI',
       path: 'https://chat.amri2k.com',
       icon: <MdChat className="w-5 h-5" />,

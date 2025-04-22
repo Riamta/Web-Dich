@@ -364,9 +364,7 @@ input:where(:not([type])),
 [type='week'],
 [multiple],
 textarea,
-select {
-  border-color: #ffffff;
-}
+
 
 select.w-full.sm\:w-auto.appearance-none.pl-3.sm\:pl-4.pr-8.sm\:pr-10.py-2.sm\:py-2\.5.rounded-xl.bg-white.border.border-gray-200.hover\:border-primary\/50.focus\:border-primary.focus\:ring-2.focus\:ring-primary\/20.transition-all.text-sm.sm\:text-base.font-medium.min-w-0.sm\:min-w-\[160px\].cursor-pointer {
   color: black;
