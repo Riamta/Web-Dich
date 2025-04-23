@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from "@google/genai";
 import { createOpenRouterClient, isOpenRouterModel } from './api-config';
 import { OpenAI } from 'openai';
 
@@ -109,39 +109,19 @@ class AIService {
     }
 
     private async processWithLocalModel(prompt: string): Promise<string> {
+        console.log(`📤 Sending request to ${this.config.model}...`);
         if (this.config.model.startsWith('gemini')) {
             const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
             if (!geminiKey) {
                 throw new Error('Gemini API key is not configured');
             }
-
             try {
-                console.log(`📤 Sending request to ${this.config.model}...`);
-                const genAI = new GoogleGenerativeAI(geminiKey);
-                const geminiModel = genAI.getGenerativeModel({ model: this.config.model });
-                let generationConfig = {
-                    temperature: 1,
-                    topP: 0.95,
-                    topK: 40,
-                    maxOutputTokens: 8192
-                };
-
-                if (this.config.model === 'gemini-2.5-pro-exp-03-25') {
-                    generationConfig = {
-                        temperature: 0.7,
-                        topP: 0.95,
-                        topK: 64,
-                        maxOutputTokens: 65536
-                    };
-                }
-
-                const chatSession = geminiModel.startChat({
-                    generationConfig,
-                    history: []
+                const ai = new GoogleGenAI({ apiKey: geminiKey });
+                const response = await ai.models.generateContent({
+                    model: this.config.model,
+                    contents: prompt,
                 });
-
-                const result = await chatSession.sendMessage(prompt);
-                return result.response.text();
+                return response.text || '';
             } catch (error) {
                 console.error('❌ Gemini error:', {
                     model: this.config.model,
@@ -157,7 +137,6 @@ class AIService {
             }
 
             try {
-                console.log('📤 Sending request to GPT-4o Mini...');
                 const client = new OpenAI({
                     apiKey: gptKey,
                     dangerouslyAllowBrowser: true
