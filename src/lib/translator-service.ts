@@ -2,6 +2,7 @@ import { aiService } from './ai-service';
 import { dictionaryService } from './dictionary-service';
 import { TRANSLATION_TONES } from './ai-service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { getLanguageName } from './utils';
 
 interface TranslationOptions {
     targetLanguage: string;
@@ -82,8 +83,8 @@ class TranslatorService {
         }
     ): string {
         const translationTone = TRANSLATION_TONES[options?.tone || 'normal'];
-
-        let prompt = `Bạn là một chuyên gia dịch thuật. Vui lòng dịch đoạn văn bản sau sang ${targetLanguage}.
+        const targetLangName = getLanguageName(targetLanguage);
+        let prompt = `You are a professional translator. Please translate ALL text to ${targetLangName}.
 
 Phong cách: ${translationTone.style}
 
@@ -130,7 +131,9 @@ Yêu cầu:
         useFormat: boolean
     ): string {
         const translationTone = TRANSLATION_TONES[tone];
-        let prompt = `Vui lòng dịch các văn bản chính và quan trọng trong hình ảnh sang ${targetLanguage}.
+        const targetLangName = getLanguageName(targetLanguage);
+        
+        let prompt = `You are a professional translator specializing in image text translation. Please translate ALL text content in the image to ${targetLangName}.
 
 Translation Style: ${translationTone.style}
 
@@ -311,7 +314,6 @@ Requirements:
             console.log('📤 Sending image translation request to Gemini...');
             const genAI = new GoogleGenerativeAI(geminiKey);
             const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
             const prompt = this.createImageTranslationPrompt(
                 options.targetLanguage,
                 options.preserveContext,
