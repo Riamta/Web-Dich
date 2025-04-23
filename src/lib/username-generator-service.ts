@@ -33,6 +33,9 @@ ${keyword === 'random' ? '- Random keyword' : `- Keyword: ${keyword}`}
 - Can include numbers (0-9), underscores, dots
 - No spaces allowed
 - Return only usernames, one per line, no explanations
+- Each username must be completely unique and different from others
+- Avoid repeating similar patterns or structures
+- Mix different naming conventions and styles
 
 Creativity guidelines:
 - Mix the keyword with related words, synonyms, or antonyms
@@ -55,6 +58,8 @@ Creativity guidelines:
 - Add personality traits or characteristics
 - Use futuristic or sci-fi elements
 - Consider adding mystical or magical elements
+- Try different combinations of the above techniques
+- Ensure each username has a distinct style and feel
 
 [Timestamp: ${Date.now()}]` // Add timestamp to avoid caching
 
