@@ -22,7 +22,8 @@ export class GeneratorService {
       type = 'random',
       maxLength = 15 
     } = options
-    const prompt = `Generate 5 unique and creative usernames.
+    
+    const prompt = `Generate 10 unique and creative usernames.
 
 Requirements:
 ${keyword === 'random' ? '- Random keyword' : `- Keyword: ${keyword}`}
@@ -43,6 +44,17 @@ Creativity guidelines:
 - Try different positions for the keyword (prefix, suffix, middle)
 - Use alliteration or similar sounds
 - Add relevant emojis if the platform allows
+- Consider cultural references and trends
+- Use gaming or tech terminology when appropriate
+- Mix different languages or writing systems
+- Create compound words or portmanteaus
+- Use mythological or fantasy elements
+- Add action verbs or power words
+- Consider adding titles or ranks
+- Use nature or elemental themes
+- Add personality traits or characteristics
+- Use futuristic or sci-fi elements
+- Consider adding mystical or magical elements
 
 [Timestamp: ${Date.now()}]` // Add timestamp to avoid caching
 
@@ -97,7 +109,26 @@ Creativity guidelines:
     const prompt = `Generate 1 random keyword for creating unique usernames.
     Requirements:
     - Return a single word only, no explanations
-    - Word can be people name, game, animal,...
+    - Word can be:
+      + Mythological creatures or beings
+      + Fantasy elements or concepts
+      + Nature phenomena or elements
+      + Tech or gaming terms
+      + Action verbs or power words
+      + Personality traits
+      + Cultural references
+      + Historical figures
+      + Scientific concepts
+      + Artistic terms
+      + Sports terminology
+      + Food or drink names
+      + Animal names or traits
+      + Weather phenomena
+      + Space or cosmic terms
+      + Music genres or terms
+      + Fashion or style terms
+      + Travel or adventure terms
+      + Mystical or magical terms
     - Must be in English
     - Maximum 10 characters
     - Should be creative and memorable

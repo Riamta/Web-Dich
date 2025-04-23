@@ -66,8 +66,8 @@ export default function Sidebar() {
       isExternal: false
     },
     {
-      name: 'Tạo tài khoản',
-      path: '/generator',
+      name: 'Username Generator',
+      path: '/username-generator',
       icon: <MdEdit className="w-5 h-5" />,
       isExternal: false
     },

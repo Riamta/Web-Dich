@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { GeneratorService } from '@/lib/generator-service'
-import { aiService } from '@/lib/ai-service'
+import { GeneratorService } from '@/lib/username-generator-service'
 import { ClipboardDocumentIcon, SparklesIcon } from '@heroicons/react/24/outline'
 
 export default function Generator() {

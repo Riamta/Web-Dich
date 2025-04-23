@@ -1,4 +1,4 @@
-import Generator from '@/components/Generator'
+import Generator from '@/components/UsernameGenerator'
 
 export default function GeneratorPage() {
   return (
