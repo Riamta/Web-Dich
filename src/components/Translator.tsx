@@ -718,9 +718,6 @@ export default function Translator() {
                   </option>
                 ))}
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                <ChevronDownIcon className="h-4 w-4 text-gray-400" />
-              </div>
             </div>
           </div>
 
