@@ -25,23 +25,61 @@ interface TranslationTone {
     name: string
     description: string
     style: string
+    specialInstructions?: string
 }
 
 export const TRANSLATION_TONES: Record<string, TranslationTone> = {
     normal: {
-        name: 'Normal',
+        name: 'Thông thường',
         description: 'Dịch thông thường, phù hợp với văn bản chung',
-        style: 'Clear, direct, and neutral translation maintaining the original meaning and context'
+        style: 'Dịch rõ ràng, trực tiếp và trung lập, giữ nguyên ý nghĩa và ngữ cảnh gốc'
     },
-    novel: {
-        name: 'Truyện trung quốc',
-        description: 'Tối ưu cho dịch tiểu thuyết Trung Quốc',
-        style: 'Dịch theo phong cách tiểu thuyết Trung Quốc, dịch tên ra dạng hán việt, giữ văn phong tiểu thuyết, nhưng sử dụng từ ngữ dễ hiểu.'
+    formal: {
+        name: 'Trang trọng',
+        description: 'Dịch trang trọng, phù hợp với văn bản học thuật và kinh doanh',
+        style: 'Dịch theo phong cách trang trọng và chuyên nghiệp - phù hợp với nội dung kinh doanh và học thuật'
     },
-    academic: {
-        name: 'Academic',
-        description: 'Tối ưu cho dịch văn bản khoa học và chuyên ngành',
-        style: 'Technical and specialized language with precise terminology, complex sentence structures, and detailed explanations'
+    casual: {
+        name: 'Thân mật',
+        description: 'Dịch thân mật, phù hợp với giao tiếp hàng ngày',
+        style: 'Dịch theo phong cách thân mật và gần gũi - phù hợp với giao tiếp hàng ngày'
+    },
+    literary: {
+        name: 'Văn học',
+        description: 'Dịch văn học, phù hợp với tiểu thuyết và sáng tác',
+        style: 'Dịch theo phong cách văn học và thi ca - phù hợp với tiểu thuyết và sáng tác'
+    },
+    xianxia: {
+        name: 'Tiên hiệp',
+        description: 'Dịch tiên hiệp, phù hợp với truyện tu tiên Trung Quốc',
+        style: 'Dịch theo phong cách tiên hiệp - thần bí, cổ xưa và sâu sắc',
+        specialInstructions: `
+- Sử dụng thuật ngữ tu luyện cổ xưa
+- Duy trì không khí thần bí và sâu sắc
+- Bao gồm các thuật ngữ liên quan đến tu luyện (ví dụ: "linh khí", "cơ sở tu luyện")
+- Sử dụng ngôn ngữ trang trọng và tao nhã
+- Bảo tồn các yếu tố văn hóa Trung Quốc
+- Bao gồm các danh xưng và tước hiệu phù hợp
+- Duy trì cảm giác bí ẩn và kỳ diệu
+- Sử dụng thuật ngữ võ thuật phù hợp
+- Giữ nguyên quy ước đặt tên truyền thống Trung Quốc
+- Bảo tồn các thuật ngữ hệ thống tu luyện độc đáo`
+    },
+    wuxia: {
+        name: 'Kiếm hiệp',
+        description: 'Dịch kiếm hiệp, phù hợp với truyện võ hiệp Trung Quốc',
+        style: 'Dịch theo phong cách kiếm hiệp - anh hùng, hiệp nghĩa và truyền thống',
+        specialInstructions: `
+- Sử dụng thuật ngữ võ thuật truyền thống
+- Duy trì không khí anh hùng và hiệp nghĩa
+- Bao gồm các kỹ thuật và phong cách võ thuật
+- Sử dụng ngôn ngữ trang trọng và tôn kính
+- Bảo tồn các yếu tố văn hóa Trung Quốc
+- Bao gồm các danh xưng và tước hiệu phù hợp
+- Duy trì cảm giác về danh dự và công lý
+- Sử dụng thuật ngữ võ thuật phù hợp
+- Giữ nguyên quy ước đặt tên truyền thống Trung Quốc
+- Bảo tồn các thuật ngữ hệ thống võ thuật độc đáo`
     }
 }
 

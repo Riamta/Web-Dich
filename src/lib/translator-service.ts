@@ -1,8 +1,8 @@
 import { aiService } from './ai-service';
 import { dictionaryService } from './dictionary-service';
-import { TRANSLATION_TONES } from './ai-service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getLanguageName } from './utils';
+import { TRANSLATION_TONES } from './ai-service';
 
 interface TranslationOptions {
     targetLanguage: string;
@@ -17,6 +17,17 @@ interface TranslationOptions {
 interface ImageTranslationOptions extends TranslationOptions {
     imageData: string;
     mimeType: string;
+}
+
+interface TranslationTone {
+    name: string;
+    style: string;
+    description: string;
+    specialInstructions?: string;
+}
+
+interface TranslationTones {
+    [key: string]: TranslationTone;
 }
 
 class TranslatorService {
@@ -84,36 +95,95 @@ class TranslatorService {
     ): string {
         const translationTone = TRANSLATION_TONES[options?.tone || 'normal'];
         const targetLangName = getLanguageName(targetLanguage);
-        let prompt = `You are a professional translator. Please translate ALL text to ${targetLangName}.
 
-Phong cách: ${translationTone.style}
+        let prompt = `You are a professional translator with expertise in ${targetLangName}. Please translate the following text to ${targetLangName}.
 
-Ngữ cảnh:
-${preserveContext ? '- Giữ nguyên ngữ cảnh, phong cách, giọng điệu và thuật ngữ gốc' : '- Tập trung vào sự rõ ràng và chính xác'}
-${options?.previousContext ? `\nNgữ cảnh trước đó:\n${options.previousContext}` : ''}
-${options?.totalChunks ? `\nPhần ${options.currentChunk}/${options.totalChunks}` : ''}
+Translation Style: ${translationTone.style}
 
-Yêu cầu:
-- Dịch chính xác trong khi đảm bảo tính tự nhiên và mạch lạc
-- Duy trì tính nhất quán trong thuật ngữ và phong cách
-- Chỉ trả về bản dịch, không giải thích hoặc ghi chú
-- Đảm bảo bản dịch dễ hiểu`;
+Context:
+${preserveContext ? '- Preserve the original context, style, tone, and terminology' : '- Focus on clarity and accuracy'}
+${options?.previousContext ? `\nPrevious context:\n${options.previousContext}` : ''}
+${options?.totalChunks ? `\nPart ${options.currentChunk}/${options.totalChunks}` : ''}
+
+CRITICAL REQUIREMENTS:
+1. Translation Accuracy:
+   - Translate ALL text content accurately
+   - Maintain the original meaning and intent
+   - Preserve technical terms and proper nouns
+   - Keep cultural references when appropriate
+   - Ensure natural flow in the target language
+   - Consider cultural nuances and idioms
+   - Adapt expressions to be culturally appropriate
+   - Maintain the author's voice and style
+   - Preserve humor, sarcasm, and tone
+   - Keep metaphors and analogies meaningful
+
+2. Language Quality:
+   - Use proper grammar and syntax in ${targetLangName}
+   - Maintain consistent terminology throughout
+   - Adapt idioms and expressions appropriately
+   - Ensure readability and natural flow
+   - Use appropriate register and formality level
+   - Consider regional language variations
+   - Use natural and modern language
+   - Avoid literal translations when inappropriate
+   - Maintain proper sentence structure
+   - Use appropriate punctuation and formatting
+
+3. Content Understanding:
+   - Analyze the text's purpose and audience
+   - Consider the text's genre and style
+   - Understand cultural references and context
+   - Identify key themes and messages
+   - Recognize technical or specialized content
+   - Consider the emotional tone and impact
+   - Understand implicit meanings
+   - Identify wordplay or double meanings
+   - Recognize formal vs informal language
+   - Understand the text's historical context
+
+4. Special Handling:
+   - Keep URLs, email addresses, and code unchanged
+   - Preserve mathematical formulas and equations
+   - Maintain proper names and trademarks
+   - Keep dates and numbers in original format
+   - Preserve HTML/Markdown tags if present
+   - Handle quotes and citations properly
+   - Maintain formatting of lists and tables
+   - Preserve special characters and symbols
+   - Keep currency and measurement units
+   - Handle abbreviations and acronyms
+
+5. Output Requirements:
+   - Return ONLY the translated text
+   - Do not add explanations or notes
+   - Do not include the original text
+   - Ensure the translation is complete
+   - Verify all content is translated
+   - Maintain proper spacing and formatting
+   - Use appropriate line breaks
+   - Ensure consistent terminology
+   - Check for any missing content
+   - Verify cultural appropriateness`;
 
         if (options?.useFormat) {
             prompt += `
-- Định dạng văn bản để dễ đọc hơn:
-  + Giữ nguyên ý nghĩa và nội dung gốc
-  + Đảm bảo tính nhất quán trong định dạng
-  + Sử dụng khoảng cách và xuống dòng phù hợp
-  + Cấu trúc nội dung một cách hợp lý`;
-        } else {
-            prompt += `
-- CRITICAL: Preserve ALL original formatting:
-  + Keep exact same line breaks and spacing
-  + Maintain original paragraph structure
-  + Preserve all indentation and alignment
-  + Keep original text emphasis and styling
-  + Do not modify any formatting elements`;
+6. Formatting Guidelines:
+   - Improve readability with proper spacing
+   - Use appropriate line breaks
+   - Structure content logically
+   - Maintain consistent formatting
+   - Ensure clear visual hierarchy
+   - Use proper paragraph structure
+   - Maintain list formatting
+   - Preserve table structure
+   - Keep proper indentation
+   - Ensure consistent styling`;
+        }
+
+        // Add special instructions for xianxia and wuxia tones
+        if (translationTone.specialInstructions) {
+            prompt += `\n\nSpecial Genre Requirements:\n${translationTone.specialInstructions}`;
         }
 
         prompt += this.createMarkdownPrompt(options?.useMarkdownFormat || false, options?.useFormat || false);
@@ -137,34 +207,83 @@ Yêu cầu:
 
 Translation Style: ${translationTone.style}
 
-Requirements:
-- Focus ONLY on translating main and important text content
-- Ignore small, decorative, or unimportant text (like watermarks, timestamps, minor UI elements,phone numbers,etc)
-- Ignore text that is less than approximately 12px in size
-- Maintain the original context and meaning of important text
-- Only return the translated text
-- Do not add any explanations or comments
-- If there's no significant text in the image, respond with "No significant text found in image"`;
+CRITICAL REQUIREMENTS:
+1. Text Analysis:
+   - Identify ALL text elements in the image
+   - Understand the context of each text element
+   - Recognize text hierarchy and importance
+   - Identify UI elements and their functions
+   - Understand the image's purpose and audience
+   - Recognize text formatting and style
+   - Identify text relationships and connections
+   - Understand the visual hierarchy
+   - Recognize text in different languages
+   - Identify text in different fonts/styles
+
+2. Translation Quality:
+   - Ensure accurate translation to ${targetLangName}
+   - Maintain original meaning and context
+   - Preserve technical terms and proper nouns
+   - Keep cultural references when appropriate
+   - Ensure natural language flow
+   - Use appropriate register and formality
+   - Consider cultural nuances
+   - Adapt expressions appropriately
+   - Maintain consistent terminology
+   - Ensure readability and clarity
+
+3. Text Processing:
+   - Translate ALL visible text content
+   - Include UI elements, buttons, and labels
+   - Translate headings and subheadings
+   - Capture text in diagrams and charts
+   - Include any visible metadata
+   - Preserve text hierarchy and importance
+   - Maintain text formatting and style
+   - Keep original line breaks and spacing
+   - Preserve text emphasis and styling
+   - Maintain proper text alignment
+
+4. Special Handling:
+   - Keep URLs and email addresses unchanged
+   - Preserve proper names and trademarks
+   - Maintain dates and numbers format
+   - Keep code snippets and commands
+   - Preserve mathematical expressions
+   - Keep currency symbols and units
+   - Preserve special characters and symbols
+   - Handle abbreviations and acronyms
+   - Keep technical terms when appropriate
+   - Preserve formatting elements
+
+5. Output Requirements:
+   - Return ONLY the translated text
+   - Do not add explanations or comments
+   - Maintain original text structure
+   - Ensure complete translation
+   - Verify all important text is translated
+   - Use proper ${targetLangName} punctuation
+   - Maintain proper spacing
+   - Ensure consistent formatting
+   - Check for missing translations
+   - Verify cultural appropriateness`;
 
         if (useFormat) {
             prompt += `
-- Định dạng văn bản để dễ đọc hơn:
-  + Add appropriate line breaks and spacing
-  + Clearly separate paragraphs
-  + Maintain the original meaning and content
-  + Ensure consistency in formatting`;
-        } else {
-            prompt += `
-- CRITICAL: Preserve ALL original formatting:
-  + Keep exact same line breaks and spacing
-  + Maintain original paragraph structure
-  + Preserve all indentation and alignment
-  + Keep original text emphasis and styling
-  + Do not modify any formatting elements`;
+6. Formatting Guidelines:
+   - Add appropriate line breaks
+   - Separate paragraphs clearly
+   - Maintain visual hierarchy
+   - Ensure consistent formatting
+   - Improve overall readability
+   - Use proper spacing
+   - Maintain text structure
+   - Preserve formatting elements
+   - Ensure clear organization
+   - Use appropriate styling`;
         }
 
         prompt += this.createMarkdownPrompt(useMarkdown, useFormat, true);
-        console.log(prompt);
         
         return prompt;
     }
@@ -367,7 +486,6 @@ Requirements:
             throw new Error('Failed to translate files');
         }
     }
-
 
     getTranslationTones() {
         return TRANSLATION_TONES;
