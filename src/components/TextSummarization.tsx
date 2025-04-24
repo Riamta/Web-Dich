@@ -417,7 +417,7 @@ export default function TextSummarization() {
                         className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
                             isLoading || (!text.trim() && files.length === 0)
                                 ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md'
+                                : 'bg-gray-800 hover:bg-gray-900 shadow-sm hover:shadow-md'
                         }`}
                     >
                         {isLoading ? (

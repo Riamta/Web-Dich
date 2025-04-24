@@ -116,9 +116,9 @@ export default function Generator() {
       <div className="bg-gradient-to-br from-white to-gray-50/50 p-8 rounded-2xl shadow-lg border border-gray-100/50 backdrop-blur-sm">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-primary/10 rounded-lg">
-            <SparklesIcon className="h-6 w-6 text-primary" />
+            <SparklesIcon className="h-6 w-6 text-gray" />
           </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-900 bg-clip-text text-transparent">
             Username Generator
           </h2>
         </div>
@@ -134,12 +134,12 @@ export default function Generator() {
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
                 placeholder="E.g., ninja, dragon, master..."
-                className="flex-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white/50 backdrop-blur-sm transition-all"
+                className="flex-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray/20 focus:border-gray bg-white/50 backdrop-blur-sm transition-all" 
               />
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as any)}
-                className="p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white/50 backdrop-blur-sm transition-all min-w-[160px]"
+                className="p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray/20 focus:border-gray bg-white/50 backdrop-blur-sm transition-all min-w-[160px]"
               >
                 <option value="random">Random Style</option>
                 <option value="cool">Cool</option>
@@ -153,7 +153,7 @@ export default function Generator() {
           <button
             onClick={handleGenerateUsernames}
             disabled={isLoading}
-            className="w-full py-3 px-4 bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl hover:from-primary/90 hover:to-primary transition-all duration-300 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg disabled:opacity-70"
+            className="w-full py-3 px-4 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl hover:from-gray-900 hover:to-gray-900 transition-all duration-300 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg disabled:opacity-70"
           >
             <SparklesIcon className="h-5 w-5" />
             {isLoading ? 'Generating...' : 'Generate Usernames'}
@@ -192,9 +192,9 @@ export default function Generator() {
       <div className="bg-gradient-to-br from-white to-gray-50/50 p-8 rounded-2xl shadow-lg border border-gray-100/50 backdrop-blur-sm">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-primary/10 rounded-lg">
-            <SparklesIcon className="h-6 w-6 text-primary" />
+            <SparklesIcon className="h-6 w-6 text-gray" />
           </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-900 bg-clip-text text-transparent">
             Password Generator
           </h2>
         </div>
@@ -206,7 +206,7 @@ export default function Generator() {
                 <label className="block text-sm font-medium text-gray-700">
                   Password Length
                 </label>
-                <span className="text-primary font-medium">{passwordLength}</span>
+                <span className="text-gray font-medium">{passwordLength}</span>
               </div>
               <input
                 type="range"
@@ -214,7 +214,7 @@ export default function Generator() {
                 max="32"
                 value={passwordLength}
                 onChange={(e) => setPasswordLength(parseInt(e.target.value))}
-                className="w-full accent-primary"
+                className="w-full accent-gray"
               />
             </div>
 
@@ -224,7 +224,7 @@ export default function Generator() {
                   type="checkbox"
                   checked={includeNumbers}
                   onChange={(e) => setIncludeNumbers(e.target.checked)}
-                  className="rounded text-primary w-4 h-4"
+                  className="rounded text-gray w-4 h-4"
                 />
                 <span className="text-sm font-medium">Include Numbers</span>
               </label>
@@ -234,7 +234,7 @@ export default function Generator() {
                   type="checkbox"
                   checked={includeSymbols}
                   onChange={(e) => setIncludeSymbols(e.target.checked)}
-                  className="rounded text-primary w-4 h-4"
+                  className="rounded text-gray w-4 h-4"
                 />
                 <span className="text-sm font-medium">Include Symbols</span>
               </label>
@@ -244,7 +244,7 @@ export default function Generator() {
                   type="checkbox"
                   checked={includeUppercase}
                   onChange={(e) => setIncludeUppercase(e.target.checked)}
-                  className="rounded text-primary w-4 h-4"
+                  className="rounded text-gray w-4 h-4"
                 />
                 <span className="text-sm font-medium">Include Uppercase</span>
               </label>
@@ -254,7 +254,7 @@ export default function Generator() {
                   type="checkbox"
                   checked={includeLowercase}
                   onChange={(e) => setIncludeLowercase(e.target.checked)}
-                  className="rounded text-primary w-4 h-4"
+                  className="rounded text-gray w-4 h-4"
                 />
                 <span className="text-sm font-medium">Include Lowercase</span>
               </label>
@@ -265,7 +265,7 @@ export default function Generator() {
                 type="checkbox"
                 checked={excludeSimilarChars}
                 onChange={(e) => setExcludeSimilarChars(e.target.checked)}
-                className="rounded text-primary w-4 h-4"
+                className="rounded text-gray w-4 h-4"
               />
               <span className="text-sm font-medium">Exclude Similar Characters (i, l, 1, L, o, 0, O)</span>
             </label>
@@ -273,7 +273,7 @@ export default function Generator() {
 
           <button
             onClick={handleGeneratePassword}
-            className="w-full py-3 px-4 bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl hover:from-primary/90 hover:to-primary transition-all duration-300 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg"
+            className="w-full py-3 px-4 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl hover:from-gray-900 hover:to-gray-900 transition-all duration-300 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg disabled:opacity-70"
           >
             <SparklesIcon className="h-5 w-5" />
             Generate Password
@@ -285,7 +285,7 @@ export default function Generator() {
               className="flex items-center justify-between p-4 bg-white rounded-xl hover:bg-gray-50 cursor-pointer transition-all border border-gray-100 group"
             >
               <span className="font-mono text-gray-700">{generatedPassword}</span>
-              <ClipboardDocumentIcon className="h-5 w-5 text-gray-400 group-hover:text-primary transition-colors" />
+              <ClipboardDocumentIcon className="h-5 w-5 text-gray-400 group-hover:text-gray transition-colors" />
             </div>
           )}
         </div>
@@ -295,9 +295,9 @@ export default function Generator() {
       <div className="bg-gradient-to-br from-white to-gray-50/50 p-8 rounded-2xl shadow-lg border border-gray-100/50 backdrop-blur-sm">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-primary/10 rounded-lg">
-            <SparklesIcon className="h-6 w-6 text-primary" />
+            <SparklesIcon className="h-6 w-6 text-gray" />
           </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-900 bg-clip-text text-transparent">
             Account Generator
           </h2>
         </div>
@@ -306,7 +306,7 @@ export default function Generator() {
           <button
             onClick={handleGenerateAccount}
             disabled={isGeneratingAccount}
-            className="w-full py-3 px-4 bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl hover:from-primary/90 hover:to-primary transition-all duration-300 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg disabled:opacity-70"
+            className="w-full py-3 px-4 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl hover:from-gray-900 hover:to-gray-900 transition-all duration-300 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg disabled:opacity-70"
           >
             <SparklesIcon className="h-5 w-5" />
             {isGeneratingAccount ? 'Generating...' : 'Generate Random Account'}
@@ -327,7 +327,7 @@ export default function Generator() {
                   <div className="text-xs font-medium text-gray-500">Username</div>
                   <span className="font-mono text-gray-700">{generatedAccount.username}</span>
                 </div>
-                <ClipboardDocumentIcon className="h-5 w-5 text-gray-400 group-hover:text-primary transition-colors" />
+                <ClipboardDocumentIcon className="h-5 w-5 text-gray-400 group-hover:text-gray transition-colors" />
               </div>
 
               <div

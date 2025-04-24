@@ -261,8 +261,8 @@ export default function VocabularyLearning() {
                       setError(null)
                     }}
                     className={`p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-[1.02] ${mode === m.id
-                      ? 'bg-primary/10 text-primary border-primary font-medium shadow-sm'
-                      : 'border-gray-200 text-gray-700 hover:border-primary/50 hover:text-primary'
+                      ? 'bg-gray-800 text-white border-gray-800 font-medium shadow-sm' 
+                      : 'border-gray-200 text-gray-700 hover:border-gray-800 hover:text-gray-800'
                       }`}
                   >
                     {m.name}
@@ -271,7 +271,7 @@ export default function VocabularyLearning() {
               </div>
               <button
                 onClick={() => setShowBookmarkModal(true)}
-                className="ml-4 px-6 py-4 rounded-xl border-2 border-primary/20 text-primary hover:bg-primary hover:text-white transition-all duration-300 flex items-center gap-2 font-medium hover:shadow-lg"
+                className="ml-4 px-6 py-4 rounded-xl border-2 border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white transition-all duration-300 flex items-center gap-2 font-medium hover:shadow-lg" 
               >
                 <MdBookmark className="h-5 w-5" />
                 Từ vựng đã lưu
@@ -412,8 +412,8 @@ export default function VocabularyLearning() {
                       key={m.id}
                       onClick={() => setLearningMode(m.id)}
                       className={`p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-[1.02] ${learningMode === m.id
-                        ? 'bg-primary/10 text-primary border-primary font-medium shadow-sm'
-                        : 'border-gray-200 text-gray-700 hover:border-primary/50 hover:text-primary'
+                        ? 'bg-gray-800 text-white border-gray-800 font-medium shadow-sm'
+                        : 'border-gray-200 text-gray-700 hover:border-gray-800 hover:text-gray-800'
                         }`}
                     >
                       {m.name}
@@ -428,7 +428,7 @@ export default function VocabularyLearning() {
               disabled={isLoading}
               className={`w-full py-4 px-6 rounded-xl text-white font-medium transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-[1.02] ${isLoading
                 ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg'
+                : 'bg-gray-800 hover:bg-gray-900 shadow-md hover:shadow-lg'
                 }`}
             >
               {isLoading ? (

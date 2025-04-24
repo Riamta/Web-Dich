@@ -223,8 +223,8 @@ export default function QuizGenerator() {
                 onClick={() => setDifficulty(level.code)}
                 className={`p-3 rounded-lg border transition-all duration-200 ${
                   difficulty === level.code
-                    ? 'bg-primary text-white border-primary'
-                    : 'border-gray-200 text-gray-700 hover:border-primary hover:text-primary'
+                    ? 'bg-gray-800 text-white border-gray-800'
+                    : 'border-gray-200 text-gray-700 hover:border-gray-800 hover:text-gray-800'
                 }`}
               >
                 {level.name}
@@ -239,7 +239,7 @@ export default function QuizGenerator() {
           className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
             isLoading || !prompt.trim()
               ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md'
+              : 'bg-gray-800 hover:bg-gray-900 shadow-sm hover:shadow-md'
           }`}
         >
           {isLoading ? (

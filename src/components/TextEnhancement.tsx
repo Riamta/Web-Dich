@@ -191,7 +191,7 @@ export default function TextEnhancement() {
                             className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-white text-sm sm:text-base font-medium transition-all ${
                                 isEnhancing || !text.trim()
                                     ? 'bg-gray-400 cursor-not-allowed'
-                                    : 'bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md'
+                                    : 'bg-gray-800 hover:bg-gray-900 shadow-sm hover:shadow-md'
                             }`}
                         >
                             {isEnhancing ? 'Enhancing...' : 'Enhance'}

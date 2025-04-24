@@ -484,7 +484,7 @@ Chỉ trả lời ${responseCount} tin nhắn, mỗi tin nhắn một dòng, kh�
                             className={`absolute right-2 top-1/2 -translate-y-1/2 py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg text-white text-sm sm:text-base font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
                                 isTranslating || !text.trim()
                                     ? 'bg-gray-400 cursor-not-allowed'
-                                    : 'bg-primary hover:bg-primary/90'
+                                    : 'bg-gray-800 hover:bg-gray-900 shadow-sm hover:shadow-md'
                             }`}
                         >
                             {isTranslating ? (

@@ -195,7 +195,7 @@ export default function DictionaryWorld() {
                 className={`px-4 py-3 rounded-xl text-white font-medium transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-[1.02] ${
                   isSearching || !searchWord.trim()
                     ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg'
+                    : 'bg-gray-800 hover:bg-gray-900 shadow-md hover:shadow-lg'
                 }`}
               >
                 {isSearching ? (
