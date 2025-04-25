@@ -660,6 +660,16 @@ export default function Translator() {
           </button>
         </div>
 
+        {/* Add file inputs */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={activeTab === 'image' ? "image/*" : Object.keys(SUPPORTED_FILE_TYPES).join(',')}
+          onChange={activeTab === 'image' ? handleImageUpload : handleFileUpload}
+          className="hidden"
+          multiple={activeTab === 'file'}
+        />
+
         {/* Language Selection Bar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 p-4 border-b border-gray-200 bg-gray-50/50">
           <div className="flex flex-1 items-center gap-2 sm:gap-4">

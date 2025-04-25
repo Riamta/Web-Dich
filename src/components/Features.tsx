@@ -135,7 +135,7 @@ const categories: CategoryProps[] = [
                 description: "Nâng cao chất lượng văn bản của bạn",
                 icon: <FileCode className="w-6 h-6 text-black" />,
                 stats: { stars: 1172, views: 2540, uses: 2540 },
-                path: "/enhance"
+                path: "/enhance-text"
             },
             {
                 title: "Tóm tắt văn bản",

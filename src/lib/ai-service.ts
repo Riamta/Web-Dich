@@ -49,6 +49,20 @@ export const TRANSLATION_TONES: Record<string, TranslationTone> = {
         description: 'Dịch văn học, phù hợp với tiểu thuyết và sáng tác',
         style: 'Dịch theo phong cách văn học và thi ca - phù hợp với tiểu thuyết và sáng tác'
     },
+    medieval: {
+        name: 'Trung cổ châu Âu',
+        description: 'Dịch theo phong cách văn học trung cổ châu Âu',
+        style: 'Dịch theo phong cách trang trọng, hào hùng của văn học trung cổ châu Âu',
+        specialInstructions: `
+- Sử dụng từ vựng cổ điển và trang trọng
+- Duy trì giọng điệu trang nghiêm, quý tộc
+- Bao gồm yếu tố hiệp sĩ và phong kiến
+- Sử dụng cấu trúc câu trang trọng
+- Bảo tồn yếu tố văn hóa trung cổ
+- Tham khảo các điển tích Kitô giáo
+- Duy trì phong cách quý tộc và tôn giáo
+- Sử dụng các danh xưng phong kiến`
+    },
     persian: {
         name: 'Trung cổ Ba Tư',
         description: 'Dịch theo phong cách trung cổ Ba Tư, phù hợp với thơ ca và văn học cổ điển',
@@ -94,7 +108,35 @@ export const TRANSLATION_TONES: Record<string, TranslationTone> = {
 - Sử dụng thuật ngữ võ thuật phù hợp
 - Giữ nguyên quy ước đặt tên truyền thống Trung Quốc
 - Bảo tồn các thuật ngữ hệ thống võ thuật độc đáo`
-    }
+    },
+    rpg: {
+        name: 'Game nhập vai',
+        description: 'Dịch game nhập vai, phù hợp với các game RPG phương Tây',
+        style: 'Dịch theo phong cách game nhập vai - phiêu lưu, kỳ ảo và hùng tráng',
+        specialInstructions: `
+- Sử dụng thuật ngữ game RPG phổ biến
+- Duy trì không khí phiêu lưu và kỳ ảo
+- Bao gồm các thuật ngữ về trang bị và vật phẩm
+- Sử dụng ngôn ngữ sinh động và hấp dẫn
+- Bảo tồn các yếu tố fantasy phương Tây
+- Dịch chính xác tên kỹ năng và phép thuật
+- Giữ nguyên các thuật ngữ game phổ biến
+- Đảm bảo tính nhất quán trong dịch thuật`
+    },
+    jrpg: {
+        name: 'Game Nhật Bản',
+        description: 'Dịch game Nhật Bản, phù hợp với các JRPG và visual novel',
+        style: 'Dịch theo phong cách game Nhật Bản - anime, kawaii và độc đáo',
+        specialInstructions: `
+- Giữ nguyên các từ tiếng Nhật phổ biến
+- Duy trì phong cách anime/manga
+- Bao gồm các yếu tố văn hóa Nhật Bản
+- Sử dụng ngôn ngữ trẻ trung, năng động
+- Dịch chính xác các thuật ngữ game
+- Giữ nguyên các suffix như -san, -kun
+- Đảm bảo tính nhất quán trong dịch thuật
+- Bảo tồn các yếu tố kawaii và moe`
+    },
 }
 
 class AIService {
