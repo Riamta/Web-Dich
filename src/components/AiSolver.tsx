@@ -51,6 +51,7 @@ export function AiSolver() {
     const [needExplanation, setNeedExplanation] = useState(false)
     const [exerciseText, setExerciseText] = useState('')
     const [selectedModel, setSelectedModel] = useState<'gemini-2.5-flash-preview-04-17' | 'gemini-2.0-flash'>('gemini-2.0-flash')
+    const [activeTab, setActiveTab] = useState<'image' | 'text' | 'document'>('image')
     const fileInputRef = useRef<HTMLInputElement>(null)
     const cameraInputRef = useRef<HTMLInputElement>(null)
     const documentInputRef = useRef<HTMLInputElement>(null)
@@ -360,7 +361,7 @@ Do not use any other language in your response.`
                         </div>
                         <div>
                             <h1 className="text-xl font-semibold">AI Giải Bài Tập</h1>
-                            <p className="text-sm text-gray-500">Tải lên hình ảnh bài tập và nhận giải pháp chi tiết</p>
+                            <p className="text-sm text-gray-500">Tải lên hình ảnh hoặc nhập nội dung bài tập</p>
                         </div>
                     </div>
                 </div>
@@ -411,122 +412,192 @@ Do not use any other language in your response.`
                 <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
                     {/* Input Panel */}
                     <div className="p-6">
-                        <div className="mb-4">
-                            <h2 className="text-lg font-medium">Nhập bài tập</h2>
-                            <p className="text-sm text-gray-500">Tải lên hình ảnh hoặc nhập nội dung bài tập</p>
+                        {/* Tab Navigation */}
+                        <div className="flex border-b border-gray-200 mb-4">
+                            <button
+                                onClick={() => setActiveTab('image')}
+                                className={`px-4 py-2 text-sm font-medium ${
+                                    activeTab === 'image'
+                                        ? 'text-black border-b-2 border-black'
+                                        : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                Hình ảnh
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('text')}
+                                className={`px-4 py-2 text-sm font-medium ${
+                                    activeTab === 'text'
+                                        ? 'text-black border-b-2 border-black'
+                                        : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                Văn bản
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('document')}
+                                className={`px-4 py-2 text-sm font-medium ${
+                                    activeTab === 'document'
+                                        ? 'text-black border-b-2 border-black'
+                                        : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                Tài liệu
+                            </button>
                         </div>
 
-                        {/* Image Upload Area */}
-                        <div
-                            ref={imageContainerRef}
-                            onClick={() => fileInputRef.current?.click()}
-                            className={`relative min-h-[200px] cursor-pointer rounded-xl border-2 border-dashed transition-colors ${
-                                imagePreview ? 'border-transparent' : 'border-gray-200 hover:border-gray-300'
-                            } mb-4`}
-                        >
-                            {imagePreview ? (
-                                <div className="relative h-full">
-                                    <img
-                                        src={imagePreview}
-                                        alt="Xem trước bài tập"
-                                        className="w-full h-full object-contain"
-                                    />
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            setSelectedImage(null)
-                                            setImagePreview(null)
-                                            if (fileInputRef.current) {
-                                                fileInputRef.current.value = ''
-                                            }
-                                        }}
-                                        className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-sm transition-colors"
-                                    >
-                                        <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
+                        {activeTab === 'image' ? (
+                            <>
+                                <div className="mb-4">
+                                    <h2 className="text-lg font-medium">Tải lên hình ảnh</h2>
+                                    <p className="text-sm text-gray-500">Kéo thả hoặc chọn hình ảnh bài tập</p>
                                 </div>
-                            ) : (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-                                    <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-                                        <PhotoIcon className="h-8 w-8 text-gray-400" />
-                                    </div>
-                                    <p className="text-sm font-medium">Kéo thả hoặc nhấp để tải lên ảnh</p>
-                                    <p className="text-xs text-gray-400 mt-1">Hỗ trợ: JPG, PNG, GIF (tối đa 10MB)</p>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            cameraInputRef.current?.click()
-                                        }}
-                                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        Chụp ảnh
-                                    </button>
-                                </div>
-                            )}
-                        </div>
 
-                        {/* Text Input Area */}
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Hoặc nhập câu hỏi của bạn</label>
+                                {/* Image Upload Area */}
+                                <div
+                                    ref={imageContainerRef}
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className={`relative min-h-[200px] cursor-pointer rounded-xl border-2 border-dashed transition-colors ${
+                                        imagePreview ? 'border-transparent' : 'border-gray-200 hover:border-gray-300'
+                                    } mb-4`}
+                                >
+                                    {imagePreview ? (
+                                        <div className="relative h-full">
+                                            <img
+                                                src={imagePreview}
+                                                alt="Xem trước bài tập"
+                                                className="w-full h-full object-contain"
+                                            />
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setSelectedImage(null)
+                                                    setImagePreview(null)
+                                                    if (fileInputRef.current) {
+                                                        fileInputRef.current.value = ''
+                                                    }
+                                                }}
+                                                className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-sm transition-colors"
+                                            >
+                                                <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                                            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                                                <PhotoIcon className="h-8 w-8 text-gray-400" />
+                                            </div>
+                                            <p className="text-sm font-medium">Kéo thả hoặc nhấp để tải lên ảnh</p>
+                                            <p className="text-xs text-gray-400 mt-1">Hỗ trợ: JPG, PNG, GIF (tối đa 10MB)</p>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    cameraInputRef.current?.click()
+                                                }}
+                                                className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                Chụp ảnh
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    className="hidden"
+                                />
+                                <input
+                                    ref={cameraInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    capture="environment"
+                                    onChange={handleCameraCapture}
+                                    className="hidden"
+                                />
+                            </>
+                        ) : activeTab === 'text' ? (
+                            <>
+                                <div className="mb-4">
+                                    <h2 className="text-lg font-medium">Nhập văn bản</h2>
+                                    <p className="text-sm text-gray-500">Nhập nội dung bài tập của bạn</p>
+                                </div>
+
                                 <textarea
                                     ref={textAreaRef}
                                     value={exerciseText}
                                     onChange={(e) => setExerciseText(e.target.value)}
                                     placeholder="Nhập nội dung bài tập của bạn ở đây..."
-                                    className="w-full h-[150px] p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                                    className="w-full h-[300px] p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black resize-none"
                                 />
-                                <div className="text-xs text-gray-500 mt-1">
-                                    * Nếu bạn nhập câu hỏi ở đây, AI sẽ ưu tiên trả lời câu hỏi này thay vì phân tích ảnh
+                            </>
+                        ) : (
+                            <>
+                                <div className="mb-4">
+                                    <h2 className="text-lg font-medium">Tải lên tài liệu</h2>
+                                    <p className="text-sm text-gray-500">Tải lên tài liệu bài tập của bạn</p>
                                 </div>
-                            </div>
 
-                            {/* File Upload Buttons */}
-                            <div className="flex flex-wrap gap-2">
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation()
-                                        documentInputRef.current?.click()
-                                    }}
-                                    className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                                <div
+                                    ref={documentInputRef}
+                                    onClick={() => documentInputRef.current?.click()}
+                                    className="relative min-h-[200px] cursor-pointer rounded-xl border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors mb-4"
                                 >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    Tải tài liệu
-                                    <span className="text-xs text-gray-500">(PDF, DOC, TXT...)</span>
-                                </button>
-                            </div>
-                        </div>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                                        <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                                            <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        </div>
+                                        <p className="text-sm font-medium">Kéo thả hoặc nhấp để tải lên tài liệu</p>
+                                        <p className="text-xs text-gray-400 mt-1">Hỗ trợ: PDF, DOC, DOCX, TXT (tối đa 20MB)</p>
+                                    </div>
+                                </div>
 
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageUpload}
-                            className="hidden"
-                        />
-                        <input
-                            ref={cameraInputRef}
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            onChange={handleCameraCapture}
-                            className="hidden"
-                        />
-                        <input
-                            ref={documentInputRef}
-                            type="file"
-                            accept=".txt,.pdf,.json,.doc,.docx,application/pdf,application/json,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                            onChange={handleImageUpload}
-                            className="hidden"
-                        />
+                                <input
+                                    ref={documentInputRef}
+                                    type="file"
+                                    accept=".txt,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                    onChange={handleImageUpload}
+                                    className="hidden"
+                                />
+
+                                {selectedImage && !imagePreview && (
+                                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-900">{selectedImage.name}</p>
+                                                <p className="text-xs text-gray-500">{(selectedImage.size / 1024 / 1024).toFixed(2)} MB</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setSelectedImage(null)
+                                                if (documentInputRef.current) {
+                                                    documentInputRef.current.value = ''
+                                                }
+                                            }}
+                                            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        )}
 
                         <button
                             onClick={handleSolve}

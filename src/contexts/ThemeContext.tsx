@@ -23,8 +23,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setTheme(savedTheme);
       document.documentElement.classList.toggle('dark', savedTheme === 'dark');
     } else if (systemPrefersDark) {
-      setTheme('dark');
-      document.documentElement.classList.add('dark');
+      setTheme('light');
+      document.documentElement.classList.add('light');
     }
   }, []);
 
