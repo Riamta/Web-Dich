@@ -2,8 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import { mailTmService, type Domain, type Message, type MessageDetails, type StoredAccount } from '@/lib/mail-tm'
-import { Loader2, Mail, Trash2, RefreshCw, Copy, Eye, EyeOff, LogOut } from 'lucide-react'
+import { Loader2, Mail, Trash2, RefreshCw, Copy, Eye, EyeOff, LogOut, History } from 'lucide-react'
 import { generatePassword } from '@/lib/utils'
+import { db, auth } from '@/lib/firebase'
+import { collection, addDoc, query, where, getDocs, orderBy, deleteDoc, doc } from 'firebase/firestore'
+
+interface SavedEmail {
+    id: string
+    email: string
+    password: string
+    createdAt: Date
+    userId: string
+}
 
 export function TempMail() {
     const [domains, setDomains] = useState<Domain[]>([])
@@ -17,6 +27,8 @@ export function TempMail() {
     const [error, setError] = useState<string | null>(null)
     const [copied, setCopied] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
+    const [savedEmails, setSavedEmails] = useState<SavedEmail[]>([])
+    const [showSavedEmails, setShowSavedEmails] = useState(false)
 
     // Load saved account and fetch domains on mount
     useEffect(() => {
@@ -27,6 +39,7 @@ export function TempMail() {
             fetchMessages()
         }
         fetchDomains()
+        fetchSavedEmails()
     }, [])
 
     // Auto-refresh messages every 30 seconds if logged in
@@ -36,6 +49,81 @@ export function TempMail() {
             return () => clearInterval(interval)
         }
     }, [email])
+
+    const fetchSavedEmails = async () => {
+        try {
+            if (!auth.currentUser) return
+
+            const emailsRef = collection(db, 'tempEmails')
+            const q = query(
+                emailsRef,
+                where('userId', '==', auth.currentUser.uid),
+                orderBy('createdAt', 'desc')
+            )
+            
+            const querySnapshot = await getDocs(q)
+            const emails: SavedEmail[] = []
+            
+            querySnapshot.forEach((doc) => {
+                const data = doc.data()
+                emails.push({
+                    id: doc.id,
+                    email: data.email,
+                    password: data.password,
+                    createdAt: data.createdAt.toDate(),
+                    userId: data.userId
+                })
+            })
+            
+            setSavedEmails(emails)
+        } catch (err) {
+            console.error('Failed to fetch saved emails:', err)
+            setError('Failed to fetch saved emails')
+        }
+    }
+
+    const saveEmailToFirebase = async () => {
+        try {
+            if (!auth.currentUser || !email || !password) return
+
+            const emailsRef = collection(db, 'tempEmails')
+            await addDoc(emailsRef, {
+                email,
+                password,
+                createdAt: new Date(),
+                userId: auth.currentUser.uid
+            })
+
+            await fetchSavedEmails()
+        } catch (err) {
+            console.error('Failed to save email:', err)
+            setError('Failed to save email to account')
+        }
+    }
+
+    const deleteSavedEmail = async (id: string) => {
+        try {
+            await deleteDoc(doc(db, 'tempEmails', id))
+            setSavedEmails(savedEmails.filter(email => email.id !== id))
+        } catch (err) {
+            console.error('Failed to delete saved email:', err)
+            setError('Failed to delete saved email')
+        }
+    }
+
+    const loadSavedEmail = async (savedEmail: SavedEmail) => {
+        try {
+            await mailTmService.login(savedEmail.email, savedEmail.password)
+            setEmail(savedEmail.email)
+            setPassword(savedEmail.password)
+            await fetchMessages()
+        } catch (err) {
+            console.error('Failed to load saved email:', err)
+            setError('Failed to load saved email. It might have expired.')
+            // If the email has expired, delete it from Firebase
+            await deleteSavedEmail(savedEmail.id)
+        }
+    }
 
     const fetchDomains = async () => {
         try {
@@ -64,6 +152,11 @@ export function TempMail() {
             setEmail(address)
             setPassword(generatedPassword)
             await fetchMessages()
+
+            // Save to Firebase if user is logged in
+            if (auth.currentUser) {
+                await saveEmailToFirebase()
+            }
         } catch (err) {
             setError('Failed to create account. Username might be taken.')
         } finally {
@@ -133,16 +226,70 @@ export function TempMail() {
                             <p className="text-sm text-gray-500">Tạo email tạm thời để nhận mã xác thực</p>
                         </div>
                     </div>
-                    {email && (
+                    <div className="flex items-center gap-2">
                         <button
-                            onClick={logout}
+                            onClick={() => setShowSavedEmails(!showSavedEmails)}
                             className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                            title="Đăng xuất"
+                            title="Lịch sử email"
                         >
-                            <LogOut className="h-5 w-5" />
+                            <History className="h-5 w-5" />
                         </button>
-                    )}
+                        {email && (
+                            <button
+                                onClick={logout}
+                                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                title="Đăng xuất"
+                            >
+                                <LogOut className="h-5 w-5" />
+                            </button>
+                        )}
+                    </div>
                 </div>
+
+                {/* Saved Emails Drawer */}
+                {showSavedEmails && (
+                    <div className="p-4 border-b border-gray-200 bg-gray-50">
+                        <div className="mb-4">
+                            <h3 className="text-lg font-medium">Email đã tạo</h3>
+                            <p className="text-sm text-gray-500">Danh sách email tạm thời đã tạo trước đó</p>
+                        </div>
+                        <div className="space-y-2">
+                            {savedEmails.length === 0 ? (
+                                <p className="text-sm text-gray-500">Chưa có email nào được lưu</p>
+                            ) : (
+                                savedEmails.map((savedEmail) => (
+                                    <div
+                                        key={savedEmail.id}
+                                        className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg"
+                                    >
+                                        <div>
+                                            <p className="font-medium">{savedEmail.email}</p>
+                                            <p className="text-xs text-gray-400">
+                                                {savedEmail.createdAt.toLocaleString()}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => loadSavedEmail(savedEmail)}
+                                                className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
+                                                title="Tải email"
+                                            >
+                                                <Mail className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => deleteSavedEmail(savedEmail.id)}
+                                                className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                title="Xóa email"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
                     {/* Left Panel - Email Creation */}
