@@ -19,7 +19,8 @@ import {
   MdCategory,
   MdCurrencyExchange,
   MdExpandMore,
-  MdExpandLess
+  MdExpandLess,
+  MdEmail
 } from 'react-icons/md';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useState } from 'react';
@@ -119,6 +120,11 @@ export default function Sidebar() {
           name: 'Tạo tên người dùng',
           path: '/username-generator',
           icon: <MdEdit className="w-5 h-5" />
+        },
+        {
+          name: 'Email tạm thời',
+          path: '/temp-mail',
+          icon: <MdEmail className="w-5 h-5" />
         },
         {
           name: 'Chat với AI',
