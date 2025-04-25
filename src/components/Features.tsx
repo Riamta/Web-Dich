@@ -25,7 +25,8 @@ import {
     Clock,
     Ruler,
     Star,
-    Utensils
+    Utensils,
+    Eye
 } from 'lucide-react'
 import { useEffect, useState } from 'react';
 import { PageView } from '@/models/PageView';
@@ -37,6 +38,7 @@ interface FeatureCardProps {
     views: number
     path: string
     badge?: 'Popular' | 'New'
+    isHot?: boolean
 }
 
 interface CategoryProps {
@@ -46,7 +48,10 @@ interface CategoryProps {
     features: FeatureCardProps[]
 }
 
-const FeatureCard = ({ title, description, icon, views, path, badge }: FeatureCardProps) => {
+const FeatureCard = ({ title, description, icon, views, path, badge, isHot }: FeatureCardProps) => {
+    // Determine if this feature is popular based on view count
+    const isPopular = views > 100; // Consider features with more than 100 views as popular
+    
     return (
         <Link href={path} className="block">
             <div className="p-6 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all bg-white">
@@ -57,10 +62,19 @@ const FeatureCard = ({ title, description, icon, views, path, badge }: FeatureCa
                     <div>
                         <div className="flex items-center gap-2">
                             <h3 className="font-semibold text-lg">{title}</h3>
-                            {badge && (
-                                <span className={`px-2 py-1 text-xs rounded-full text-white ${badge === 'Popular' ? 'bg-black' : 'bg-blue-500'
-                                    }`}>
-                                    {badge}
+                            {isHot && (
+                                <span className="px-2 py-1 text-xs rounded-full text-white bg-red-500">
+                                    Hot
+                                </span>
+                            )}
+                            {(badge === 'Popular' || isPopular) && !isHot && (
+                                <span className="px-2 py-1 text-xs rounded-full text-white bg-black">
+                                    Popular
+                                </span>
+                            )}
+                            {badge === 'New' && (
+                                <span className="px-2 py-1 text-xs rounded-full text-white bg-blue-500">
+                                    New
                                 </span>
                             )}
                         </div>
@@ -70,7 +84,7 @@ const FeatureCard = ({ title, description, icon, views, path, badge }: FeatureCa
 
                 <div className="flex justify-end text-sm text-gray-500">
                     <div className="flex items-center gap-1">
-                        <span>👁</span>
+                        <Eye className="h-4 w-4" />
                         <span>{views}</span>
                     </div>
                 </div>
@@ -90,8 +104,7 @@ const categories: CategoryProps[] = [
                 description: "Dịch văn bản giữa các ngôn ngữ bằng AI",
                 icon: <Languages className="w-6 h-6 text-black" />,
                 views: 0,
-                path: "/translate",
-                badge: "Popular"
+                path: "/translate"
             },
             {
                 title: "Dịch hội thoại",
@@ -140,8 +153,7 @@ const categories: CategoryProps[] = [
                 description: "Tự động tóm tắt văn bản dài",
                 icon: <ScrollText className="w-6 h-6 text-black" />,
                 views: 0,
-                path: "/summarize",
-                badge: "Popular"
+                path: "/summarize"
             },
             {
                 title: "Giải bài tập",
@@ -262,6 +274,7 @@ const categories: CategoryProps[] = [
 
 export default function Features() {
     const [pageViews, setPageViews] = useState<Record<string, number>>({});
+    const [topPages, setTopPages] = useState<string[]>([]);
 
     useEffect(() => {
         const CACHE_KEY = 'page_views_cache';
@@ -279,6 +292,7 @@ export default function Features() {
                     if (now - timestamp < CACHE_DURATION) {
                         console.log('Using cached page views');
                         setPageViews(data);
+                        updateTopPages(data);
                         return;
                     }
                 }
@@ -297,6 +311,7 @@ export default function Features() {
 
                 // Update state and cache
                 setPageViews(viewsMap);
+                updateTopPages(viewsMap);
                 localStorage.setItem(CACHE_KEY, JSON.stringify({
                     data: viewsMap,
                     timestamp: Date.now()
@@ -308,10 +323,23 @@ export default function Features() {
                 if (cachedData) {
                     const { data } = JSON.parse(cachedData);
                     setPageViews(data);
+                    updateTopPages(data);
                 } else {
                     setPageViews({});
+                    setTopPages([]);
                 }
             }
+        };
+
+        // Helper function to update top pages
+        const updateTopPages = (viewsMap: Record<string, number>) => {
+            // Get all paths and sort by views
+            const sortedPaths = Object.entries(viewsMap)
+                .sort((a, b) => b[1] - a[1]) // Sort by views in descending order
+                .slice(0, 3) // Take top 3
+                .map(([path]) => path); // Extract just the paths
+            
+            setTopPages(sortedPaths);
         };
 
         fetchPageViews();
@@ -344,6 +372,7 @@ export default function Features() {
                                     key={featureIndex}
                                     {...feature}
                                     views={pageViews[feature.path] || 0}
+                                    isHot={topPages.includes(feature.path)}
                                 />
                             ))}
                         </div>
