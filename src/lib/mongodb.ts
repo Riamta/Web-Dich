@@ -1,69 +1,49 @@
 import { MongoClient } from 'mongodb'
 
-// Default to a mock client if no URI is provided
-let client: MongoClient | null = null
-let clientPromise: Promise<MongoClient | null> | null = null
-let isConnecting = false
+// In-memory storage for page views when MongoDB is not available
+export const inMemoryPageViews: Record<string, number> = {};
 
-export async function getMongoClient() {
-  // If no URI is provided, return null immediately
+// Simple function to check if MongoDB is available
+export async function isMongoDBAvailable(): Promise<boolean> {
   if (!process.env.MONGODB_URI) {
-    console.warn('MongoDB URI not found. Using mock client.')
-    return null
-  }
-
-  // If we already have a connection promise, return it
-  if (clientPromise) {
-    return clientPromise
-  }
-
-  // If we're already trying to connect, don't start another connection attempt
-  if (isConnecting) {
-    console.log('MongoDB connection already in progress. Waiting...')
-    return clientPromise
+    console.log('MongoDB URI not found. Using in-memory storage.');
+    return false;
   }
 
   try {
-    isConnecting = true
-    console.log('Attempting to connect to MongoDB...')
+    const client = new MongoClient(process.env.MONGODB_URI, {
+      connectTimeoutMS: 3000,
+      serverSelectionTimeoutMS: 3000,
+    });
     
-    // Set connection timeout to 5 seconds
-    const options = {
-      connectTimeoutMS: 5000,
-      socketTimeoutMS: 5000,
-      serverSelectionTimeoutMS: 5000,
-      maxPoolSize: 10,
-      minPoolSize: 0
-    }
-    
-    client = new MongoClient(process.env.MONGODB_URI, options)
-    
-    // Set a timeout for the connection promise
-    clientPromise = Promise.race([
-      client.connect().then(connectedClient => {
-        console.log('Successfully connected to MongoDB')
-        isConnecting = false
-        return connectedClient
-      }),
-      new Promise<null>((_, reject) => 
-        setTimeout(() => {
-          console.warn('MongoDB connection timed out. Using mock client.')
-          isConnecting = false
-          reject(null)
-        }, 5000)
-      )
-    ]).catch(error => {
-      console.error('Error connecting to MongoDB:', error)
-      isConnecting = false
-      return null
-    })
-    
-    return clientPromise
+    await client.connect();
+    await client.close();
+    console.log('MongoDB connection successful');
+    return true;
   } catch (error) {
-    console.error('Error setting up MongoDB connection:', error)
-    isConnecting = false
-    return null
+    console.log('MongoDB connection failed, using in-memory storage:', error);
+    return false;
   }
 }
 
-export default getMongoClient 
+// Get MongoDB client if available
+export async function getMongoClient() {
+  if (!process.env.MONGODB_URI) {
+    return null;
+  }
+
+  try {
+    const client = new MongoClient(process.env.MONGODB_URI, {
+      connectTimeoutMS: 3000,
+      serverSelectionTimeoutMS: 3000,
+    });
+    
+    await client.connect();
+    return client;
+  } catch (error) {
+    console.error('Error connecting to MongoDB:', error);
+    return null;
+  }
+}
+
+export default { isMongoDBAvailable, getMongoClient, inMemoryPageViews }; 

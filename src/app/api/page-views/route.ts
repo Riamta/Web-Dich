@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getMongoClient } from '@/lib/mongodb';
+import { getMongoClient, inMemoryPageViews, isMongoDBAvailable } from '@/lib/mongodb';
 import { PageView } from '@/models/PageView';
 
-// In-memory fallback for when MongoDB is not available
-let inMemoryPageViews: Record<string, number> = {};
-
-// Set a timeout for API operations
-const API_TIMEOUT = 8000; // 8 seconds
+// Check if MongoDB is available at startup
+let useMongoDB = false;
+isMongoDBAvailable().then(available => {
+  useMongoDB = available;
+  console.log(`Using ${useMongoDB ? 'MongoDB' : 'in-memory storage'} for page views`);
+});
 
 export async function POST(request: Request) {
   try {
@@ -18,47 +19,41 @@ export async function POST(request: Request) {
 
     console.log(`Tracking page view for path: ${path}`);
 
-    // Use Promise.race to implement a timeout
-    const result = await Promise.race([
-      (async () => {
+    // Use in-memory storage by default
+    inMemoryPageViews[path] = (inMemoryPageViews[path] || 0) + 1;
+    const result = { path, views: inMemoryPageViews[path] };
+
+    // If MongoDB is available, also update the database
+    if (useMongoDB) {
+      try {
         const client = await getMongoClient();
-        
         if (client) {
-          console.log('Using MongoDB for page view tracking');
-          // Use MongoDB if available
           const db = client.db();
           const collection = db.collection<PageView>('pageViews');
 
-          const result = await collection.findOneAndUpdate(
+          await collection.findOneAndUpdate(
             { path },
             { 
               $inc: { views: 1 },
               $set: { lastUpdated: new Date() }
             },
             { 
-              upsert: true,
-              returnDocument: 'after'
+              upsert: true
             }
           );
-
-          return result;
-        } else {
-          console.log('Using in-memory storage for page view tracking');
-          // Fallback to in-memory storage
-          inMemoryPageViews[path] = (inMemoryPageViews[path] || 0) + 1;
-          return { path, views: inMemoryPageViews[path] };
+          
+          await client.close();
         }
-      })(),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Operation timed out')), API_TIMEOUT)
-      )
-    ]);
+      } catch (error) {
+        console.error('Error updating MongoDB:', error);
+        // Continue with in-memory result even if MongoDB update fails
+      }
+    }
 
     console.log(`Successfully tracked page view for path: ${path}`);
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error tracking page view:', error);
-    // Always return a valid JSON response
     return NextResponse.json({ 
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error'
@@ -70,40 +65,42 @@ export async function GET() {
   try {
     console.log('Fetching page views');
     
-    // Use Promise.race to implement a timeout
-    const result = await Promise.race([
-      (async () => {
+    // Always use in-memory storage for reading
+    const pageViews = Object.entries(inMemoryPageViews).map(([path, views]) => ({
+      path,
+      views,
+      lastUpdated: new Date()
+    }));
+
+    // If MongoDB is available, try to sync with the database
+    if (useMongoDB) {
+      try {
         const client = await getMongoClient();
-        
         if (client) {
-          console.log('Using MongoDB for fetching page views');
-          // Use MongoDB if available
           const db = client.db();
           const collection = db.collection<PageView>('pageViews');
           
-          const pageViews = await collection.find({}).toArray();
-          return pageViews;
-        } else {
-          console.log('Using in-memory storage for fetching page views');
-          // Fallback to in-memory storage
-          const pageViews = Object.entries(inMemoryPageViews).map(([path, views]) => ({
-            path,
-            views,
-            lastUpdated: new Date()
-          }));
-          return pageViews;
+          const dbPageViews = await collection.find({}).toArray();
+          
+          // Update in-memory storage with database values
+          for (const pv of dbPageViews) {
+            if (pv.path) {
+              inMemoryPageViews[pv.path] = pv.views || 0;
+            }
+          }
+          
+          await client.close();
         }
-      })(),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Operation timed out')), API_TIMEOUT)
-      )
-    ]);
+      } catch (error) {
+        console.error('Error syncing with MongoDB:', error);
+        // Continue with in-memory data even if MongoDB sync fails
+      }
+    }
 
-    console.log(`Successfully fetched ${Array.isArray(result) ? result.length : 0} page views`);
-    return NextResponse.json(result);
+    console.log(`Successfully fetched ${pageViews.length} page views`);
+    return NextResponse.json(pageViews);
   } catch (error) {
     console.error('Error fetching page views:', error);
-    // Always return a valid JSON response
     return NextResponse.json({ 
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error',
