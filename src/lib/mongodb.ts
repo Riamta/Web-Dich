@@ -12,15 +12,19 @@ export async function getMongoClient() {
 
   try {
     const client = new MongoClient(process.env.NEXT_PUBLIC_MONGODB_URI, {
-      connectTimeoutMS: 5000,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 10000,
       maxPoolSize: 10,
       minPoolSize: 0,
       ssl: true,
       tls: true,
+      tlsCAFile: undefined,
+      tlsAllowInvalidHostnames: true,
       retryWrites: true,
-      retryReads: true
+      retryReads: true,
+      directConnection: false,
+      replicaSet: 'atlas-qkwesz-shard-0'
     });
     
     await client.connect();
