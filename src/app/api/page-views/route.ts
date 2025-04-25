@@ -40,7 +40,11 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error('Error tracking page view:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    // Always return a valid JSON response
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
@@ -66,6 +70,11 @@ export async function GET() {
     }
   } catch (error) {
     console.error('Error fetching page views:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    // Always return a valid JSON response
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      pageViews: [] // Return empty array as fallback
+    }, { status: 500 });
   }
 } 
