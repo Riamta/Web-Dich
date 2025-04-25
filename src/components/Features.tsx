@@ -264,8 +264,27 @@ export default function Features() {
     const [pageViews, setPageViews] = useState<Record<string, number>>({});
 
     useEffect(() => {
+        const CACHE_KEY = 'page_views_cache';
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
         const fetchPageViews = async () => {
             try {
+                // Check cache first
+                const cachedData = localStorage.getItem(CACHE_KEY);
+                if (cachedData) {
+                    const { data, timestamp } = JSON.parse(cachedData);
+                    const now = Date.now();
+                    
+                    // If cache is still valid (less than 5 minutes old)
+                    if (now - timestamp < CACHE_DURATION) {
+                        console.log('Using cached page views');
+                        setPageViews(data);
+                        return;
+                    }
+                }
+
+                // If no cache or cache expired, fetch new data
+                console.log('Fetching fresh page views');
                 const response = await fetch('/api/page-views');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -275,15 +294,33 @@ export default function Features() {
                     acc[view.path] = view.views;
                     return acc;
                 }, {} as Record<string, number>);
+
+                // Update state and cache
                 setPageViews(viewsMap);
+                localStorage.setItem(CACHE_KEY, JSON.stringify({
+                    data: viewsMap,
+                    timestamp: Date.now()
+                }));
             } catch (error) {
                 console.error('Error fetching page views:', error);
-                // Set empty object as fallback
-                setPageViews({});
+                // If fetch fails and we have cached data, use it as fallback
+                const cachedData = localStorage.getItem(CACHE_KEY);
+                if (cachedData) {
+                    const { data } = JSON.parse(cachedData);
+                    setPageViews(data);
+                } else {
+                    setPageViews({});
+                }
             }
         };
 
         fetchPageViews();
+
+        // Set up interval to refresh cache every 5 minutes
+        const intervalId = setInterval(fetchPageViews, CACHE_DURATION);
+
+        // Cleanup interval on component unmount
+        return () => clearInterval(intervalId);
     }, []);
 
     return (
