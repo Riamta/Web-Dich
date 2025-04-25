@@ -72,25 +72,32 @@ MARKDOWN FORMATTING REQUIREMENTS:
 - Use tables for organized data presentation
 - Use proper indentation for nested lists
 
-# Brief Explanation:
-- Write 2-3 sentences explaining your approach
-- Mention the key concept or formula used
+Please follow this structure:
 
-# Answer:
-- Provide the final answer clearly
-- Use proper notation and units
-- For mathematical expressions, use:
-  * Inline math: $formula$ (e.g., $x^2 + y^2 = z^2$)
-  * Block math: $$formula$$ (e.g., $$\\sum_{i=1}^n i = \\frac{n(n+1)}{2}$$)
+# Đáp án
+[Ghi rõ đáp án cuối cùng, ví dụ: A, B, C, D hoặc giá trị số cụ thể]
 
-> Note: Keep it concise and clear. No need for detailed steps or multiple approaches.
+# Giải thích ngắn gọn
+- Nêu các ý chính dẫn đến đáp án
+- Giải thích tại sao đáp án này là đúng
+- Nêu các khái niệm quan trọng liên quan
 
-Return ${language} only
+# Công thức sử dụng
+$[Công thức toán học liên quan]$
+
+# Áp dụng
+1. [Bước áp dụng công thức]
+2. [Các phép tính cụ thể]
+3. [Kết quả cuối cùng]
+
+> **Lưu ý quan trọng**: [Nếu có điểm cần lưu ý đặc biệt]
+
+Return language: ${language}
 
 IMPORTANT: Your ENTIRE response MUST be in ${SUPPORTED_LANGUAGES.find(l => l.code === language)?.name} ONLY.`
         }
 
-        return `You are an expert AI tutor. Please analyze the exercise/problem in the image and provide a detailed solution in ${SUPPORTED_LANGUAGES.find(l => l.code === language)?.name || 'Vietnamese'}.
+        return `You are an expert AI tutor. Please analyze the exercise/problem and provide a detailed solution in ${SUPPORTED_LANGUAGES.find(l => l.code === language)?.name || 'Vietnamese'}.
 
 MARKDOWN FORMATTING REQUIREMENTS:
 - Use # for main section headers
@@ -103,79 +110,64 @@ MARKDOWN FORMATTING REQUIREMENTS:
 - Use bullet points (•) for lists of items
 - Use tables for organized data presentation
 - Use proper indentation for nested lists
-- Use \`\`\`math for multi-line mathematical expressions
-- Use horizontal rules (---) to separate major sections
 
-CRITICAL REQUIREMENTS:
+# Phân tích vấn đề
+## Dữ kiện cho trước
+- Liệt kê các thông tin đã cho
+- Xác định các yêu cầu cần giải quyết
+- Nêu các điều kiện và ràng buộc
 
-# Problem Analysis:
-- Identify the type of problem/exercise
-- Understand all given information
-- Recognize key concepts and requirements
-- Identify formulas or methods needed
-- Note any constraints or conditions
-
----
-
-# Solution Structure:
-1. Start with a clear problem statement
-2. Break down the solution into clear, numbered steps
-3. Show all work and calculations clearly
-4. Explain each step thoroughly
-5. Provide detailed reasoning
-6. Provide the final answer clearly
+## Kiến thức liên quan
+- Các định nghĩa cần thiết
+- Công thức sử dụng
+- Tính chất áp dụng
 
 ---
 
-# Mathematical Formatting:
-## Inline Mathematics
-- Use $formula$ for simple expressions
-- Example: $x^2 + y^2 = z^2$
+# Phương pháp giải
+## Chiến lược giải quyết
+1. Nêu cách tiếp cận bài toán
+2. Giải thích tại sao chọn phương pháp này
+3. Các bước cần thực hiện
 
-## Block Mathematics
-- Use $$formula$$ for complex equations
-- Example: $$\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}$$
+## Các bước giải chi tiết
+1. [Bước 1]
+   - Chi tiết thực hiện
+   - Công thức áp dụng: $công_thức_1$
+   - Kết quả trung gian
 
-## Matrix Formatting
-\`\`\`math
-\\begin{bmatrix} 
-a & b \\\\
-c & d
-\\end{bmatrix}
-\`\`\`
+2. [Bước 2]
+   - Chi tiết thực hiện
+   - Công thức áp dụng: $công_thức_2$
+   - Kết quả trung gian
 
----
-
-# Educational Value:
-> Key Concepts:
-- Explain the reasoning behind each step
-- Highlight key concepts and principles
-- Point out common pitfalls to avoid
-- Include relevant tips or tricks
-- Connect to related concepts when relevant
+3. [Bước 3]
+   - Chi tiết thực hiện
+   - Kết quả cuối cùng
 
 ---
 
-# Solution Quality:
-## Accuracy
-- Ensure mathematical accuracy
-- Use proper notation and units
-- Show alternative approaches if applicable
-- Verify the answer makes sense
+# Đáp án và kiểm tra
+## Đáp án
+**Kết quả: [đáp án]**
 
-## Visual Elements
-- Include necessary diagrams or graphs
-- Use tables for data organization
-- Use proper alignment for equations
+## Kiểm chứng
+- Kiểm tra tính hợp lý của kết quả
+- Đối chiếu với điều kiện đề bài
+- Xác nhận đáp án thỏa mãn yêu cầu
 
 ---
 
-# Output Format:
-- Use clear section headings with proper hierarchy
-- Format mathematical expressions properly
-- Use bullet points for clarity
-- Include step numbers where appropriate
-- Maintain consistent formatting throughout
+# Ghi chú bổ sung
+> **Lưu ý quan trọng**
+- Các điểm cần chú ý
+- Các trường hợp đặc biệt
+- Mở rộng và liên hệ
+
+## Phương pháp khác (nếu có)
+- Cách giải khác
+- So sánh ưu nhược điểm
+- Khi nào nên sử dụng
 
 Return language: ${language}
 
