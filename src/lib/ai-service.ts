@@ -49,6 +49,20 @@ export const TRANSLATION_TONES: Record<string, TranslationTone> = {
         description: 'Dịch văn học, phù hợp với tiểu thuyết và sáng tác',
         style: 'Dịch theo phong cách văn học và thi ca - phù hợp với tiểu thuyết và sáng tác'
     },
+    persian: {
+        name: 'Trung cổ Ba Tư',
+        description: 'Dịch theo phong cách trung cổ Ba Tư, phù hợp với thơ ca và văn học cổ điển',
+        style: 'Dịch theo phong cách trang trọng, hoa mỹ của văn học Ba Tư - sử dụng nhiều ẩn dụ và hình ảnh thơ ca',
+        specialInstructions: `
+- Sử dụng từ vựng trang trọng và cổ điển
+- Duy trì giọng điệu thi ca và trữ tình
+- Bao gồm các ẩn dụ và hình ảnh từ văn hóa Ba Tư
+- Sử dụng cấu trúc câu phức tạp và hoa mỹ
+- Bảo tồn các yếu tố văn hóa Ba Tư cổ đại
+- Tham khảo các biểu tượng và hình ảnh từ thần thoại Ba Tư
+- Duy trì phong cách trang trọng và thanh nhã
+- Sử dụng các điển tích và tích truyện Ba Tư`
+    },
     xianxia: {
         name: 'Tiên hiệp',
         description: 'Dịch tiên hiệp, phù hợp với truyện tu tiên Trung Quốc',

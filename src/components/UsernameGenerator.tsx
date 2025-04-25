@@ -12,17 +12,21 @@ export default function Generator() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copySuccess, setCopySuccess] = useState(false)
+  const [usernameLength, setUsernameLength] = useState(12)
+  const [includeNumbers, setIncludeNumbers] = useState(true)
+  const [includeSpecial, setIncludeSpecial] = useState(false)
+  const [useLeetSpeak, setUseLeetSpeak] = useState(false)
 
   // Password states
   const [passwordLength, setPasswordLength] = useState(12)
-  const [includeNumbers, setIncludeNumbers] = useState(true)
+  const [includePasswordNumbers, setIncludePasswordNumbers] = useState(true)
   const [includeSymbols, setIncludeSymbols] = useState(true)
   const [includeUppercase, setIncludeUppercase] = useState(true)
   const [includeLowercase, setIncludeLowercase] = useState(true)
   const [excludeSimilarChars, setExcludeSimilarChars] = useState(false)
   const [generatedPassword, setGeneratedPassword] = useState('')
 
-  // New states for account generator
+  // Account states
   const [generatedAccount, setGeneratedAccount] = useState<{
     username: string;
     password: string;
@@ -33,23 +37,17 @@ export default function Generator() {
     setIsLoading(true)
     setError(null)
     try {
-      if (keyword.trim()) {
-        // Nếu có keyword, sử dụng keyword đó để tạo username
-        const usernames = await GeneratorService.generateUsernames({
-          keyword: keyword.trim(),
-          type,
-          maxLength: 20
-        })
-        setGeneratedUsernames(usernames)
-      } else {
-        // Chỉ gửi 1 request để lấy nhiều username cùng lúc
-        const usernames = await GeneratorService.generateUsernames({
-          keyword: 'random',
-          type,
-          maxLength: 20
-        })
-        setGeneratedUsernames(usernames)
+      const options = {
+        keyword: keyword.trim() || 'random',
+        type,
+        maxLength: usernameLength,
+        includeNumbers,
+        includeSpecial,
+        useLeetSpeak
       }
+      
+      const usernames = await GeneratorService.generateUsernames(options)
+      setGeneratedUsernames(usernames)
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to generate usernames')
     } finally {
@@ -60,7 +58,7 @@ export default function Generator() {
   const handleGeneratePassword = () => {
     const password = GeneratorService.generatePassword({
       length: passwordLength,
-      includeNumbers,
+      includeNumbers: includePasswordNumbers,
       includeSymbols,
       includeUppercase,
       includeLowercase,
@@ -79,17 +77,15 @@ export default function Generator() {
     setIsGeneratingAccount(true);
     try {
       const keyword = await GeneratorService.generateKeyword();
-      console.log('Generated keyword:', keyword);
-
-      // Generate username with the keyword
       const usernames = await GeneratorService.generateUsernames({
         keyword: keyword.trim(),
         type: 'random',
-        maxLength: 20
+        maxLength: 20,
+        includeNumbers: true,
+        includeSpecial: false,
+        useLeetSpeak: true
       });
-      console.log('Generated keyword:', usernames);
 
-      // Generate a strong password
       const password = GeneratorService.generatePassword({
         length: 16,
         includeNumbers: true,
@@ -111,35 +107,30 @@ export default function Generator() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
+    <div className="max-w-4xl mx-auto p-4 space-y-6">
       {/* Username Generator Section */}
-      <div className="bg-gradient-to-br from-white to-gray-50/50 p-8 rounded-2xl shadow-lg border border-gray-100/50 backdrop-blur-sm">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <SparklesIcon className="h-6 w-6 text-gray" />
-          </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-900 bg-clip-text text-transparent">
-            Username Generator
-          </h2>
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-3 mb-4">
+          <SparklesIcon className="h-5 w-5 text-gray-600" />
+          <h2 className="text-lg font-semibold">Username Generator</h2>
         </div>
         
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Enter a keyword (optional)
-            </label>
-            <div className="flex gap-3">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
               <input
                 type="text"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                placeholder="E.g., ninja, dragon, master..."
-                className="flex-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray/20 focus:border-gray bg-white/50 backdrop-blur-sm transition-all" 
+                placeholder="Enter keyword (optional)"
+                className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 bg-white/50" 
               />
+            </div>
+            <div>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as any)}
-                className="p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray/20 focus:border-gray bg-white/50 backdrop-blur-sm transition-all min-w-[160px]"
+                className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 bg-white/50"
               >
                 <option value="random">Random Style</option>
                 <option value="cool">Cool</option>
@@ -150,212 +141,231 @@ export default function Generator() {
             </div>
           </div>
 
-          <button
-            onClick={handleGenerateUsernames}
-            disabled={isLoading}
-            className="w-full py-3 px-4 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl hover:from-gray-900 hover:to-gray-900 transition-all duration-300 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg disabled:opacity-70"
-          >
-            <SparklesIcon className="h-5 w-5" />
-            {isLoading ? 'Generating...' : 'Generate Usernames'}
-          </button>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={includeNumbers}
+                onChange={(e) => setIncludeNumbers(e.target.checked)}
+                className="rounded text-gray-600"
+              />
+              Numbers
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={includeSpecial}
+                onChange={(e) => setIncludeSpecial(e.target.checked)}
+                className="rounded text-gray-600"
+              />
+              Special Chars
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={useLeetSpeak}
+                onChange={(e) => setUseLeetSpeak(e.target.checked)}
+                className="rounded text-gray-600"
+              />
+              Leet Speak
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min="4"
+                max="20"
+                value={usernameLength}
+                onChange={(e) => setUsernameLength(parseInt(e.target.value))}
+                className="flex-1 accent-gray-600"
+              />
+              <span className="text-sm w-8">{usernameLength}</span>
+            </div>
+          </div>
+
+          <div>
+            <button
+              onClick={handleGenerateUsernames}
+              disabled={isLoading}
+              className="py-2 px-6 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-1.5"
+            >
+              <SparklesIcon className="h-3.5 w-3.5" />
+              {isLoading ? 'Generating...' : 'Generate Usernames'}
+            </button>
+          </div>
 
           {error && (
-            <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm">
+            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">
               {error}
             </div>
           )}
 
           {generatedUsernames.length > 0 && (
-            <div className="space-y-3 mt-4">
-              <div className="text-sm text-gray-500 flex items-center gap-2">
-                <ClipboardDocumentIcon className="h-4 w-4" />
-                Click on any username to copy
-              </div>
-              <div className="grid gap-2">
-                {generatedUsernames.map((username, index) => (
-                  <div
-                    key={index}
-                    onClick={() => handleCopy(username)}
-                    className="flex items-center justify-between p-4 bg-white rounded-xl hover:bg-gray-50 cursor-pointer transition-all border border-gray-100 group"
-                  >
-                    <span className="font-mono text-gray-700">{username}</span>
-                    <ClipboardDocumentIcon className="h-5 w-5 text-gray-400 group-hover:text-primary transition-colors" />
-                  </div>
-                ))}
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
+              {generatedUsernames.map((username, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleCopy(username)}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer group"
+                >
+                  <span className="font-mono text-sm">{username}</span>
+                  <ClipboardDocumentIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
+                </div>
+              ))}
             </div>
           )}
         </div>
       </div>
 
       {/* Password Generator Section */}
-      <div className="bg-gradient-to-br from-white to-gray-50/50 p-8 rounded-2xl shadow-lg border border-gray-100/50 backdrop-blur-sm">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <SparklesIcon className="h-6 w-6 text-gray" />
-          </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-900 bg-clip-text text-transparent">
-            Password Generator
-          </h2>
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-3 mb-4">
+          <SparklesIcon className="h-5 w-5 text-gray-600" />
+          <h2 className="text-lg font-semibold">Password Generator</h2>
         </div>
         
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Password Length
-                </label>
-                <span className="text-gray font-medium">{passwordLength}</span>
-              </div>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <input
+              type="range"
+              min="8"
+              max="32"
+              value={passwordLength}
+              onChange={(e) => setPasswordLength(parseInt(e.target.value))}
+              className="flex-1 accent-gray-600"
+            />
+            <span className="text-sm w-8">{passwordLength}</span>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <label className="flex items-center gap-2 text-sm">
               <input
-                type="range"
-                min="8"
-                max="32"
-                value={passwordLength}
-                onChange={(e) => setPasswordLength(parseInt(e.target.value))}
-                className="w-full accent-gray"
+                type="checkbox"
+                checked={includePasswordNumbers}
+                onChange={(e) => setIncludePasswordNumbers(e.target.checked)}
+                className="rounded text-gray-600"
               />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <label className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={includeNumbers}
-                  onChange={(e) => setIncludeNumbers(e.target.checked)}
-                  className="rounded text-gray w-4 h-4"
-                />
-                <span className="text-sm font-medium">Include Numbers</span>
-              </label>
-
-              <label className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={includeSymbols}
-                  onChange={(e) => setIncludeSymbols(e.target.checked)}
-                  className="rounded text-gray w-4 h-4"
-                />
-                <span className="text-sm font-medium">Include Symbols</span>
-              </label>
-
-              <label className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={includeUppercase}
-                  onChange={(e) => setIncludeUppercase(e.target.checked)}
-                  className="rounded text-gray w-4 h-4"
-                />
-                <span className="text-sm font-medium">Include Uppercase</span>
-              </label>
-
-              <label className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={includeLowercase}
-                  onChange={(e) => setIncludeLowercase(e.target.checked)}
-                  className="rounded text-gray w-4 h-4"
-                />
-                <span className="text-sm font-medium">Include Lowercase</span>
-              </label>
-            </div>
-
-            <label className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
+              Numbers
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={includeSymbols}
+                onChange={(e) => setIncludeSymbols(e.target.checked)}
+                className="rounded text-gray-600"
+              />
+              Symbols
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={includeUppercase}
+                onChange={(e) => setIncludeUppercase(e.target.checked)}
+                className="rounded text-gray-600"
+              />
+              Uppercase
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={includeLowercase}
+                onChange={(e) => setIncludeLowercase(e.target.checked)}
+                className="rounded text-gray-600"
+              />
+              Lowercase
+            </label>
+            <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
                 checked={excludeSimilarChars}
                 onChange={(e) => setExcludeSimilarChars(e.target.checked)}
-                className="rounded text-gray w-4 h-4"
+                className="rounded text-gray-600"
               />
-              <span className="text-sm font-medium">Exclude Similar Characters (i, l, 1, L, o, 0, O)</span>
+              No Similar Chars
             </label>
           </div>
 
-          <button
-            onClick={handleGeneratePassword}
-            className="w-full py-3 px-4 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl hover:from-gray-900 hover:to-gray-900 transition-all duration-300 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg disabled:opacity-70"
-          >
-            <SparklesIcon className="h-5 w-5" />
-            Generate Password
-          </button>
+          <div>
+            <button
+              onClick={handleGeneratePassword}
+              className="py-2 px-6 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-1.5"
+            >
+              <SparklesIcon className="h-3.5 w-3.5" />
+              Generate Password
+            </button>
+          </div>
 
           {generatedPassword && (
             <div
               onClick={() => handleCopy(generatedPassword)}
-              className="flex items-center justify-between p-4 bg-white rounded-xl hover:bg-gray-50 cursor-pointer transition-all border border-gray-100 group"
+              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer group"
             >
-              <span className="font-mono text-gray-700">{generatedPassword}</span>
-              <ClipboardDocumentIcon className="h-5 w-5 text-gray-400 group-hover:text-gray transition-colors" />
+              <span className="font-mono text-sm">{generatedPassword}</span>
+              <ClipboardDocumentIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
             </div>
           )}
         </div>
       </div>
 
       {/* Account Generator Section */}
-      <div className="bg-gradient-to-br from-white to-gray-50/50 p-8 rounded-2xl shadow-lg border border-gray-100/50 backdrop-blur-sm">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <SparklesIcon className="h-6 w-6 text-gray" />
-          </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-900 bg-clip-text text-transparent">
-            Account Generator
-          </h2>
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-3 mb-4">
+          <SparklesIcon className="h-5 w-5 text-gray-600" />
+          <h2 className="text-lg font-semibold">Account Generator</h2>
         </div>
         
-        <div className="space-y-6">
-          <button
-            onClick={handleGenerateAccount}
-            disabled={isGeneratingAccount}
-            className="w-full py-3 px-4 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl hover:from-gray-900 hover:to-gray-900 transition-all duration-300 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg disabled:opacity-70"
-          >
-            <SparklesIcon className="h-5 w-5" />
-            {isGeneratingAccount ? 'Generating...' : 'Generate Random Account'}
-          </button>
+        <div className="space-y-4">
+          <div>
+            <button
+              onClick={handleGenerateAccount}
+              disabled={isGeneratingAccount}
+              className="py-2 px-6 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-1.5"
+            >
+              <SparklesIcon className="h-3.5 w-3.5" />
+              {isGeneratingAccount ? 'Generating...' : 'Generate Random Account'}
+            </button>
+          </div>
 
           {generatedAccount && (
-            <div className="space-y-4">
-              <div className="text-sm text-gray-500 flex items-center gap-2">
-                <ClipboardDocumentIcon className="h-4 w-4" />
-                Click on any field to copy
-              </div>
-              
+            <div className="space-y-2">
               <div
                 onClick={() => handleCopy(generatedAccount.username)}
-                className="flex items-center justify-between p-4 bg-white rounded-xl hover:bg-gray-50 cursor-pointer transition-all border border-gray-100 group"
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer group"
               >
-                <div className="space-y-1">
-                  <div className="text-xs font-medium text-gray-500">Username</div>
-                  <span className="font-mono text-gray-700">{generatedAccount.username}</span>
+                <div>
+                  <div className="text-xs text-gray-500">Username</div>
+                  <div className="font-mono text-sm">{generatedAccount.username}</div>
                 </div>
-                <ClipboardDocumentIcon className="h-5 w-5 text-gray-400 group-hover:text-gray transition-colors" />
+                <ClipboardDocumentIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
               </div>
 
               <div
                 onClick={() => handleCopy(generatedAccount.password)}
-                className="flex items-center justify-between p-4 bg-white rounded-xl hover:bg-gray-50 cursor-pointer transition-all border border-gray-100 group"
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer group"
               >
-                <div className="space-y-1">
-                  <div className="text-xs font-medium text-gray-500">Password</div>
-                  <span className="font-mono text-gray-700">{generatedAccount.password}</span>
+                <div>
+                  <div className="text-xs text-gray-500">Password</div>
+                  <div className="font-mono text-sm">{generatedAccount.password}</div>
                 </div>
-                <ClipboardDocumentIcon className="h-5 w-5 text-gray-400 group-hover:text-primary transition-colors" />
+                <ClipboardDocumentIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
               </div>
 
-              <button
-                onClick={() => handleCopy(`Username: ${generatedAccount.username}\nPassword: ${generatedAccount.password}`)}
-                className="w-full flex items-center justify-center gap-2 p-3 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors text-sm text-gray-600 font-medium"
-              >
-                <span>Copy both</span>
-                <ClipboardDocumentIcon className="h-4 w-4" />
-              </button>
+              <div className="mt-2">
+                <button
+                  onClick={() => handleCopy(`Username: ${generatedAccount.username}\nPassword: ${generatedAccount.password}`)}
+                  className="py-1.5 px-4 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-xs text-gray-600 flex items-center gap-1.5"
+                >
+                  Copy both
+                  <ClipboardDocumentIcon className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {copySuccess && (
-        <div className="fixed bottom-6 right-6 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg animate-fade-in-out flex items-center gap-2">
-          <ClipboardDocumentIcon className="h-5 w-5" />
+        <div className="fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out flex items-center gap-2 text-sm">
+          <ClipboardDocumentIcon className="h-4 w-4" />
           Copied to clipboard!
         </div>
       )}

@@ -4,6 +4,9 @@ interface UsernameOptions {
   keyword: string
   type?: 'cool' | 'funny' | 'professional' | 'gaming' | 'random'
   maxLength?: number
+  includeNumbers?: boolean
+  includeSpecial?: boolean
+  useLeetSpeak?: boolean
 }
 
 interface PasswordOptions {
@@ -20,7 +23,10 @@ export class GeneratorService {
     const { 
       keyword,
       type = 'random',
-      maxLength = 15 
+      maxLength = 15,
+      includeNumbers = true,
+      includeSpecial = false,
+      useLeetSpeak = false
     } = options
     
     const prompt = `Generate 10 unique and creative usernames.
@@ -29,8 +35,10 @@ Requirements:
 ${keyword === 'random' ? '- Random keyword' : `- Keyword: ${keyword}`}
 - Style: ${type !== 'random' ? type : 'any style'} 
 - Maximum length: ${maxLength} characters
+- ${includeNumbers ? 'Include' : 'Do not include'} numbers (0-9)
+- ${includeSpecial ? 'Include' : 'Do not include'} special characters (_.-) 
+- ${useLeetSpeak ? 'Use' : 'Do not use'} leetspeak (e.g. 3 for E, 4 for A)
 - Should be creative and memorable
-- Can include numbers (0-9), underscores, dots
 - No spaces allowed
 - Return only usernames, one per line, no explanations
 - Each username must be completely unique and different from others

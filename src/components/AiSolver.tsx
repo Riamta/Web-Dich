@@ -49,10 +49,11 @@ export function AiSolver() {
     const [isPasteEnabled, setIsPasteEnabled] = useState(true)
     const [language, setLanguage] = useState('vi')
     const [needExplanation, setNeedExplanation] = useState(false)
-    const [inputType, setInputType] = useState<'image' | 'text'>('image')
     const [exerciseText, setExerciseText] = useState('')
     const [selectedModel, setSelectedModel] = useState<'gemini-2.5-flash-preview-04-17' | 'gemini-2.0-flash'>('gemini-2.0-flash')
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const cameraInputRef = useRef<HTMLInputElement>(null)
+    const documentInputRef = useRef<HTMLInputElement>(null)
     const imageContainerRef = useRef<HTMLDivElement>(null)
     const textAreaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -179,8 +180,48 @@ Do not use any other language in your response.`
         const file = e.target.files?.[0]
         if (!file) return
 
+        if (file.type.startsWith('image/')) {
+            if (file.size > 10 * 1024 * 1024) {
+                setError('Image size should be less than 10MB')
+                return
+            }
+
+            setSelectedImage(file)
+            setImagePreview(URL.createObjectURL(file))
+            setError(null)
+        } else {
+            // Handle document files
+            const supportedTypes = [
+                'text/plain',
+                'application/pdf',
+                'application/json',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            ]
+
+            if (!supportedTypes.includes(file.type)) {
+                setError('Unsupported file type. Please upload an image or document (txt, pdf, json, doc, docx)')
+                return
+            }
+
+            if (file.size > 20 * 1024 * 1024) {
+                setError('Document size should be less than 20MB')
+                return
+            }
+
+            // For documents, we'll set them as selectedImage but won't show preview
+            setSelectedImage(file)
+            setImagePreview(null)
+            setError(null)
+        }
+    }
+
+    const handleCameraCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
         if (!file.type.startsWith('image/')) {
-            setError('Please upload an image file')
+            setError('Please capture an image')
             return
         }
 
@@ -212,7 +253,16 @@ Do not use any other language in your response.`
             const selectedLanguage = SUPPORTED_LANGUAGES.find(l => l.code === language)?.name || 'Vietnamese'
 
             let result;
-            if (selectedImage) {
+            // Ưu tiên xử lý text nếu có
+            if (exerciseText.trim()) {
+                result = await model.generateContent({
+                    model: selectedModel,
+                    contents: createUserContent([
+                        `${prompt}\n\nIMPORTANT: You MUST respond ONLY in ${selectedLanguage}. Do not use any other language in your response.`,
+                        `Bài tập:\n${exerciseText}`
+                    ])
+                })
+            } else if (selectedImage) {
                 // Upload file to Gemini
                 const uploadedFile = await ai.files.upload({
                     file: selectedImage,
@@ -232,18 +282,14 @@ Do not use any other language in your response.`
                     ])
                 })
             } else {
-                // Generate content with text only
-                result = await model.generateContent({
-                    model: selectedModel,
-                    contents: createUserContent([
-                        `${prompt}\n\nIMPORTANT: You MUST respond ONLY in ${selectedLanguage}. Do not use any other language in your response.`,
-                        `Bài tập:\n${exerciseText}`
-                    ])
-                })
+                throw new Error('No input provided')
             }
 
-            const solution = result.text || 'No solution generated'
-            setSolution(solution)
+            if (!result) {
+                throw new Error('No solution generated')
+            }
+
+            setSolution(result.text || 'No solution generated')
         } catch (error) {
             console.error('Solving error:', error)
             setError(error instanceof Error ? error.message : 'Failed to solve the exercise')
@@ -370,95 +416,117 @@ Do not use any other language in your response.`
                             <p className="text-sm text-gray-500">Tải lên hình ảnh hoặc nhập nội dung bài tập</p>
                         </div>
 
-                        {/* Input Type Selector */}
-                        <div className="flex border-b mb-4">
-                            <button
-                                onClick={() => setInputType('image')}
-                                className={`px-4 py-2 text-sm font-medium ${
-                                    inputType === 'image'
-                                        ? 'border-b-2 border-black text-black'
-                                        : 'text-gray-500 hover:text-black'
-                                }`}
-                            >
-                                Hình ảnh
-                            </button>
-                            <button
-                                onClick={() => setInputType('text')}
-                                className={`px-4 py-2 text-sm font-medium ${
-                                    inputType === 'text'
-                                        ? 'border-b-2 border-black text-black'
-                                        : 'text-gray-500 hover:text-black'
-                                }`}
-                            >
-                                Văn bản
-                            </button>
+                        {/* Image Upload Area */}
+                        <div
+                            ref={imageContainerRef}
+                            onClick={() => fileInputRef.current?.click()}
+                            className={`relative min-h-[200px] cursor-pointer rounded-xl border-2 border-dashed transition-colors ${
+                                imagePreview ? 'border-transparent' : 'border-gray-200 hover:border-gray-300'
+                            } mb-4`}
+                        >
+                            {imagePreview ? (
+                                <div className="relative h-full">
+                                    <img
+                                        src={imagePreview}
+                                        alt="Xem trước bài tập"
+                                        className="w-full h-full object-contain"
+                                    />
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            setSelectedImage(null)
+                                            setImagePreview(null)
+                                            if (fileInputRef.current) {
+                                                fileInputRef.current.value = ''
+                                            }
+                                        }}
+                                        className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-sm transition-colors"
+                                    >
+                                        <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                                    <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                                        <PhotoIcon className="h-8 w-8 text-gray-400" />
+                                    </div>
+                                    <p className="text-sm font-medium">Kéo thả hoặc nhấp để tải lên ảnh</p>
+                                    <p className="text-xs text-gray-400 mt-1">Hỗ trợ: JPG, PNG, GIF (tối đa 10MB)</p>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            cameraInputRef.current?.click()
+                                        }}
+                                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        Chụp ảnh
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
-                        {inputType === 'image' ? (
-                            <>
-                                <div
-                                    ref={imageContainerRef}
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className={`relative min-h-[300px] cursor-pointer rounded-xl border-2 border-dashed transition-colors ${
-                                        imagePreview ? 'border-transparent' : 'border-gray-200 hover:border-gray-300'
-                                    }`}
-                                >
-                                    {imagePreview ? (
-                                        <div className="relative h-full">
-                                            <img
-                                                src={imagePreview}
-                                                alt="Xem trước bài tập"
-                                                className="w-full h-full object-contain"
-                                            />
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    setSelectedImage(null)
-                                                    setImagePreview(null)
-                                                    if (fileInputRef.current) {
-                                                        fileInputRef.current.value = ''
-                                                    }
-                                                }}
-                                                className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-sm transition-colors"
-                                            >
-                                                <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-                                            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-                                                <PhotoIcon className="h-8 w-8 text-gray-400" />
-                                            </div>
-                                            <p className="text-sm font-medium">Nhấp để tải lên hoặc dán hình ảnh</p>
-                                            <p className="text-xs text-gray-400 mt-1">Hỗ trợ: JPG, PNG, GIF (tối đa 10MB)</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    className="hidden"
-                                />
-                            </>
-                        ) : (
-                            <div className="space-y-4">
+                        {/* Text Input Area */}
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Hoặc nhập câu hỏi của bạn</label>
                                 <textarea
                                     ref={textAreaRef}
                                     value={exerciseText}
                                     onChange={(e) => setExerciseText(e.target.value)}
                                     placeholder="Nhập nội dung bài tập của bạn ở đây..."
-                                    className="w-full h-[300px] p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                                    className="w-full h-[150px] p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black resize-none"
                                 />
-                                <div className="text-xs text-gray-500">
-                                    * Hãy nhập đầy đủ nội dung bài tập, bao gồm các yêu cầu và dữ liệu cần thiết
+                                <div className="text-xs text-gray-500 mt-1">
+                                    * Nếu bạn nhập câu hỏi ở đây, AI sẽ ưu tiên trả lời câu hỏi này thay vì phân tích ảnh
                                 </div>
                             </div>
-                        )}
+
+                            {/* File Upload Buttons */}
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        documentInputRef.current?.click()
+                                    }}
+                                    className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                                >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Tải tài liệu
+                                    <span className="text-xs text-gray-500">(PDF, DOC, TXT...)</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                        />
+                        <input
+                            ref={cameraInputRef}
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={handleCameraCapture}
+                            className="hidden"
+                        />
+                        <input
+                            ref={documentInputRef}
+                            type="file"
+                            accept=".txt,.pdf,.json,.doc,.docx,application/pdf,application/json,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                        />
 
                         <button
                             onClick={handleSolve}
