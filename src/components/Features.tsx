@@ -27,16 +27,14 @@ import {
     Star,
     Utensils
 } from 'lucide-react'
+import { useEffect, useState } from 'react';
+import { PageView } from '@/models/PageView';
 
 interface FeatureCardProps {
     title: string
     description: string
     icon: React.ReactNode
-    stats: {
-        stars: number
-        views: number
-        uses: number
-    }
+    views: number
     path: string
     badge?: 'Popular' | 'New'
 }
@@ -48,7 +46,7 @@ interface CategoryProps {
     features: FeatureCardProps[]
 }
 
-const FeatureCard = ({ title, description, icon, stats, path, badge }: FeatureCardProps) => {
+const FeatureCard = ({ title, description, icon, views, path, badge }: FeatureCardProps) => {
     return (
         <Link href={path} className="block">
             <div className="p-6 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all bg-white">
@@ -70,18 +68,10 @@ const FeatureCard = ({ title, description, icon, stats, path, badge }: FeatureCa
                     </div>
                 </div>
 
-                <div className="flex justify-between text-sm text-gray-500">
-                    <div className="flex items-center gap-1">
-                        <span className="text-yellow-400">★</span>
-                        <span>{stats.stars}</span>
-                    </div>
+                <div className="flex justify-end text-sm text-gray-500">
                     <div className="flex items-center gap-1">
                         <span>👁</span>
-                        <span>{stats.views}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <span>↗</span>
-                        <span>{stats.uses}</span>
+                        <span>{views}</span>
                     </div>
                 </div>
             </div>
@@ -99,55 +89,57 @@ const categories: CategoryProps[] = [
                 title: "Dịch thuật AI",
                 description: "Dịch văn bản giữa các ngôn ngữ bằng AI",
                 icon: <Languages className="w-6 h-6 text-black" />,
-                stats: { stars: 579, views: 23563, uses: 4308 },
+                views: 0,
                 path: "/translate",
                 badge: "Popular"
-            }, {
+            },
+            {
                 title: "Dịch hội thoại",
                 description: "Dịch các cuộc hội thoại và đoạn chat",
                 icon: <MessageCircle className="w-6 h-6 text-black" />,
-                stats: { stars: 300, views: 15346, uses: 2801 },
+                views: 0,
                 path: "/conversation-translate"
             },
             {
                 title: "Dịch phụ đề",
                 description: "Dịch file phụ đề SRT sang nhiều ngôn ngữ",
                 icon: <Subtitles className="w-6 h-6 text-black" />,
-                stats: { stars: 245, views: 11399, uses: 2910 },
+                views: 0,
                 path: "/srt-translation"
-            }, {
+            },
+            {
                 title: "Từ điển",
                 description: "Tra cứu từ điển đa ngôn ngữ",
                 icon: <Book className="w-6 h-6 text-black" />,
-                stats: { stars: 813, views: 18184, uses: 4369 },
+                views: 0,
                 path: "/dictionary"
             },
             {
                 title: "Học từ vựng",
                 description: "Học và luyện tập từ vựng hiệu quả",
                 icon: <Brain className="w-6 h-6 text-black" />,
-                stats: { stars: 653, views: 6618, uses: 1305 },
+                views: 0,
                 path: "/vocabulary"
             },
             {
                 title: "Tạo câu hỏi",
                 description: "Tạo các bài tập và câu hỏi trắc nghiệm",
                 icon: <FileText className="w-6 h-6 text-black" />,
-                stats: { stars: 602, views: 14205, uses: 4286 },
+                views: 0,
                 path: "/quiz"
             },
             {
                 title: "Cải thiện văn bản",
                 description: "Nâng cao chất lượng văn bản của bạn",
                 icon: <FileCode className="w-6 h-6 text-black" />,
-                stats: { stars: 1172, views: 2540, uses: 2540 },
+                views: 0,
                 path: "/enhance-text"
             },
             {
                 title: "Tóm tắt văn bản",
                 description: "Tự động tóm tắt văn bản dài",
                 icon: <ScrollText className="w-6 h-6 text-black" />,
-                stats: { stars: 1976, views: 18381, uses: 3660 },
+                views: 0,
                 path: "/summarize",
                 badge: "Popular"
             },
@@ -155,28 +147,28 @@ const categories: CategoryProps[] = [
                 title: "Giải bài tập",
                 description: "Giải bài tập bằng AI",
                 icon: <Brain className="w-6 h-6 text-black" />,
-                stats: { stars: 1569, views: 14325, uses: 7194 },
+                views: 0,
                 path: "/aisolver"
             },
             {
                 title: "Hỗ trợ tán gái",
                 description: "Hỗ trợ tán gái bằng AI",
                 icon: <Heart className="w-6 h-6 text-black" />,
-                stats: { stars: 602, views: 14205, uses: 4286 },
+                views: 0,
                 path: "/flirting"
             },
             {
                 title: "Xem bói",
                 description: "Xem bói bằng AI",
                 icon: <Star className="w-6 h-6 text-black" />,
-                stats: { stars: 602, views: 14205, uses: 4286 },
+                views: 0,
                 path: "/fortune-telling"
             },
             {
-                title: "Xem công thức nấu ăn",
-                description: "Xem công thức nấu ăn bằng AI",
+                title: "Tạo công thức nấu ăn",
+                description: "Tạo công thức nấu ăn bằng AI",
                 icon: <Utensils className="w-6 h-6 text-black" />,
-                stats: { stars: 602, views: 14205, uses: 4286 },
+                views: 0,
                 path: "/recipe-generator"
             }
         ]
@@ -190,7 +182,7 @@ const categories: CategoryProps[] = [
                 title: "Chuyển đổi tiền tệ",
                 description: "Chuyển đổi giữa các loại tiền tệ khác nhau",
                 icon: <DollarSign className="w-6 h-6 text-black" />,
-                stats: { stars: 0, views: 0, uses: 0 },
+                views: 0,
                 path: "/currency",
                 badge: "New"
             },
@@ -198,70 +190,90 @@ const categories: CategoryProps[] = [
                 title: "Tính lãi suất",
                 description: "Tính lãi suất tiết kiệm",
                 icon: <Calculator className="w-6 h-6 text-black" />,
-                stats: { stars: 1569, views: 14325, uses: 7194 },
+                views: 0,
                 path: "/utilities/interest-calculator"
             },
             {
                 title: "Quản lý chi tiêu",
                 description: "Quản lý chi tiêu của bạn",
                 icon: <CreditCard className="w-6 h-6 text-black" />,
-                stats: { stars: 1569, views: 14325, uses: 7194 },
+                views: 0,
                 path: "/money-love"
             },
             {
                 title: "Tạo tên người dùng",
                 description: "Tạo tên người dùng sáng tạo",
                 icon: <User className="w-6 h-6 text-black" />,
-                stats: { stars: 1569, views: 14325, uses: 7194 },
+                views: 0,
                 path: "/username-generator"
             },
-
             {
                 title: "Mã QR",
                 description: "Tạo và quét mã QR",
                 icon: <QrCode className="w-6 h-6 text-black" />,
-                stats: { stars: 1569, views: 14325, uses: 7194 },
+                views: 0,
                 path: "/qrcode"
-            }, {
+            },
+            {
                 title: "Email tạm thời",
                 description: "Tạo email tạm",
                 icon: <Mail className="w-6 h-6 text-black" />,
-                stats: { stars: 1569, views: 14325, uses: 7194 },
+                views: 0,
                 path: "/temp-mail"
             },
             {
                 title: "Chuyển đổi múi giờ",
                 description: "Chuyển đổi múi giờ giữa các thành phố trên thế giới",
                 icon: <Clock className="w-6 h-6 text-black" />,
-                stats: { stars: 1569, views: 14325, uses: 7194 },
-                path: "/utilities//time-converter"
+                views: 0,
+                path: "/utilities/time-converter"
             },
             {
                 title: "Chuyển đổi đơn vị",
                 description: "Chuyển đổi đơn vị giữa các đơn vị khác nhau",
                 icon: <Ruler className="w-6 h-6 text-black" />,
-                stats: { stars: 1569, views: 14325, uses: 7194 },
-                path: "/utilities//unit-converter"
+                views: 0,
+                path: "/utilities/unit-converter"
             },
             {
                 title: "Tính chỉ số BMI",
                 description: "Tính chỉ số BMI của bạn",
                 icon: <Calculator className="w-6 h-6 text-black" />,
-                stats: { stars: 1569, views: 14325, uses: 7194 },
-                path: "/utilities//bmi-calculator"
+                views: 0,
+                path: "/utilities/bmi-calculator"
             },
             {
                 title: "Tính tuổi",
                 description: "Tính tuổi của bạn",
                 icon: <Calculator className="w-6 h-6 text-black" />,
-                stats: { stars: 1569, views: 14325, uses: 7194 },
-                path: "/utilities//age-calculator"
+                views: 0,
+                path: "/utilities/age-calculator"
             }
         ]
     },
 ]
 
 export default function Features() {
+    const [pageViews, setPageViews] = useState<Record<string, number>>({});
+
+    useEffect(() => {
+        const fetchPageViews = async () => {
+            try {
+                const response = await fetch('/api/page-views');
+                const data: PageView[] = await response.json();
+                const viewsMap = data.reduce((acc, view) => {
+                    acc[view.path] = view.views;
+                    return acc;
+                }, {} as Record<string, number>);
+                setPageViews(viewsMap);
+            } catch (error) {
+                console.error('Error fetching page views:', error);
+            }
+        };
+
+        fetchPageViews();
+    }, []);
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="space-y-16">
@@ -279,7 +291,11 @@ export default function Features() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {category.features.map((feature, featureIndex) => (
-                                <FeatureCard key={featureIndex} {...feature} />
+                                <FeatureCard
+                                    key={featureIndex}
+                                    {...feature}
+                                    views={pageViews[feature.path] || 0}
+                                />
                             ))}
                         </div>
                     </div>
