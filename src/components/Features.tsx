@@ -27,7 +27,10 @@ import {
     Star,
     Utensils,
     Eye,
-    Search
+    Search,
+    Cloud,
+    Thermometer,
+    Wind
 } from 'lucide-react'
 import { useEffect, useState } from 'react';
 import { PageView } from '@/models/PageView';
@@ -191,6 +194,14 @@ const categories: CategoryProps[] = [
         description: "Các công cụ hỗ trợ tiện ích",
         icon: <Wrench className="w-6 h-6 text-black" />,
         features: [
+            {
+                title: "Dự báo thời tiết",
+                description: "Xem dự báo thời tiết chi tiết với bản đồ tương tác",
+                icon: <Cloud className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/weather",
+                badge: "New"
+            },
             {
                 title: "Chuyển đổi tiền tệ",
                 description: "Chuyển đổi giữa các loại tiền tệ khác nhau",
