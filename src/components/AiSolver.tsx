@@ -55,78 +55,127 @@ export function AiSolver() {
         if (!needExplanation) {
             return `You are an expert AI tutor. Please provide a concise solution in ${SUPPORTED_LANGUAGES.find(l => l.code === language)?.name || 'Vietnamese'}.
 
-Please follow this structure:
+MARKDOWN FORMATTING REQUIREMENTS:
+- Use # for main section headers
+- Use ## for subsection headers
+- Use > for important notes or key points
+- Use **bold** for emphasis on key terms
+- Use \`code\` for mathematical terms or variables
+- Use --- for section separators
+- Use numbered lists (1., 2., etc.) for steps
+- Use bullet points (•) for lists of items
+- Use tables for organized data presentation
+- Use proper indentation for nested lists
 
-1. Problem Statement:
-   - Briefly state what the problem is asking for
-   - List the key given information
+# Brief Explanation:
+- Write 2-3 sentences explaining your approach
+- Mention the key concept or formula used
 
-2. Brief Explanation:
-   - Write 2-3 sentences explaining your approach
-   - Mention the key concept or formula used
+# Answer:
+- Provide the final answer clearly
+- Use proper notation and units
+- For mathematical expressions, use:
+  * Inline math: $formula$ (e.g., $x^2 + y^2 = z^2$)
+  * Block math: $$formula$$ (e.g., $$\\sum_{i=1}^n i = \\frac{n(n+1)}{2}$$)
 
-3. Answer:
-   - Provide the final answer clearly
-   - Use proper notation and units
-   - For mathematical expressions, use:
-     * Inline math: $formula$ (e.g., $x^2 + y^2 = z^2$)
-     * Block math: $$formula$$ (e.g., $$\\sum_{i=1}^n i = \\frac{n(n+1)}{2}$$)
+> Note: Keep it concise and clear. No need for detailed steps or multiple approaches.
 
-Note: Keep it concise and clear. No need for detailed steps or multiple approaches.
-Return language: ${language}
+Return ${language} only
 
-Please format the solution using markdown syntax for better readability.`
+IMPORTANT: Your ENTIRE response MUST be in ${SUPPORTED_LANGUAGES.find(l => l.code === language)?.name} ONLY.`
         }
 
         return `You are an expert AI tutor. Please analyze the exercise/problem in the image and provide a detailed solution in ${SUPPORTED_LANGUAGES.find(l => l.code === language)?.name || 'Vietnamese'}.
 
+MARKDOWN FORMATTING REQUIREMENTS:
+- Use # for main section headers
+- Use ## for subsection headers
+- Use > for important notes or key points
+- Use **bold** for emphasis on key terms
+- Use \`code\` for mathematical terms or variables
+- Use --- for section separators
+- Use numbered lists (1., 2., etc.) for steps
+- Use bullet points (•) for lists of items
+- Use tables for organized data presentation
+- Use proper indentation for nested lists
+- Use \`\`\`math for multi-line mathematical expressions
+- Use horizontal rules (---) to separate major sections
+
 CRITICAL REQUIREMENTS:
 
-1. Problem Analysis:
-   - Identify the type of problem/exercise
-   - Understand all given information
-   - Recognize key concepts and requirements
-   - Identify formulas or methods needed
-   - Note any constraints or conditions
+# Problem Analysis:
+- Identify the type of problem/exercise
+- Understand all given information
+- Recognize key concepts and requirements
+- Identify formulas or methods needed
+- Note any constraints or conditions
 
-2. Solution Structure:
-   - Start with a clear problem statement
-   - Break down the solution into clear, numbered steps
-   - Show all work and calculations clearly
-   - Explain each step thoroughly
-   - Provide detailed reasoning
-   - Provide the final answer clearly
+---
 
-3. Mathematical Formatting:
-   - Use inline math with $formula$ for simple expressions (e.g., $x^2 + y^2 = z^2$)
-   - Use block math with $$formula$$ for complex equations (e.g., $$\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}$$)
-   - Format matrices, fractions, and special symbols properly
-   - Use proper mathematical notation
+# Solution Structure:
+1. Start with a clear problem statement
+2. Break down the solution into clear, numbered steps
+3. Show all work and calculations clearly
+4. Explain each step thoroughly
+5. Provide detailed reasoning
+6. Provide the final answer clearly
 
-4. Educational Value:
-   - Explain the reasoning behind each step
-   - Highlight key concepts and principles
-   - Point out common pitfalls to avoid
-   - Include relevant tips or tricks
-   - Connect to related concepts when relevant
+---
 
-5. Solution Quality:
-   - Ensure mathematical accuracy
-   - Use proper notation and units
-   - Show alternative approaches if applicable
-   - Verify the answer makes sense
-   - Include any necessary diagrams or graphs
+# Mathematical Formatting:
+## Inline Mathematics
+- Use $formula$ for simple expressions
+- Example: $x^2 + y^2 = z^2$
 
-6. Output Format:
-   - Use clear section headings
-   - Format mathematical expressions properly
-   - Use bullet points for clarity
-   - Include step numbers where appropriate
-   - Use markdown for better readability
+## Block Mathematics
+- Use $$formula$$ for complex equations
+- Example: $$\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}$$
 
-7. Return language: ${language}
+## Matrix Formatting
+\`\`\`math
+\\begin{bmatrix} 
+a & b \\\\
+c & d
+\\end{bmatrix}
+\`\`\`
 
-Please solve the problem and format the solution using markdown syntax for better readability.`
+---
+
+# Educational Value:
+> Key Concepts:
+- Explain the reasoning behind each step
+- Highlight key concepts and principles
+- Point out common pitfalls to avoid
+- Include relevant tips or tricks
+- Connect to related concepts when relevant
+
+---
+
+# Solution Quality:
+## Accuracy
+- Ensure mathematical accuracy
+- Use proper notation and units
+- Show alternative approaches if applicable
+- Verify the answer makes sense
+
+## Visual Elements
+- Include necessary diagrams or graphs
+- Use tables for data organization
+- Use proper alignment for equations
+
+---
+
+# Output Format:
+- Use clear section headings with proper hierarchy
+- Format mathematical expressions properly
+- Use bullet points for clarity
+- Include step numbers where appropriate
+- Maintain consistent formatting throughout
+
+Return language: ${language}
+
+IMPORTANT: Your ENTIRE response MUST be in ${SUPPORTED_LANGUAGES.find(l => l.code === language)?.name} ONLY.
+Do not use any other language in your response.`
     }
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,6 +212,7 @@ Please solve the problem and format the solution using markdown syntax for bette
             const genAI = new GoogleGenerativeAI(geminiKey)
             const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
             const prompt = createSolverPrompt()
+            const selectedLanguage = SUPPORTED_LANGUAGES.find(l => l.code === language)?.name || 'Vietnamese'
 
             let result;
             if (selectedImage) {
@@ -184,11 +234,14 @@ Please solve the problem and format the solution using markdown syntax for bette
                     }
                 }
 
-                result = await model.generateContent([prompt, imagePart])
+                result = await model.generateContent([
+                    `${prompt}\n\nIMPORTANT: You MUST respond ONLY in ${selectedLanguage}. Do not use any other language in your response.`,
+                    imagePart
+                ])
             } else {
                 // Use text input
                 result = await model.generateContent([
-                    prompt,
+                    `${prompt}\n\nIMPORTANT: You MUST respond ONLY in ${selectedLanguage}. Do not use any other language in your response.`,
                     `Bài tập:\n${exerciseText}`
                 ])
             }
