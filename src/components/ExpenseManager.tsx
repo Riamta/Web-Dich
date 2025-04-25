@@ -556,6 +556,78 @@ export function ExpenseManager() {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Ký hiệu tiền tệ
                                     </label>
+                                    <div className="flex gap-2 mb-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSettings(prev => ({
+                                                ...prev,
+                                                currency: { ...prev.currency, symbol: 'đ' }
+                                            }))}
+                                            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                                                settings.currency.symbol === 'đ'
+                                                    ? 'bg-black text-white border-black'
+                                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                            }`}
+                                        >
+                                            VND (đ)
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSettings(prev => ({
+                                                ...prev,
+                                                currency: { ...prev.currency, symbol: '$' }
+                                            }))}
+                                            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                                                settings.currency.symbol === '$'
+                                                    ? 'bg-black text-white border-black'
+                                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                            }`}
+                                        >
+                                            USD ($)
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSettings(prev => ({
+                                                ...prev,
+                                                currency: { ...prev.currency, symbol: '¥' }
+                                            }))}
+                                            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                                                settings.currency.symbol === '¥'
+                                                    ? 'bg-black text-white border-black'
+                                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                            }`}
+                                        >
+                                            CNY (¥)
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSettings(prev => ({
+                                                ...prev,
+                                                currency: { ...prev.currency, symbol: '¥' }
+                                            }))}
+                                            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                                                settings.currency.symbol === '¥'
+                                                    ? 'bg-black text-white border-black'
+                                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                            }`}
+                                        >
+                                            JPY (¥)
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSettings(prev => ({
+                                                ...prev,
+                                                currency: { ...prev.currency, symbol: '₩' }
+                                            }))}
+                                            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                                                settings.currency.symbol === '₩'
+                                                    ? 'bg-black text-white border-black'
+                                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                            }`}
+                                        >
+                                            KRW (₩)
+                                        </button>
+                                    </div>
                                     <input
                                         type="text"
                                         value={settings.currency.symbol}
@@ -564,6 +636,7 @@ export function ExpenseManager() {
                                             currency: { ...prev.currency, symbol: e.target.value }
                                         }))}
                                         className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                        placeholder="Hoặc nhập ký hiệu khác"
                                     />
                                 </div>
                                 <div>
@@ -678,7 +751,7 @@ export function ExpenseManager() {
                             <select
                                 value={filter.category}
                                 onChange={(e) => setFilter(prev => ({ ...prev, category: e.target.value }))}
-                                className="flex-1 sm:flex-none p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                className="flex-1 sm:flex-none p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black min-w-[150px]"
                             >
                                 <option value="all">Tất cả danh mục</option>
                                 {filter.type === 'all' && (
@@ -705,7 +778,7 @@ export function ExpenseManager() {
                             <select
                                 value={filter.period}
                                 onChange={(e) => setFilter(prev => ({ ...prev, period: e.target.value as any }))}
-                                className="flex-1 sm:flex-none p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                className="flex-1 sm:flex-none p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black min-w-[150px]"
                             >
                                 <option value="all">Tất cả thời gian</option>
                                 <option value="day">Theo ngày</option>
