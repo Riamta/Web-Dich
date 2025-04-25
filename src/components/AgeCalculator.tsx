@@ -73,7 +73,6 @@ export default function AgeCalculator() {
         let years = now.getFullYear() - birth.getFullYear()
         let months = now.getMonth() - birth.getMonth()
         let days = now.getDate() - birth.getDate()
-
         if (days < 0) {
             months--
             const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, birth.getDate())

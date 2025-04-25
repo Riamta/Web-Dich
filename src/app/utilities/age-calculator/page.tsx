@@ -1,7 +1,6 @@
-'use client'
-
 import AgeCalculator from '@/components/AgeCalculator'
 
+// Move metadata to a separate layout.tsx file
 export default function AgeCalculatorPage() {
     return (
         <div className="container mx-auto px-4 py-8">
@@ -17,4 +16,4 @@ export default function AgeCalculatorPage() {
             </div>
         </div>
     )
-} 
+}
