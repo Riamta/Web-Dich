@@ -8,11 +8,39 @@ import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { aiService } from '../lib/ai-service';
 import ReactMarkdown from 'react-markdown';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartData
+} from 'chart.js';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
+
+// Đăng ký các components của Chart.js
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const EXPENSE_CATEGORIES = [
     'Ăn uống',
-    'Di chuyển',
     'Giải trí',
+    'Di chuyển',
+    'Đầu tư',
     'Mua sắm',
     'Hóa đơn',
     'Y tế',
@@ -93,6 +121,7 @@ export function ExpenseManager() {
     const [wallet, setWallet] = useState<Wallet | null>(null);
     const [showWalletModal, setShowWalletModal] = useState(false);
     const [newBalance, setNewBalance] = useState('');
+    const [showCharts, setShowCharts] = useState(false);
 
     const expenseService = ExpenseService.getInstance();
 
@@ -403,6 +432,40 @@ export function ExpenseManager() {
         return acc;
     }, {} as Record<string, number>);
 
+    // Thêm các hàm xử lý dữ liệu cho biểu đồ
+    const getMonthlyData = (expenses: Expense[]) => {
+        const monthlyData: { [key: string]: { income: number; expense: number } } = {};
+        
+        expenses.forEach(expense => {
+            const monthKey = format(expense.date, 'MM/yyyy');
+            if (!monthlyData[monthKey]) {
+                monthlyData[monthKey] = { income: 0, expense: 0 };
+            }
+            if (expense.amount > 0) {
+                monthlyData[monthKey].income += expense.amount;
+            } else {
+                monthlyData[monthKey].expense += Math.abs(expense.amount);
+            }
+        });
+        
+        return monthlyData;
+    };
+
+    const getCategoryData = (expenses: Expense[], type: 'income' | 'expense') => {
+        const categoryData: { [key: string]: number } = {};
+        
+        expenses.forEach(expense => {
+            if ((type === 'income' && expense.amount > 0) || (type === 'expense' && expense.amount < 0)) {
+                if (!categoryData[expense.category]) {
+                    categoryData[expense.category] = 0;
+                }
+                categoryData[expense.category] += Math.abs(expense.amount);
+            }
+        });
+        
+        return categoryData;
+    };
+
     return (
         <div className="max-w-6xl mx-auto p-2 sm:p-4">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
@@ -702,6 +765,188 @@ export function ExpenseManager() {
                             <p className="text-lg sm:text-2xl font-semibold">{filteredExpenses.length}</p>
                         </div>
                     </div>
+                </div>
+
+                {/* Charts Toggle Button */}
+                <div className="p-4 sm:p-6 border-b border-gray-200">
+                    <div className="flex items-center justify-between mb-4">
+                        <button
+                            onClick={() => setShowCharts(!showCharts)}
+                            className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                        >
+                            {showCharts ? (
+                                <>
+                                    <span>Ẩn biểu đồ</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+                                    </svg>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Hiện biểu đồ</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                    </svg>
+                                </>
+                            )}
+                        </button>
+                    </div>
+
+                    {showCharts && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Biểu đồ đường - Thu chi theo tháng */}
+                            <div className="p-4 bg-white rounded-xl shadow-sm">
+                                <h3 className="text-sm font-medium mb-4">Thu chi theo tháng</h3>
+                                <Line
+                                    data={{
+                                        labels: Object.keys(getMonthlyData(filteredExpenses)),
+                                        datasets: [
+                                            {
+                                                label: 'Thu nhập',
+                                                data: Object.values(getMonthlyData(filteredExpenses)).map(d => d.income),
+                                                borderColor: 'rgb(75, 192, 192)',
+                                                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                                                tension: 0.3
+                                            },
+                                            {
+                                                label: 'Chi tiêu',
+                                                data: Object.values(getMonthlyData(filteredExpenses)).map(d => d.expense),
+                                                borderColor: 'rgb(255, 99, 132)',
+                                                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                                                tension: 0.3
+                                            }
+                                        ]
+                                    }}
+                                    options={{
+                                        responsive: true,
+                                        plugins: {
+                                            legend: {
+                                                position: 'top' as const,
+                                            },
+                                            title: {
+                                                display: false
+                                            }
+                                        },
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+
+                            {/* Biểu đồ cột - Thu nhập theo danh mục */}
+                            <div className="p-4 bg-white rounded-xl shadow-sm">
+                                <h3 className="text-sm font-medium mb-4">Thu nhập theo danh mục</h3>
+                                <Bar
+                                    data={{
+                                        labels: Object.keys(getCategoryData(filteredExpenses, 'income')),
+                                        datasets: [
+                                            {
+                                                label: 'Số tiền',
+                                                data: Object.values(getCategoryData(filteredExpenses, 'income')),
+                                                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                                                borderColor: 'rgb(75, 192, 192)',
+                                                borderWidth: 1
+                                            }
+                                        ]
+                                    }}
+                                    options={{
+                                        responsive: true,
+                                        plugins: {
+                                            legend: {
+                                                position: 'top' as const,
+                                            },
+                                            title: {
+                                                display: false
+                                            }
+                                        },
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+
+                            {/* Biểu đồ cột - Chi tiêu theo danh mục */}
+                            <div className="p-4 bg-white rounded-xl shadow-sm">
+                                <h3 className="text-sm font-medium mb-4">Chi tiêu theo danh mục</h3>
+                                <Bar
+                                    data={{
+                                        labels: Object.keys(getCategoryData(filteredExpenses, 'expense')),
+                                        datasets: [
+                                            {
+                                                label: 'Số tiền',
+                                                data: Object.values(getCategoryData(filteredExpenses, 'expense')),
+                                                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                                                borderColor: 'rgb(255, 99, 132)',
+                                                borderWidth: 1
+                                            }
+                                        ]
+                                    }}
+                                    options={{
+                                        responsive: true,
+                                        plugins: {
+                                            legend: {
+                                                position: 'top' as const,
+                                            },
+                                            title: {
+                                                display: false
+                                            }
+                                        },
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+
+                            {/* Biểu đồ tròn - Tỷ lệ chi tiêu theo danh mục */}
+                            <div className="p-4 bg-white rounded-xl shadow-sm">
+                                <h3 className="text-sm font-medium mb-4">Tỷ lệ chi tiêu theo danh mục</h3>
+                                <Doughnut
+                                    data={{
+                                        labels: Object.keys(getCategoryData(filteredExpenses, 'expense')),
+                                        datasets: [
+                                            {
+                                                data: Object.values(getCategoryData(filteredExpenses, 'expense')),
+                                                backgroundColor: [
+                                                    'rgba(255, 99, 132, 0.5)',
+                                                    'rgba(54, 162, 235, 0.5)',
+                                                    'rgba(255, 206, 86, 0.5)',
+                                                    'rgba(75, 192, 192, 0.5)',
+                                                    'rgba(153, 102, 255, 0.5)',
+                                                    'rgba(255, 159, 64, 0.5)',
+                                                ],
+                                                borderColor: [
+                                                    'rgb(255, 99, 132)',
+                                                    'rgb(54, 162, 235)',
+                                                    'rgb(255, 206, 86)',
+                                                    'rgb(75, 192, 192)',
+                                                    'rgb(153, 102, 255)',
+                                                    'rgb(255, 159, 64)',
+                                                ],
+                                                borderWidth: 1
+                                            }
+                                        ]
+                                    }}
+                                    options={{
+                                        responsive: true,
+                                        plugins: {
+                                            legend: {
+                                                position: 'right' as const,
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Expenses List */}

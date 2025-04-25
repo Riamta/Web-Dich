@@ -21,7 +21,10 @@ import {
     QrCode,
     Mail,
     CreditCard,
-    Calculator
+    Calculator,
+    Clock,
+    Ruler,
+    Star
 } from 'lucide-react'
 
 interface FeatureCardProps {
@@ -160,6 +163,13 @@ const categories: CategoryProps[] = [
                 icon: <Heart className="w-6 h-6 text-black" />,
                 stats: { stars: 602, views: 14205, uses: 4286 },
                 path: "/flirting"
+            },
+            {
+                title: "Xem bói",
+                description: "Xem bói bằng AI",
+                icon: <Star className="w-6 h-6 text-black" />,
+                stats: { stars: 602, views: 14205, uses: 4286 },
+                path: "/fortune-telling"
             }
         ]
     },
@@ -210,6 +220,34 @@ const categories: CategoryProps[] = [
                 icon: <Mail className="w-6 h-6 text-black" />,
                 stats: { stars: 1569, views: 14325, uses: 7194 },
                 path: "/temp-mail"
+            },
+            {
+                title: "Chuyển đổi múi giờ",
+                description: "Chuyển đổi múi giờ giữa các thành phố trên thế giới",
+                icon: <Clock className="w-6 h-6 text-black" />,
+                stats: { stars: 1569, views: 14325, uses: 7194 },
+                path: "/utilities//time-converter"
+            },
+            {
+                title: "Chuyển đổi đơn vị",
+                description: "Chuyển đổi đơn vị giữa các đơn vị khác nhau",
+                icon: <Ruler className="w-6 h-6 text-black" />,
+                stats: { stars: 1569, views: 14325, uses: 7194 },
+                path: "/utilities//unit-converter"
+            },
+            {
+                title: "Tính chỉ số BMI",
+                description: "Tính chỉ số BMI của bạn",
+                icon: <Calculator className="w-6 h-6 text-black" />,
+                stats: { stars: 1569, views: 14325, uses: 7194 },
+                path: "/utilities//bmi-calculator"
+            },
+            {
+                title: "Tính tuổi",
+                description: "Tính tuổi của bạn",
+                icon: <Calculator className="w-6 h-6 text-black" />,
+                stats: { stars: 1569, views: 14325, uses: 7194 },
+                path: "/utilities//age-calculator"
             }
         ]
     },
