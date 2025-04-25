@@ -155,12 +155,16 @@ export function ExpenseManager() {
         e.preventDefault();
         if (!user) return;
 
+        // Đóng modal ngay lập tức
+        setShowAddForm(false);
+        setEditingExpense(null);
+
         try {
             const expenseData = {
                 userId: user.uid,
                 amount: parseFloat(formData.amount) * (formData.type === 'expense' ? -1 : 1),
                 category: formData.category,
-                description: formData.description,
+                description: formData.description || '',
                 date: new Date(formData.date),
                 type: formData.type
             };
@@ -203,8 +207,7 @@ export function ExpenseManager() {
                 ));
             }
 
-            setShowAddForm(false);
-            setEditingExpense(null);
+            // Reset form data
             setFormData({
                 amount: '',
                 category: '',
@@ -792,14 +795,14 @@ export function ExpenseManager() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Mô tả
+                                        Mô tả <span className="text-gray-400">(không bắt buộc)</span>
                                     </label>
                                     <input
                                         type="text"
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                        required
+                                        placeholder="Nhập mô tả (nếu có)"
                                     />
                                 </div>
                                 <div>
