@@ -5,18 +5,25 @@ export const inMemoryPageViews: Record<string, number> = {};
 
 // Get MongoDB client if available
 export async function getMongoClient() {
-  if (!process.env.NEXT_PUBLIC_MONGODB_URI) {
+  if (!process.env.MONGODB_URI) {
     console.log('MongoDB URI not found');
     return null;
   }
 
   try {
-    const client = new MongoClient(process.env.NEXT_PUBLIC_MONGODB_URI, {
+    const client = new MongoClient(process.env.MONGODB_URI, {
       connectTimeoutMS: 5000,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 5000,
       maxPoolSize: 10,
-      minPoolSize: 0
+      minPoolSize: 0,
+      ssl: true,
+      tls: true,
+      tlsAllowInvalidCertificates: false,
+      tlsAllowInvalidHostnames: false,
+      tlsInsecure: false,
+      retryWrites: true,
+      retryReads: true
     });
     
     await client.connect();
