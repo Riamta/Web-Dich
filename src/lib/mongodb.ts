@@ -19,9 +19,6 @@ export async function getMongoClient() {
       minPoolSize: 0,
       ssl: true,
       tls: true,
-      tlsAllowInvalidCertificates: false,
-      tlsAllowInvalidHostnames: false,
-      tlsInsecure: false,
       retryWrites: true,
       retryReads: true
     });
