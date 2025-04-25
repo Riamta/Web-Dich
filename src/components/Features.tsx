@@ -267,14 +267,19 @@ export default function Features() {
         const fetchPageViews = async () => {
             try {
                 const response = await fetch('/api/page-views');
-                const data: PageView[] = await response.json();
-                const viewsMap = data.reduce((acc, view) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                const viewsMap = data.reduce((acc: Record<string, number>, view: { path: string; views: number }) => {
                     acc[view.path] = view.views;
                     return acc;
                 }, {} as Record<string, number>);
                 setPageViews(viewsMap);
             } catch (error) {
                 console.error('Error fetching page views:', error);
+                // Set empty object as fallback
+                setPageViews({});
             }
         };
 
