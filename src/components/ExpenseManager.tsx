@@ -404,40 +404,41 @@ export function ExpenseManager() {
     }, {} as Record<string, number>);
 
     return (
-        <div className="max-w-6xl mx-auto p-4">
+        <div className="max-w-6xl mx-auto p-2 sm:p-4">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b border-gray-200 gap-4">
                     <div className="flex items-center space-x-2">
-                        <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center">
-                            <ChartBarIcon className="h-6 w-6 text-white" />
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-black flex items-center justify-center">
+                            <ChartBarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-semibold">Quản lý tài chính</h1>
-                            <p className="text-sm text-gray-500">Theo dõi thu nhập và chi tiêu của bạn</p>
+                            <h1 className="text-lg sm:text-xl font-semibold">Quản lý tài chính</h1>
+                            <p className="text-xs sm:text-sm text-gray-500">Theo dõi thu nhập và chi tiêu của bạn</p>
                         </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                         <button
                             onClick={() => setShowWalletModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                            className="flex-1 sm:flex-none flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                         >
-                            <PencilSquareIcon className="h-5 w-5" />
-                            Số dư ví: {wallet ? formatCurrency(wallet.balance) : '0đ'}
+                            <PencilSquareIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <span className="hidden sm:inline">Số dư ví:</span> {wallet ? formatCurrency(wallet.balance) : '0đ'}
                         </button>
                         <button
                             onClick={() => setShowSettings(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                            className="flex-1 sm:flex-none flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                         >
-                            <Cog6ToothIcon className="h-5 w-5" />
-                            Cài đặt
+                            <Cog6ToothIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <span className="hidden sm:inline">Cài đặt</span>
                         </button>
                         <button
                             onClick={() => setShowAddForm(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
+                            className="flex-1 sm:flex-none flex items-center gap-2 px-3 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
                         >
-                            <PlusIcon className="h-5 w-5" />
-                            Thêm giao dịch
+                            <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <span className="hidden sm:inline">Thêm giao dịch</span>
+                            <span className="sm:hidden">Thêm</span>
                         </button>
                     </div>
                 </div>
@@ -566,7 +567,7 @@ export function ExpenseManager() {
                 )}
 
                 {/* Smart Input */}
-                <div className="p-6 border-b border-gray-200">
+                <div className="p-4 sm:p-6 border-b border-gray-200">
                     <div className="relative">
                         <input
                             type="text"
@@ -579,7 +580,7 @@ export function ExpenseManager() {
                                 }
                             }}
                             placeholder="Nhập mô tả giao dịch (ví dụ: Tôi vừa đi ăn hết 30.000 hoặc Nhận lương tháng 10.000.000)"
-                            className="w-full p-4 pr-12 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                            className="w-full p-3 pr-12 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                         />
                         <button
                             onClick={() => analyzeExpense(smartInput)}
@@ -587,25 +588,25 @@ export function ExpenseManager() {
                             className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-black disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isAnalyzing ? (
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black" />
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black" />
                             ) : (
-                                <SparklesIcon className="h-5 w-5" />
+                                <SparklesIcon className="h-4 w-4" />
                             )}
                         </button>
                     </div>
-                    <p className="mt-2 text-sm text-gray-500">
-                        Nhấn Enter hoặc nút <SparklesIcon className="h-4 w-4 inline" /> để AI phân tích giao dịch
+                    <p className="mt-2 text-xs text-gray-500">
+                        Nhấn Enter hoặc nút <SparklesIcon className="h-3 w-3 inline" /> để AI phân tích giao dịch
                     </p>
                 </div>
 
                 {/* Summary */}
-                <div className="p-6 border-b border-gray-200">
-                    <div className="flex flex-col md:flex-row gap-4 mb-4">
+                <div className="p-4 sm:p-6 border-b border-gray-200">
+                    <div className="flex flex-col sm:flex-row gap-4 mb-4">
                         <div className="flex flex-wrap gap-2">
                             <select
                                 value={filter.type}
                                 onChange={(e) => setFilter(prev => ({ ...prev, type: e.target.value as any }))}
-                                className="p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                className="flex-1 sm:flex-none p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                             >
                                 <option value="all">Tất cả</option>
                                 <option value="income">Thu nhập</option>
@@ -614,7 +615,7 @@ export function ExpenseManager() {
                             <select
                                 value={filter.category}
                                 onChange={(e) => setFilter(prev => ({ ...prev, category: e.target.value }))}
-                                className="p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                className="flex-1 sm:flex-none p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                             >
                                 <option value="all">Tất cả danh mục</option>
                                 {filter.type === 'all' && (
@@ -641,7 +642,7 @@ export function ExpenseManager() {
                             <select
                                 value={filter.period}
                                 onChange={(e) => setFilter(prev => ({ ...prev, period: e.target.value as any }))}
-                                className="p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                className="flex-1 sm:flex-none p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                             >
                                 <option value="all">Tất cả thời gian</option>
                                 <option value="day">Theo ngày</option>
@@ -653,7 +654,7 @@ export function ExpenseManager() {
                                     type="date"
                                     value={filter.day}
                                     onChange={(e) => setFilter(prev => ({ ...prev, day: e.target.value }))}
-                                    className="p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                    className="flex-1 sm:flex-none p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                                 />
                             )}
                             {filter.period === 'month' && (
@@ -661,7 +662,7 @@ export function ExpenseManager() {
                                     type="month"
                                     value={filter.month}
                                     onChange={(e) => setFilter(prev => ({ ...prev, month: e.target.value }))}
-                                    className="p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                    className="flex-1 sm:flex-none p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                                 />
                             )}
                             {filter.period === 'year' && (
@@ -671,44 +672,110 @@ export function ExpenseManager() {
                                     onChange={(e) => setFilter(prev => ({ ...prev, year: e.target.value }))}
                                     min="2000"
                                     max="2100"
-                                    className="p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black w-24"
+                                    className="flex-1 sm:flex-none p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black w-24"
                                     placeholder="Năm"
                                 />
                             )}
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="p-4 bg-gray-50 rounded-xl">
-                            <p className="text-sm text-gray-500">Số dư</p>
-                            <p className={`text-2xl font-semibold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                        <div className="p-3 sm:p-4 bg-gray-50 rounded-xl">
+                            <p className="text-xs sm:text-sm text-gray-500">Số dư</p>
+                            <p className={`text-lg sm:text-2xl font-semibold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                 {formatCurrency(balance)}
                             </p>
                         </div>
-                        <div className="p-4 bg-gray-50 rounded-xl">
-                            <p className="text-sm text-gray-500">Thu nhập</p>
-                            <p className="text-2xl font-semibold text-green-600">
+                        <div className="p-3 sm:p-4 bg-gray-50 rounded-xl">
+                            <p className="text-xs sm:text-sm text-gray-500">Thu nhập</p>
+                            <p className="text-lg sm:text-2xl font-semibold text-green-600">
                                 {formatCurrency(income)}
                             </p>
                         </div>
-                        <div className="p-4 bg-gray-50 rounded-xl">
-                            <p className="text-sm text-gray-500">Chi tiêu</p>
-                            <p className="text-2xl font-semibold text-red-600">
+                        <div className="p-3 sm:p-4 bg-gray-50 rounded-xl">
+                            <p className="text-xs sm:text-sm text-gray-500">Chi tiêu</p>
+                            <p className="text-lg sm:text-2xl font-semibold text-red-600">
                                 {formatCurrency(expense)}
                             </p>
                         </div>
-                        <div className="p-4 bg-gray-50 rounded-xl">
-                            <p className="text-sm text-gray-500">Số giao dịch</p>
-                            <p className="text-2xl font-semibold">{filteredExpenses.length}</p>
+                        <div className="p-3 sm:p-4 bg-gray-50 rounded-xl">
+                            <p className="text-xs sm:text-sm text-gray-500">Số giao dịch</p>
+                            <p className="text-lg sm:text-2xl font-semibold">{filteredExpenses.length}</p>
                         </div>
                     </div>
                 </div>
 
+                {/* Expenses List */}
+                <div className="p-4 sm:p-6">
+                    {loading ? (
+                        <div className="flex justify-center">
+                            <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-black" />
+                        </div>
+                    ) : filteredExpenses.length === 0 ? (
+                        <div className="text-center text-gray-500">
+                            <p>Không có giao dịch nào phù hợp</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3 sm:space-y-4">
+                            {filteredExpenses.map((expense) => (
+                                <div
+                                    key={expense.id}
+                                    className="p-3 sm:p-4 bg-gray-50 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${
+                                            expense.amount >= 0 ? 'bg-green-600' : 'bg-red-600'
+                                        }`}>
+                                            {expense.amount >= 0 ? (
+                                                <ArrowUpIcon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                                            ) : (
+                                                <ArrowDownIcon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p className={`text-sm sm:text-base font-medium ${
+                                                expense.amount >= 0 ? 'text-green-600' : 'text-red-600'
+                                            }`}>
+                                                {formatCurrency(Math.abs(expense.amount))}
+                                            </p>
+                                            <p className="text-xs sm:text-sm text-gray-500">{expense.description}</p>
+                                            <p className="text-xs text-gray-400">
+                                                {format(expense.date, 'dd/MM/yyyy', { locale: vi })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`px-2 py-1 text-xs sm:text-sm rounded-full ${
+                                            expense.amount >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                        }`}>
+                                            {expense.category}
+                                        </span>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={() => handleEdit(expense)}
+                                                className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                            >
+                                                <PencilIcon className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(expense.id!)}
+                                                className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-gray-100 rounded-lg transition-colors"
+                                            >
+                                                <TrashIcon className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
                 {/* Add/Edit Form Modal */}
                 {showAddForm && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-xl p-6 w-full max-w-md">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-md">
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-semibold">
+                                <h2 className="text-lg sm:text-xl font-semibold">
                                     {editingExpense ? 'Sửa giao dịch' : 'Thêm giao dịch mới'}
                                 </h2>
                                 <button
@@ -725,24 +792,24 @@ export function ExpenseManager() {
                                     }}
                                     className="text-gray-500 hover:text-gray-700"
                                 >
-                                    <XMarkIcon className="h-6 w-6" />
+                                    <XMarkIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                                 </button>
                             </div>
                             <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="flex gap-4">
+                                <div className="flex gap-2 sm:gap-4">
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setFormData(prev => ({ ...prev, type: 'expense' }));
                                             setIsIncome(false);
                                         }}
-                                        className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
+                                        className={`flex-1 px-3 py-2 text-sm rounded-lg border transition-colors ${
                                             formData.type === 'expense'
                                                 ? 'bg-red-50 border-red-200 text-red-600'
                                                 : 'bg-gray-50 border-gray-200 text-gray-600'
                                         }`}
                                     >
-                                        <ArrowDownIcon className="h-5 w-5 inline mr-2" />
+                                        <ArrowDownIcon className="h-4 w-4 inline mr-1 sm:mr-2" />
                                         Chi tiêu
                                     </button>
                                     <button
@@ -751,17 +818,17 @@ export function ExpenseManager() {
                                             setFormData(prev => ({ ...prev, type: 'income' }));
                                             setIsIncome(true);
                                         }}
-                                        className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
+                                        className={`flex-1 px-3 py-2 text-sm rounded-lg border transition-colors ${
                                             formData.type === 'income'
                                                 ? 'bg-green-50 border-green-200 text-green-600'
                                                 : 'bg-gray-50 border-gray-200 text-gray-600'
                                         }`}
                                     >
-                                        <ArrowUpIcon className="h-5 w-5 inline mr-2" />
+                                        <ArrowUpIcon className="h-4 w-4 inline mr-1 sm:mr-2" />
                                         Thu nhập
                                     </button>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Số tiền
@@ -770,7 +837,7 @@ export function ExpenseManager() {
                                             type="number"
                                             value={formData.amount}
                                             onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                                            className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                            className="w-full p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                                             required
                                         />
                                     </div>
@@ -781,7 +848,7 @@ export function ExpenseManager() {
                                         <select
                                             value={formData.category}
                                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                            className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                            className="w-full p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                                             required
                                         >
                                             <option value="">Chọn danh mục</option>
@@ -801,7 +868,7 @@ export function ExpenseManager() {
                                         type="text"
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                        className="w-full p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                                         placeholder="Nhập mô tả (nếu có)"
                                     />
                                 </div>
@@ -813,7 +880,7 @@ export function ExpenseManager() {
                                         type="date"
                                         value={formData.date}
                                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                        className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                        className="w-full p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                                         required
                                     />
                                 </div>
@@ -831,13 +898,13 @@ export function ExpenseManager() {
                                                 type: 'expense'
                                             });
                                         }}
-                                        className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                        className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                                     >
                                         Hủy
                                     </button>
                                     <button
                                         type="submit"
-                                        className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
+                                        className="px-3 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
                                     >
                                         {editingExpense ? 'Cập nhật' : 'Thêm'}
                                     </button>
@@ -846,70 +913,6 @@ export function ExpenseManager() {
                         </div>
                     </div>
                 )}
-
-                {/* Expenses List */}
-                <div className="p-6">
-                    {loading ? (
-                        <div className="flex justify-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black" />
-                        </div>
-                    ) : filteredExpenses.length === 0 ? (
-                        <div className="text-center text-gray-500">
-                            <p>Không có giao dịch nào phù hợp</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {filteredExpenses.map((expense) => (
-                                <div
-                                    key={expense.id}
-                                    className="p-4 bg-gray-50 rounded-xl flex items-center justify-between"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                                            expense.amount >= 0 ? 'bg-green-600' : 'bg-red-600'
-                                        }`}>
-                                            {expense.amount >= 0 ? (
-                                                <ArrowUpIcon className="h-6 w-6 text-white" />
-                                            ) : (
-                                                <ArrowDownIcon className="h-6 w-6 text-white" />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <p className={`font-medium ${
-                                                expense.amount >= 0 ? 'text-green-600' : 'text-red-600'
-                                            }`}>
-                                                {Math.abs(expense.amount).toLocaleString('vi-VN')}đ
-                                            </p>
-                                            <p className="text-sm text-gray-500">{expense.description}</p>
-                                            <p className="text-xs text-gray-400">
-                                                {format(expense.date, 'dd/MM/yyyy', { locale: vi })}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`px-3 py-1 rounded-full text-sm ${
-                                            expense.amount >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                                        }`}>
-                                            {expense.category}
-                                        </span>
-                                        <button
-                                            onClick={() => handleEdit(expense)}
-                                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                        >
-                                            <PencilIcon className="h-4 w-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(expense.id!)}
-                                            className="p-2 text-gray-500 hover:text-red-500 hover:bg-gray-100 rounded-lg transition-colors"
-                                        >
-                                            <TrashIcon className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
 
                 {/* AI Analysis */}
                 {filteredExpenses.length > 0 && (

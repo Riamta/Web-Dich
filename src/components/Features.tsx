@@ -20,7 +20,8 @@ import {
     DollarSign,
     QrCode,
     Mail,
-    CreditCard
+    CreditCard,
+    Calculator
 } from 'lucide-react'
 
 interface FeatureCardProps {
@@ -110,7 +111,7 @@ const categories: CategoryProps[] = [
                 icon: <Subtitles className="w-6 h-6 text-black" />,
                 stats: { stars: 245, views: 11399, uses: 2910 },
                 path: "/srt-translation"
-            },{
+            }, {
                 title: "Từ điển",
                 description: "Tra cứu từ điển đa ngôn ngữ",
                 icon: <Book className="w-6 h-6 text-black" />,
@@ -176,11 +177,11 @@ const categories: CategoryProps[] = [
                 badge: "New"
             },
             {
-                title: "Tạo tên người dùng",
-                description: "Tạo tên người dùng sáng tạo",
-                icon: <User className="w-6 h-6 text-black" />,
+                title: "Tính lãi suất",
+                description: "Tính lãi suất tiết kiệm",
+                icon: <Calculator className="w-6 h-6 text-black" />,
                 stats: { stars: 1569, views: 14325, uses: 7194 },
-                path: "/username-generator"
+                path: "/utilities/interest-calculator"
             },
             {
                 title: "Quản lý chi tiêu",
@@ -189,6 +190,14 @@ const categories: CategoryProps[] = [
                 stats: { stars: 1569, views: 14325, uses: 7194 },
                 path: "/money-love"
             },
+            {
+                title: "Tạo tên người dùng",
+                description: "Tạo tên người dùng sáng tạo",
+                icon: <User className="w-6 h-6 text-black" />,
+                stats: { stars: 1569, views: 14325, uses: 7194 },
+                path: "/username-generator"
+            },
+
             {
                 title: "Mã QR",
                 description: "Tạo và quét mã QR",
