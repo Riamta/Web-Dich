@@ -107,10 +107,10 @@ Yêu cầu trả về JSON với cấu trúc sau:
         "max": số kg tối đa (chỉ trả về số)
     },
     "risks": [
-        "3-4 nguy cơ sức khỏe chính"
+        "một vài nguy cơ sức khỏe chính nếu có"
     ],
     "recommendations": [
-        "3-4 khuyến nghị quan trọng nhất"
+        "một vài khuyến nghị quan trọng nhất nếu có"
     ],
     "aiAdvice": "Lời khuyên ngắn gọn về sức khỏe, sử dụng markdown để định dạng",
     "bodyAge": số tuổi cơ thể (chỉ trả về số),
