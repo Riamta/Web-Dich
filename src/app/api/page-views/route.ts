@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getMongoClient, inMemoryPageViews } from '@/lib/mongodb';
-import { PageView } from '@/models/PageView';
+import { incrementPageView, getAllPageViews } from '@/lib/db';
+
+// Set max duration to 10 seconds (default is 5 seconds)
+export const maxDuration = 10;
 
 export async function POST(request: Request) {
   try {
@@ -11,48 +13,9 @@ export async function POST(request: Request) {
     }
 
     console.log(`Tracking page view for path: ${path}`);
-
-    // Try to use MongoDB first
-    const client = await getMongoClient();
-    if (client) {
-      try {
-        const db = client.db();
-        const collection = db.collection<PageView>('pageViews');
-
-        const result = await collection.findOneAndUpdate(
-          { path },
-          { 
-            $inc: { views: 1 },
-            $set: { lastUpdated: new Date() }
-          },
-          { 
-            upsert: true,
-            returnDocument: 'after'
-          }
-        );
-        
-        await client.close();
-        
-        // Update in-memory storage as backup
-        if (result && result.path) {
-          inMemoryPageViews[result.path] = result.views || 0;
-        }
-        
-        console.log(`Successfully tracked page view in MongoDB for path: ${path}`);
-        return NextResponse.json(result);
-      } catch (error) {
-        console.error('Error updating MongoDB:', error);
-        await client.close();
-        // Fall back to in-memory storage if MongoDB fails
-      }
-    }
-
-    // Fallback to in-memory storage
-    console.log(`Using in-memory storage for path: ${path}`);
-    inMemoryPageViews[path] = (inMemoryPageViews[path] || 0) + 1;
-    const result = { path, views: inMemoryPageViews[path] };
+    const result = await incrementPageView(path);
     
-    console.log(`Successfully tracked page view in memory for path: ${path}`);
+    console.log(`Successfully tracked page view for path: ${path}`);
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error tracking page view:', error);
@@ -66,43 +29,9 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     console.log('Fetching page views');
+    const pageViews = await getAllPageViews();
     
-    // Try to use MongoDB first
-    const client = await getMongoClient();
-    if (client) {
-      try {
-        const db = client.db();
-        const collection = db.collection<PageView>('pageViews');
-        
-        const pageViews = await collection.find({}).toArray();
-        
-        // Update in-memory storage as backup
-        for (const pv of pageViews) {
-          if (pv.path) {
-            inMemoryPageViews[pv.path] = pv.views || 0;
-          }
-        }
-        
-        await client.close();
-        
-        console.log(`Successfully fetched ${pageViews.length} page views from MongoDB`);
-        return NextResponse.json(pageViews);
-      } catch (error) {
-        console.error('Error fetching from MongoDB:', error);
-        await client.close();
-        // Fall back to in-memory storage if MongoDB fails
-      }
-    }
-
-    // Fallback to in-memory storage
-    console.log('Using in-memory storage for page views');
-    const pageViews = Object.entries(inMemoryPageViews).map(([path, views]) => ({
-      path,
-      views,
-      lastUpdated: new Date()
-    }));
-    
-    console.log(`Successfully fetched ${pageViews.length} page views from memory`);
+    console.log(`Successfully fetched ${pageViews.length} page views`);
     return NextResponse.json(pageViews);
   } catch (error) {
     console.error('Error fetching page views:', error);

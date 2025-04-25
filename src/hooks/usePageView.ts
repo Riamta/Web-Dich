@@ -1,6 +1,40 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY = 1000; // 1 second
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const trackPageView = async (path: string, retryCount = 0): Promise<void> => {
+  try {
+    const response = await fetch('/api/page-views', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ path }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    await response.json();
+  } catch (error) {
+    console.error('Error tracking page view:', error);
+    
+    if (retryCount < MAX_RETRIES) {
+      const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
+      console.log(`Retrying in ${delay}ms... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+      await sleep(delay);
+      return trackPageView(path, retryCount + 1);
+    }
+    
+    console.error('Max retries reached, giving up on tracking page view');
+  }
+};
+
 export function usePageView() {
   const pathname = usePathname();
   const lastTrackedPath = useRef<string | null>(null);
@@ -32,58 +66,9 @@ export function usePageView() {
   }, []);
 
   useEffect(() => {
-    const trackPageView = async () => {
-      // Only track if the path has changed and is not null
-      if (pathname && pathname !== lastTrackedPath.current) {
-        try {
-          console.log(`Tracking page view for: ${pathname}`);
-          
-          const response = await fetch('/api/page-views', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ path: pathname }),
-          });
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          
-          const data = await response.json();
-          console.log(`Page view tracked successfully: ${pathname}`, data);
-          
-          // Update local state with the new view count
-          if (data && data.path) {
-            setPageViews(prev => ({
-              ...prev,
-              [data.path]: data.views || 0
-            }));
-          }
-          
-          // Reset retry count on success
-          retryCount.current = 0;
-          lastTrackedPath.current = pathname;
-        } catch (error) {
-          console.error('Error tracking page view:', error);
-          
-          // Retry logic
-          if (retryCount.current < maxRetries) {
-            retryCount.current += 1;
-            console.log(`Retrying page view tracking (${retryCount.current}/${maxRetries})...`);
-            
-            // Exponential backoff: 1s, 2s, 4s
-            const delay = Math.pow(2, retryCount.current - 1) * 1000;
-            setTimeout(trackPageView, delay);
-          } else {
-            console.error(`Failed to track page view after ${maxRetries} attempts`);
-            retryCount.current = 0; // Reset for next time
-          }
-        }
-      }
-    };
-
-    trackPageView();
+    if (pathname) {
+      trackPageView(pathname);
+    }
   }, [pathname]);
 
   // Return the current page views for display
