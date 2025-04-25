@@ -18,7 +18,8 @@ import {
     Wrench,
     GraduationCap,
     DollarSign,
-    QrCode
+    QrCode,
+    Mail
 } from 'lucide-react'
 
 interface FeatureCardProps {
@@ -213,6 +214,12 @@ const categories: CategoryProps[] = [
                 icon: <QrCode className="w-6 h-6 text-black" />,
                 stats: { stars: 1569, views: 14325, uses: 7194 },
                 path: "/qrcode"
+            }, {
+                title: "Email tạm",
+                description: "Tạo email tạm",
+                icon: <Mail className="w-6 h-6 text-black" />,
+                stats: { stars: 1569, views: 14325, uses: 7194 },
+                path: "/tempmail"
             }
         ]
     },
