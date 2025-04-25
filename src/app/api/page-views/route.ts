@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import { getMongoClient } from '@/lib/mongodb';
 import { PageView } from '@/models/PageView';
+
+// In-memory fallback for when MongoDB is not available
+let inMemoryPageViews: Record<string, number> = {};
 
 export async function POST(request: Request) {
   try {
@@ -10,23 +13,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Path is required' }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db();
-    const collection = db.collection<PageView>('pageViews');
+    const client = await getMongoClient();
+    
+    if (client) {
+      // Use MongoDB if available
+      const db = client.db();
+      const collection = db.collection<PageView>('pageViews');
 
-    const result = await collection.findOneAndUpdate(
-      { path },
-      { 
-        $inc: { views: 1 },
-        $set: { lastUpdated: new Date() }
-      },
-      { 
-        upsert: true,
-        returnDocument: 'after'
-      }
-    );
+      const result = await collection.findOneAndUpdate(
+        { path },
+        { 
+          $inc: { views: 1 },
+          $set: { lastUpdated: new Date() }
+        },
+        { 
+          upsert: true,
+          returnDocument: 'after'
+        }
+      );
 
-    return NextResponse.json(result);
+      return NextResponse.json(result);
+    } else {
+      // Fallback to in-memory storage
+      inMemoryPageViews[path] = (inMemoryPageViews[path] || 0) + 1;
+      return NextResponse.json({ path, views: inMemoryPageViews[path] });
+    }
   } catch (error) {
     console.error('Error tracking page view:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -35,12 +46,24 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const client = await clientPromise;
-    const db = client.db();
-    const collection = db.collection<PageView>('pageViews');
+    const client = await getMongoClient();
     
-    const pageViews = await collection.find({}).toArray();
-    return NextResponse.json(pageViews);
+    if (client) {
+      // Use MongoDB if available
+      const db = client.db();
+      const collection = db.collection<PageView>('pageViews');
+      
+      const pageViews = await collection.find({}).toArray();
+      return NextResponse.json(pageViews);
+    } else {
+      // Fallback to in-memory storage
+      const pageViews = Object.entries(inMemoryPageViews).map(([path, views]) => ({
+        path,
+        views,
+        lastUpdated: new Date()
+      }));
+      return NextResponse.json(pageViews);
+    }
   } catch (error) {
     console.error('Error fetching page views:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
