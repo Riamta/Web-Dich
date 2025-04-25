@@ -88,17 +88,18 @@ export default function BMICalculator() {
     const [height, setHeight] = useState<string>('')
     const [weight, setWeight] = useState<string>('')
     const [age, setAge] = useState<string>('')
+    const [gender, setGender] = useState<'male' | 'female'>('male')
     const [bmiResult, setBmiResult] = useState<BMIResult | null>(null)
     const [isLoading, setIsLoading] = useState<boolean>(false)
 
-    const getHealthInfo = async (bmi: number, category: string, height: number, age?: number) => {
+    const getHealthInfo = async (bmi: number, category: string, height: number, age?: number, gender?: string) => {
         setIsLoading(true)
         try {
             // Kiểm tra và điều chỉnh BMI nếu quá cao
             const adjustedBmi = Math.min(bmi, 100) // Giới hạn BMI tối đa là 100
             const adjustedCategory = adjustedBmi >= 100 ? 'Béo phì nghiêm trọng' : category
 
-            const prompt = `Bạn là một chuyên gia dinh dưỡng và sức khỏe. Dựa trên chỉ số BMI ${adjustedBmi}, phân loại ${adjustedCategory}, chiều cao ${height}cm${age ? ` và tuổi ${age}` : ''}, hãy đưa ra thông tin sức khỏe ngắn gọn và súc tích.
+            const prompt = `Bạn là một chuyên gia dinh dưỡng và sức khỏe. Dựa trên chỉ số BMI ${adjustedBmi}, phân loại ${adjustedCategory}, chiều cao ${height}cm${age ? ` và tuổi ${age}` : ''}, giới tính ${gender === 'male' ? 'nam' : 'nữ'}, hãy đưa ra thông tin sức khỏe ngắn gọn và súc tích.
 
 Yêu cầu trả về JSON với cấu trúc sau:
 {
@@ -196,7 +197,7 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
 
         // Sau đó tải thông tin chi tiết từ AI
         try {
-            const healthInfo = await getHealthInfo(Number(bmi.toFixed(1)), category, Number(height), ageInYears)
+            const healthInfo = await getHealthInfo(Number(bmi.toFixed(1)), category, Number(height), ageInYears, gender)
             setBmiResult({
                 ...basicResult,
                 ...healthInfo
@@ -212,13 +213,15 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
         }
     }
 
-    const handleInputChange = (type: 'height' | 'weight' | 'age', value: string) => {
+    const handleInputChange = (type: 'height' | 'weight' | 'age' | 'gender', value: string) => {
         if (type === 'height') {
             setHeight(value)
         } else if (type === 'weight') {
             setWeight(value)
-        } else {
+        } else if (type === 'age') {
             setAge(value)
+        } else if (type === 'gender') {
+            setGender(value as 'male' | 'female')
         }
         setBmiResult(null)
     }
@@ -247,7 +250,7 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
                 </div>
 
                 <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Chiều cao (cm)
@@ -296,6 +299,22 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
                                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
                                 />
                                 <Activity className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Giới tính
+                            </label>
+                            <div className="relative">
+                                <select
+                                    value={gender}
+                                    onChange={(e) => handleInputChange('gender', e.target.value)}
+                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
+                                >
+                                    <option value="male">Nam</option>
+                                    <option value="female">Nữ</option>
+                                </select>
                             </div>
                         </div>
                     </div>

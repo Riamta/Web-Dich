@@ -18,12 +18,6 @@ export const metadata: Metadata = {
             }
         ]
     },
-    twitter: {
-        card: 'summary_large_image',
-        title: 'Hỗ Trợ Dịch SRT - AI Tool',
-        description: 'Công cụ dịch file phụ đề SRT thông minh sử dụng AI. Hỗ trợ dịch nhanh chóng và chính xác các file phụ đề từ nhiều ngôn ngữ khác nhau.',
-        images: ['/og-srt-translate.png'],
-    }
 }
 
 export default function SRTTranslatePage() {
