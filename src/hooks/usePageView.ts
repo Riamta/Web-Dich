@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
 export function usePageView() {
@@ -6,6 +6,30 @@ export function usePageView() {
   const lastTrackedPath = useRef<string | null>(null);
   const retryCount = useRef<number>(0);
   const maxRetries = 3;
+  const [pageViews, setPageViews] = useState<Record<string, number>>({});
+
+  // Fetch page views on component mount
+  useEffect(() => {
+    const fetchPageViews = async () => {
+      try {
+        const response = await fetch('/api/page-views');
+        if (response.ok) {
+          const data = await response.json();
+          const viewsMap: Record<string, number> = {};
+          data.forEach((item: any) => {
+            if (item.path) {
+              viewsMap[item.path] = item.views || 0;
+            }
+          });
+          setPageViews(viewsMap);
+        }
+      } catch (error) {
+        console.error('Error fetching page views:', error);
+      }
+    };
+
+    fetchPageViews();
+  }, []);
 
   useEffect(() => {
     const trackPageView = async () => {
@@ -28,6 +52,14 @@ export function usePageView() {
           
           const data = await response.json();
           console.log(`Page view tracked successfully: ${pathname}`, data);
+          
+          // Update local state with the new view count
+          if (data && data.path) {
+            setPageViews(prev => ({
+              ...prev,
+              [data.path]: data.views || 0
+            }));
+          }
           
           // Reset retry count on success
           retryCount.current = 0;
@@ -53,4 +85,7 @@ export function usePageView() {
 
     trackPageView();
   }, [pathname]);
+
+  // Return the current page views for display
+  return pageViews;
 } 

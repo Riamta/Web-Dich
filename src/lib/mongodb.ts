@@ -12,8 +12,11 @@ export async function isMongoDBAvailable(): Promise<boolean> {
 
   try {
     const client = new MongoClient(process.env.MONGODB_URI, {
-      connectTimeoutMS: 3000,
-      serverSelectionTimeoutMS: 3000,
+      connectTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 5000,
+      maxPoolSize: 10,
+      minPoolSize: 0
     });
     
     await client.connect();
@@ -34,8 +37,11 @@ export async function getMongoClient() {
 
   try {
     const client = new MongoClient(process.env.MONGODB_URI, {
-      connectTimeoutMS: 3000,
-      serverSelectionTimeoutMS: 3000,
+      connectTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 5000,
+      maxPoolSize: 10,
+      minPoolSize: 0
     });
     
     await client.connect();
@@ -46,4 +52,36 @@ export async function getMongoClient() {
   }
 }
 
-export default { isMongoDBAvailable, getMongoClient, inMemoryPageViews }; 
+// Function to load page views from localStorage (client-side only)
+export function loadPageViewsFromStorage(): Record<string, number> {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('pageViews');
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('Error loading page views from localStorage:', error);
+    }
+  }
+  return {};
+}
+
+// Function to save page views to localStorage (client-side only)
+export function savePageViewsToStorage(pageViews: Record<string, number>): void {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('pageViews', JSON.stringify(pageViews));
+    } catch (error) {
+      console.error('Error saving page views to localStorage:', error);
+    }
+  }
+}
+
+export default { 
+  isMongoDBAvailable, 
+  getMongoClient, 
+  inMemoryPageViews,
+  loadPageViewsFromStorage,
+  savePageViewsToStorage
+}; 
