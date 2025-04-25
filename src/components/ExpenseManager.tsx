@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { ExpenseService, Expense, UserSettings, Wallet } from '../lib/expense-service';
-import { ChartBarIcon, PlusIcon, TrashIcon, PencilIcon, SparklesIcon, ArrowUpIcon, ArrowDownIcon, Cog6ToothIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
+import { ChartBarIcon, PlusIcon, TrashIcon, PencilIcon, SparklesIcon, ArrowUpIcon, ArrowDownIcon, Cog6ToothIcon, PencilSquareIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { aiService } from '../lib/ai-service';
@@ -87,7 +87,8 @@ export function ExpenseManager() {
         period: 'all' as 'all' | 'day' | 'month' | 'year',
         day: format(new Date(), 'yyyy-MM-dd'),
         month: format(new Date(), 'yyyy-MM'),
-        year: format(new Date(), 'yyyy')
+        year: format(new Date(), 'yyyy'),
+        category: 'all' as 'all' | string
     });
     const [wallet, setWallet] = useState<Wallet | null>(null);
     const [showWalletModal, setShowWalletModal] = useState(false);
@@ -363,6 +364,11 @@ export function ExpenseManager() {
             return false;
         }
 
+        // Lọc theo danh mục
+        if (filter.category !== 'all' && expense.category !== filter.category) {
+            return false;
+        }
+
         // Lọc theo thời gian
         if (filter.period !== 'all') {
             const expenseDate = new Date(expense.date);
@@ -592,7 +598,7 @@ export function ExpenseManager() {
                 {/* Summary */}
                 <div className="p-6 border-b border-gray-200">
                     <div className="flex flex-col md:flex-row gap-4 mb-4">
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             <select
                                 value={filter.type}
                                 onChange={(e) => setFilter(prev => ({ ...prev, type: e.target.value as any }))}
@@ -601,6 +607,33 @@ export function ExpenseManager() {
                                 <option value="all">Tất cả</option>
                                 <option value="income">Thu nhập</option>
                                 <option value="expense">Chi tiêu</option>
+                            </select>
+                            <select
+                                value={filter.category}
+                                onChange={(e) => setFilter(prev => ({ ...prev, category: e.target.value }))}
+                                className="p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                            >
+                                <option value="all">Tất cả danh mục</option>
+                                {filter.type === 'all' && (
+                                    <>
+                                        <optgroup label="Thu nhập">
+                                            {INCOME_CATEGORIES.map(category => (
+                                                <option key={category} value={category}>{category}</option>
+                                            ))}
+                                        </optgroup>
+                                        <optgroup label="Chi tiêu">
+                                            {EXPENSE_CATEGORIES.map(category => (
+                                                <option key={category} value={category}>{category}</option>
+                                            ))}
+                                        </optgroup>
+                                    </>
+                                )}
+                                {filter.type === 'income' && INCOME_CATEGORIES.map(category => (
+                                    <option key={category} value={category}>{category}</option>
+                                ))}
+                                {filter.type === 'expense' && EXPENSE_CATEGORIES.map(category => (
+                                    <option key={category} value={category}>{category}</option>
+                                ))}
                             </select>
                             <select
                                 value={filter.period}
@@ -667,101 +700,15 @@ export function ExpenseManager() {
                     </div>
                 </div>
 
-                {/* Add/Edit Form */}
+                {/* Add/Edit Form Modal */}
                 {showAddForm && (
-                    <div className="p-6 border-b border-gray-200">
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="flex gap-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-xl p-6 w-full max-w-md">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold">
+                                    {editingExpense ? 'Sửa giao dịch' : 'Thêm giao dịch mới'}
+                                </h2>
                                 <button
-                                    type="button"
-                                    onClick={() => {
-                                        setFormData(prev => ({ ...prev, type: 'expense' }));
-                                        setIsIncome(false);
-                                    }}
-                                    className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
-                                        formData.type === 'expense'
-                                            ? 'bg-red-50 border-red-200 text-red-600'
-                                            : 'bg-gray-50 border-gray-200 text-gray-600'
-                                    }`}
-                                >
-                                    <ArrowDownIcon className="h-5 w-5 inline mr-2" />
-                                    Chi tiêu
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setFormData(prev => ({ ...prev, type: 'income' }));
-                                        setIsIncome(true);
-                                    }}
-                                    className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
-                                        formData.type === 'income'
-                                            ? 'bg-green-50 border-green-200 text-green-600'
-                                            : 'bg-gray-50 border-gray-200 text-gray-600'
-                                    }`}
-                                >
-                                    <ArrowUpIcon className="h-5 w-5 inline mr-2" />
-                                    Thu nhập
-                                </button>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Số tiền
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={formData.amount}
-                                        onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                                        className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Danh mục
-                                    </label>
-                                    <select
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                        required
-                                    >
-                                        <option value="">Chọn danh mục</option>
-                                        {(formData.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES).map((category) => (
-                                            <option key={category} value={category}>
-                                                {category}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Mô tả
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Ngày
-                                </label>
-                                <input
-                                    type="date"
-                                    value={formData.date}
-                                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                    className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                    required
-                                />
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <button
-                                    type="button"
                                     onClick={() => {
                                         setShowAddForm(false);
                                         setEditingExpense(null);
@@ -773,18 +720,127 @@ export function ExpenseManager() {
                                             type: 'expense'
                                         });
                                     }}
-                                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                    className="text-gray-500 hover:text-gray-700"
                                 >
-                                    Hủy
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
-                                >
-                                    {editingExpense ? 'Cập nhật' : 'Thêm'}
+                                    <XMarkIcon className="h-6 w-6" />
                                 </button>
                             </div>
-                        </form>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div className="flex gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setFormData(prev => ({ ...prev, type: 'expense' }));
+                                            setIsIncome(false);
+                                        }}
+                                        className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
+                                            formData.type === 'expense'
+                                                ? 'bg-red-50 border-red-200 text-red-600'
+                                                : 'bg-gray-50 border-gray-200 text-gray-600'
+                                        }`}
+                                    >
+                                        <ArrowDownIcon className="h-5 w-5 inline mr-2" />
+                                        Chi tiêu
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setFormData(prev => ({ ...prev, type: 'income' }));
+                                            setIsIncome(true);
+                                        }}
+                                        className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
+                                            formData.type === 'income'
+                                                ? 'bg-green-50 border-green-200 text-green-600'
+                                                : 'bg-gray-50 border-gray-200 text-gray-600'
+                                        }`}
+                                    >
+                                        <ArrowUpIcon className="h-5 w-5 inline mr-2" />
+                                        Thu nhập
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Số tiền
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={formData.amount}
+                                            onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                                            className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Danh mục
+                                        </label>
+                                        <select
+                                            value={formData.category}
+                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                            className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                            required
+                                        >
+                                            <option value="">Chọn danh mục</option>
+                                            {(formData.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES).map((category) => (
+                                                <option key={category} value={category}>
+                                                    {category}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Mô tả
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Ngày
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={formData.date}
+                                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                        className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                        required
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-2 mt-6">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowAddForm(false);
+                                            setEditingExpense(null);
+                                            setFormData({
+                                                amount: '',
+                                                category: '',
+                                                description: '',
+                                                date: format(new Date(), 'yyyy-MM-dd'),
+                                                type: 'expense'
+                                            });
+                                        }}
+                                        className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
+                                    >
+                                        {editingExpense ? 'Cập nhật' : 'Thêm'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 )}
 
