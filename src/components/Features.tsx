@@ -19,7 +19,8 @@ import {
     GraduationCap,
     DollarSign,
     QrCode,
-    Mail
+    Mail,
+    CreditCard
 } from 'lucide-react'
 
 interface FeatureCardProps {
@@ -182,13 +183,20 @@ const categories: CategoryProps[] = [
                 path: "/username-generator"
             },
             {
+                title: "Quản lý chi tiêu",
+                description: "Quản lý chi tiêu của bạn",
+                icon: <CreditCard className="w-6 h-6 text-black" />,
+                stats: { stars: 1569, views: 14325, uses: 7194 },
+                path: "/money-love"
+            },
+            {
                 title: "Mã QR",
                 description: "Tạo và quét mã QR",
                 icon: <QrCode className="w-6 h-6 text-black" />,
                 stats: { stars: 1569, views: 14325, uses: 7194 },
                 path: "/qrcode"
             }, {
-                title: "Email tạm",
+                title: "Email tạm thời",
                 description: "Tạo email tạm",
                 icon: <Mail className="w-6 h-6 text-black" />,
                 stats: { stars: 1569, views: 14325, uses: 7194 },

@@ -20,7 +20,8 @@ import {
   MdCurrencyExchange,
   MdExpandMore,
   MdExpandLess,
-  MdEmail
+  MdEmail,
+  MdCreditCard
 } from 'react-icons/md';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useState } from 'react';
@@ -115,6 +116,11 @@ export default function Sidebar() {
           name: 'Chuyển đổi tiền tệ',
           path: '/currency',
           icon: <MdCurrencyExchange className="w-5 h-5" />
+        },
+        {
+          name: 'Quản lý chi tiêu',
+          path: '/money-love',
+          icon: <MdCreditCard className="w-5 h-5" />
         },
         {
           name: 'Tạo tên người dùng',
