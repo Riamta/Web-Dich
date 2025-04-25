@@ -24,7 +24,8 @@ import {
     Calculator,
     Clock,
     Ruler,
-    Star
+    Star,
+    Utensils
 } from 'lucide-react'
 
 interface FeatureCardProps {
@@ -170,6 +171,13 @@ const categories: CategoryProps[] = [
                 icon: <Star className="w-6 h-6 text-black" />,
                 stats: { stars: 602, views: 14205, uses: 4286 },
                 path: "/fortune-telling"
+            },
+            {
+                title: "Xem công thức nấu ăn",
+                description: "Xem công thức nấu ăn bằng AI",
+                icon: <Utensils className="w-6 h-6 text-black" />,
+                stats: { stars: 602, views: 14205, uses: 4286 },
+                path: "/recipe-generator"
             }
         ]
     },

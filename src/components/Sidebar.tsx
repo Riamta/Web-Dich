@@ -105,6 +105,10 @@ export default function Sidebar() {
           name: 'Từ điển',
           path: '/dictionary',
           icon: <MdOutlineMenuBook className="w-5 h-5" />
+        }, {
+          name: 'Xem công thức nấu ăn',
+          path: '/recipe-generator',
+          icon: <MdOutlineMenuBook className="w-5 h-5" />
         }
       ]
     },
