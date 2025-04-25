@@ -1,6 +1,16 @@
-'use client'
-
+import type { Metadata } from 'next'
 import BMICalculator from '@/components/BMICalculator'
+
+export const metadata: Metadata = {
+  title: 'Tính Chỉ Số BMI | Công Cụ Sức Khỏe',
+  description: 'Tính toán chỉ số BMI (Body Mass Index) và nhận thông tin chi tiết về tình trạng sức khỏe của bạn. Nhập chiều cao và cân nặng để bắt đầu.',
+  keywords: 'tính BMI, chỉ số BMI, tính cân nặng, đánh giá sức khỏe, tính chỉ số khối cơ thể, BMI calculator, body mass index, health calculator',
+  openGraph: {
+    title: 'Tính Chỉ Số BMI | Công Cụ Sức Khỏe',
+    description: 'Tính toán chỉ số BMI (Body Mass Index) và nhận thông tin chi tiết về tình trạng sức khỏe của bạn. Nhập chiều cao và cân nặng để bắt đầu.',
+    type: 'website',
+  }
+}
 
 export default function BMICalculatorPage() {
     return (
