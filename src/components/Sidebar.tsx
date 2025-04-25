@@ -69,7 +69,7 @@ export default function Sidebar() {
         },
         {
           name: 'Dịch hội thoại',
-          path: '/conversation',
+          path: '/conversation-translate',
           icon: <MdChat className="w-5 h-5" />
         },
         {
