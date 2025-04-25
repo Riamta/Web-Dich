@@ -16,12 +16,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Path is required' }, { status: 400 });
     }
 
+    console.log(`Tracking page view for path: ${path}`);
+
     // Use Promise.race to implement a timeout
     const result = await Promise.race([
       (async () => {
         const client = await getMongoClient();
         
         if (client) {
+          console.log('Using MongoDB for page view tracking');
           // Use MongoDB if available
           const db = client.db();
           const collection = db.collection<PageView>('pageViews');
@@ -40,6 +43,7 @@ export async function POST(request: Request) {
 
           return result;
         } else {
+          console.log('Using in-memory storage for page view tracking');
           // Fallback to in-memory storage
           inMemoryPageViews[path] = (inMemoryPageViews[path] || 0) + 1;
           return { path, views: inMemoryPageViews[path] };
@@ -50,6 +54,7 @@ export async function POST(request: Request) {
       )
     ]);
 
+    console.log(`Successfully tracked page view for path: ${path}`);
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error tracking page view:', error);
@@ -63,12 +68,15 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
+    console.log('Fetching page views');
+    
     // Use Promise.race to implement a timeout
     const result = await Promise.race([
       (async () => {
         const client = await getMongoClient();
         
         if (client) {
+          console.log('Using MongoDB for fetching page views');
           // Use MongoDB if available
           const db = client.db();
           const collection = db.collection<PageView>('pageViews');
@@ -76,6 +84,7 @@ export async function GET() {
           const pageViews = await collection.find({}).toArray();
           return pageViews;
         } else {
+          console.log('Using in-memory storage for fetching page views');
           // Fallback to in-memory storage
           const pageViews = Object.entries(inMemoryPageViews).map(([path, views]) => ({
             path,
@@ -90,6 +99,7 @@ export async function GET() {
       )
     ]);
 
+    console.log(`Successfully fetched ${Array.isArray(result) ? result.length : 0} page views`);
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error fetching page views:', error);

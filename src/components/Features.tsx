@@ -194,6 +194,13 @@ const categories: CategoryProps[] = [
                 path: "/utilities/interest-calculator"
             },
             {
+                title: "Tính khoản vay",
+                description: "Tính khoản vay và lãi suất",
+                icon: <Calculator className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/utilities/loan-calculator"
+            },
+            {
                 title: "Quản lý chi tiêu",
                 description: "Quản lý chi tiêu của bạn",
                 icon: <CreditCard className="w-6 h-6 text-black" />,
