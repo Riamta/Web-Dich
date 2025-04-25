@@ -25,6 +25,7 @@ import {
 } from 'react-icons/md';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useState } from 'react';
+import { Utensils } from 'lucide-react';
 
 interface MenuItem {
   name: string;
@@ -108,7 +109,7 @@ export default function Sidebar() {
         }, {
           name: 'Xem công thức nấu ăn',
           path: '/recipe-generator',
-          icon: <MdOutlineMenuBook className="w-5 h-5" />
+          icon: <Utensils className="w-5 h-5" />
         }
       ]
     },
