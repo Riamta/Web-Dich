@@ -105,7 +105,7 @@ const categories: CategoryProps[] = [
                 description: "Dịch file phụ đề SRT sang nhiều ngôn ngữ",
                 icon: <Subtitles className="w-6 h-6 text-black" />,
                 views: 0,
-                path: "/srt-translation"
+                path: "/srt-translate"
             },
             {
                 title: "Từ điển",

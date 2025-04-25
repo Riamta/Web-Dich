@@ -73,21 +73,6 @@ export default function CurrencyConverter() {
             } else {
                 throw new Error('Không thể lấy tỷ giá')
             }
-
-            // Fetch rates for each quick conversion pair
-            const newQuickResults: {[key: string]: number} = {}
-            for (const conv of quickConversions) {
-                try {
-                    const convResponse = await fetch(`https://api.exchangerate-api.com/v4/latest/${conv.from}`)
-                    const convData = await convResponse.json()
-                    if (convData.rates && convData.rates[conv.to]) {
-                        newQuickResults[`${conv.from}-${conv.to}`] = conv.amount * convData.rates[conv.to]
-                    }
-                } catch (err) {
-                    console.error(`Error fetching rates for ${conv.from}-${conv.to}:`, err)
-                }
-            }
-            setQuickResults(newQuickResults)
         } catch (err) {
             setError('Có lỗi xảy ra khi chuyển đổi tiền tệ')
             setResult(null)
@@ -96,12 +81,36 @@ export default function CurrencyConverter() {
         }
     }, [amount, fromCurrency, toCurrency])
 
+    // Fetch quick conversion rates on component mount
+    const fetchQuickConversionRates = useCallback(async () => {
+        const newQuickResults: {[key: string]: number} = {}
+        
+        for (const conv of quickConversions) {
+            try {
+                const convResponse = await fetch(`https://api.exchangerate-api.com/v4/latest/${conv.from}`)
+                const convData = await convResponse.json()
+                if (convData.rates && convData.rates[conv.to]) {
+                    newQuickResults[`${conv.from}-${conv.to}`] = conv.amount * convData.rates[conv.to]
+                }
+            } catch (err) {
+                console.error(`Error fetching rates for ${conv.from}-${conv.to}:`, err)
+            }
+        }
+        
+        setQuickResults(newQuickResults)
+    }, [])
+
     // Tự động chuyển đổi khi input thay đổi
     useEffect(() => {
         if (amount && !isNaN(Number(amount))) {
             fetchExchangeRates()
         }
     }, [amount, fromCurrency, toCurrency, fetchExchangeRates])
+
+    // Fetch quick conversion rates when component mounts
+    useEffect(() => {
+        fetchQuickConversionRates()
+    }, [fetchQuickConversionRates])
 
     const handleQuickConvert = (from: string, to: string, amount: number) => {
         setFromCurrency(from)
