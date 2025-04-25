@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { mailTmService, type Domain, type Message, type MessageDetails, type StoredAccount } from '@/lib/mail-tm'
-import { Loader2, Mail, Trash2, RefreshCw, Copy, Eye, EyeOff, LogOut, History } from 'lucide-react'
+import { Loader2, Mail, Trash2, RefreshCw, Copy, Eye, EyeOff, LogOut, History, LogIn } from 'lucide-react'
 import { generatePassword } from '@/lib/utils'
 import { db, auth } from '@/lib/firebase'
 import { collection, addDoc, query, where, getDocs, orderBy, deleteDoc, doc } from 'firebase/firestore'
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 
 interface SavedEmail {
     id: string
@@ -29,6 +30,7 @@ export function TempMail() {
     const [showPassword, setShowPassword] = useState(false)
     const [savedEmails, setSavedEmails] = useState<SavedEmail[]>([])
     const [showSavedEmails, setShowSavedEmails] = useState(false)
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
 
     // Load saved account and fetch domains on mount
     useEffect(() => {
@@ -49,6 +51,20 @@ export function TempMail() {
             return () => clearInterval(interval)
         }
     }, [email])
+
+    // Check auth state
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            setIsAuthenticated(!!user)
+            if (user) {
+                fetchSavedEmails()
+            } else {
+                setSavedEmails([])
+            }
+        })
+
+        return () => unsubscribe()
+    }, [])
 
     const fetchSavedEmails = async () => {
         try {
@@ -164,12 +180,35 @@ export function TempMail() {
         }
     }
 
-    const logout = () => {
+    const handleLogin = async () => {
+        try {
+            const provider = new GoogleAuthProvider()
+            await signInWithPopup(auth, provider)
+        } catch (err) {
+            console.error('Failed to login:', err)
+            setError('Failed to login with Google')
+        }
+    }
+
+    const handleFirebaseLogout = async () => {
+        try {
+            await auth.signOut()
+        } catch (err) {
+            console.error('Failed to logout:', err)
+            setError('Failed to logout')
+        }
+    }
+
+    // Update the logout function to handle both temp mail and Firebase logout
+    const handleLogout = async () => {
         mailTmService.logout()
         setEmail('')
         setPassword('')
         setMessages([])
         setSelectedMessage(null)
+        if (isAuthenticated) {
+            await handleFirebaseLogout()
+        }
     }
 
     const fetchMessages = async () => {
@@ -227,24 +266,56 @@ export function TempMail() {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setShowSavedEmails(!showSavedEmails)}
-                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                            title="Lịch sử email"
-                        >
-                            <History className="h-5 w-5" />
-                        </button>
-                        {email && (
+                        {isAuthenticated ? (
+                            <>
+                                <button
+                                    onClick={() => setShowSavedEmails(!showSavedEmails)}
+                                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                    title="Lịch sử email"
+                                >
+                                    <History className="h-5 w-5" />
+                                </button>
+                                {email && (
+                                    <button
+                                        onClick={handleLogout}
+                                        className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                        title="Đăng xuất"
+                                    >
+                                        <LogOut className="h-5 w-5" />
+                                    </button>
+                                )}
+                            </>
+                        ) : (
                             <button
-                                onClick={logout}
-                                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                title="Đăng xuất"
+                                onClick={handleLogin}
+                                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
                             >
-                                <LogOut className="h-5 w-5" />
+                                <LogIn className="h-5 w-5" />
+                                <span>Đăng nhập</span>
                             </button>
                         )}
                     </div>
                 </div>
+
+                {/* Show login prompt if not authenticated */}
+                {!isAuthenticated && showSavedEmails && (
+                    <div className="p-4 border-b border-gray-200 bg-gray-50">
+                        <div className="text-center py-8">
+                            <Mail className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                            <h3 className="text-lg font-medium mb-2">Đăng nhập để lưu email</h3>
+                            <p className="text-sm text-gray-500 mb-4">
+                                Đăng nhập để lưu và xem lại các email tạm thời đã tạo
+                            </p>
+                            <button
+                                onClick={handleLogin}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
+                            >
+                                <LogIn className="h-5 w-5" />
+                                <span>Đăng nhập với Google</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Saved Emails Drawer */}
                 {showSavedEmails && (
