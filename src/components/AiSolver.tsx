@@ -51,7 +51,7 @@ export function AiSolver() {
     const [needExplanation, setNeedExplanation] = useState(false)
     const [inputType, setInputType] = useState<'image' | 'text'>('image')
     const [exerciseText, setExerciseText] = useState('')
-    const [selectedModel, setSelectedModel] = useState<'gemini-2.5-flash-preview-04-17' | 'gemini-2.0-flash'>('gemini-2.5-flash-preview-04-17')
+    const [selectedModel, setSelectedModel] = useState<'gemini-2.5-flash-preview-04-17' | 'gemini-2.0-flash'>('gemini-2.0-flash')
     const fileInputRef = useRef<HTMLInputElement>(null)
     const imageContainerRef = useRef<HTMLDivElement>(null)
     const textAreaRef = useRef<HTMLTextAreaElement>(null)
