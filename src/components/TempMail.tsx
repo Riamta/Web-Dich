@@ -22,6 +22,8 @@ export function TempMail() {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [email, setEmail] = useState('')
+    const [loginEmail, setLoginEmail] = useState('')
+    const [loginPassword, setLoginPassword] = useState('')
     const [messages, setMessages] = useState<Message[]>([])
     const [selectedMessage, setSelectedMessage] = useState<MessageDetails | null>(null)
     const [loading, setLoading] = useState(false)
@@ -181,34 +183,34 @@ export function TempMail() {
     }
 
     const handleLogin = async () => {
+        if (!loginEmail || !loginPassword) {
+            setError('Vui lòng nhập email và mật khẩu')
+            return
+        }
+
+        setLoading(true)
+        setError(null)
+
         try {
-            const provider = new GoogleAuthProvider()
-            await signInWithPopup(auth, provider)
+            await mailTmService.login(loginEmail, loginPassword)
+            setEmail(loginEmail)
+            setPassword(loginPassword)
+            await fetchMessages()
         } catch (err) {
             console.error('Failed to login:', err)
-            setError('Failed to login with Google')
+            setError('Email hoặc mật khẩu không đúng')
+        } finally {
+            setLoading(false)
         }
     }
 
-    const handleFirebaseLogout = async () => {
-        try {
-            await auth.signOut()
-        } catch (err) {
-            console.error('Failed to logout:', err)
-            setError('Failed to logout')
-        }
-    }
-
-    // Update the logout function to handle both temp mail and Firebase logout
-    const handleLogout = async () => {
+    // Update the logout function to only handle temp mail logout
+    const handleLogout = () => {
         mailTmService.logout()
         setEmail('')
         setPassword('')
         setMessages([])
         setSelectedMessage(null)
-        if (isAuthenticated) {
-            await handleFirebaseLogout()
-        }
     }
 
     const fetchMessages = async () => {
@@ -266,58 +268,17 @@ export function TempMail() {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        {isAuthenticated ? (
-                            <>
-                                <button
-                                    onClick={() => setShowSavedEmails(!showSavedEmails)}
-                                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                    title="Lịch sử email"
-                                >
-                                    <History className="h-5 w-5" />
-                                </button>
-                                {email && (
-                                    <button
-                                        onClick={handleLogout}
-                                        className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                        title="Đăng xuất"
-                                    >
-                                        <LogOut className="h-5 w-5" />
-                                    </button>
-                                )}
-                            </>
-                        ) : (
-                            <button
-                                onClick={handleLogin}
-                                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
-                            >
-                                <LogIn className="h-5 w-5" />
-                                <span>Đăng nhập</span>
-                            </button>
-                        )}
+                        <button
+                            onClick={() => setShowSavedEmails(!showSavedEmails)}
+                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Lịch sử email"
+                        >
+                            <History className="h-5 w-5" />
+                        </button>
                     </div>
                 </div>
 
-                {/* Show login prompt if not authenticated */}
-                {!isAuthenticated && showSavedEmails && (
-                    <div className="p-4 border-b border-gray-200 bg-gray-50">
-                        <div className="text-center py-8">
-                            <Mail className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                            <h3 className="text-lg font-medium mb-2">Đăng nhập để lưu email</h3>
-                            <p className="text-sm text-gray-500 mb-4">
-                                Đăng nhập để lưu và xem lại các email tạm thời đã tạo
-                            </p>
-                            <button
-                                onClick={handleLogin}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
-                            >
-                                <LogIn className="h-5 w-5" />
-                                <span>Đăng nhập với Google</span>
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Saved Emails Drawer */}
+                {/* Show saved emails section */}
                 {showSavedEmails && (
                     <div className="p-4 border-b border-gray-200 bg-gray-50">
                         <div className="mb-4">
@@ -343,9 +304,9 @@ export function TempMail() {
                                             <button
                                                 onClick={() => loadSavedEmail(savedEmail)}
                                                 className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
-                                                title="Tải email"
+                                                title="Đăng nhập"
                                             >
-                                                <Mail className="h-4 w-4" />
+                                                <LogIn className="h-4 w-4" />
                                             </button>
                                             <button
                                                 onClick={() => deleteSavedEmail(savedEmail.id)}
@@ -363,111 +324,180 @@ export function TempMail() {
                 )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
-                    {/* Left Panel - Email Creation */}
+                    {/* Left Panel - Email Creation/Login */}
                     <div className="p-6">
-                        <div className="mb-6">
-                            <h2 className="text-lg font-medium mb-1">Tạo Email</h2>
-                            <p className="text-sm text-gray-500">Nhập tên người dùng và chọn tên miền</p>
-                        </div>
+                        {!email ? (
+                            <>
+                                <div className="mb-6">
+                                    <h2 className="text-lg font-medium mb-1">Tạo Email Mới</h2>
+                                    <p className="text-sm text-gray-500">Nhập tên người dùng và chọn tên miền</p>
+                                </div>
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tên người dùng</label>
-                                <input
-                                    type="text"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    placeholder="username"
-                                    className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                    disabled={!!email}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tên miền</label>
-                                <select
-                                    value={selectedDomain?.id}
-                                    onChange={(e) => setSelectedDomain(domains.find(d => d.id === e.target.value) || null)}
-                                    className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                    disabled={!!email}
-                                >
-                                    {domains.map((domain) => (
-                                        <option key={domain.id} value={domain.id}>
-                                            @{domain.domain}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {email ? (
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email của bạn</label>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="text"
-                                                value={email}
-                                                readOnly
-                                                className="flex-1 p-2 bg-gray-50 border border-gray-200 rounded-lg"
-                                            />
-                                            <button
-                                                onClick={() => copyToClipboard(email)}
-                                                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                                title="Sao chép email"
-                                            >
-                                                <Copy className="h-5 w-5" />
-                                            </button>
-                                        </div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Tên người dùng</label>
+                                        <input
+                                            type="text"
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value)}
+                                            placeholder="username"
+                                            className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                        />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type={showPassword ? 'text' : 'password'}
-                                                value={password}
-                                                readOnly
-                                                className="flex-1 p-2 bg-gray-50 border border-gray-200 rounded-lg"
-                                            />
-                                            <button
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                                title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                                            >
-                                                {showPassword ? (
-                                                    <EyeOff className="h-5 w-5" />
-                                                ) : (
-                                                    <Eye className="h-5 w-5" />
-                                                )}
-                                            </button>
-                                            <button
-                                                onClick={() => copyToClipboard(password)}
-                                                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                                title="Sao chép mật khẩu"
-                                            >
-                                                <Copy className="h-5 w-5" />
-                                            </button>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Tên miền</label>
+                                        <select
+                                            value={selectedDomain?.id}
+                                            onChange={(e) => setSelectedDomain(domains.find(d => d.id === e.target.value) || null)}
+                                            className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                        >
+                                            {domains.map((domain) => (
+                                                <option key={domain.id} value={domain.id}>
+                                                    @{domain.domain}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <button
+                                        onClick={createAccount}
+                                        disabled={!selectedDomain || !username || loading}
+                                        className={`w-full py-2.5 rounded-lg text-white font-medium transition-all ${
+                                            !selectedDomain || !username || loading
+                                                ? 'bg-gray-400 cursor-not-allowed'
+                                                : 'bg-black hover:bg-gray-900'
+                                        }`}
+                                    >
+                                        {loading ? (
+                                            <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+                                        ) : (
+                                            'Tạo email'
+                                        )}
+                                    </button>
+
+                                    <div className="relative">
+                                        <div className="absolute inset-0 flex items-center">
+                                            <div className="w-full border-t border-gray-200" />
+                                        </div>
+                                        <div className="relative flex justify-center text-sm">
+                                            <span className="px-2 bg-white text-gray-500">Hoặc</span>
                                         </div>
                                     </div>
+
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                            <input
+                                                type="email"
+                                                value={loginEmail}
+                                                onChange={(e) => setLoginEmail(e.target.value)}
+                                                placeholder="example@domain.com"
+                                                className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                                            <div className="relative">
+                                                <input
+                                                    type={showPassword ? 'text' : 'password'}
+                                                    value={loginPassword}
+                                                    onChange={(e) => setLoginPassword(e.target.value)}
+                                                    placeholder="••••••••"
+                                                    className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black pr-10"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    className="absolute inset-y-0 right-0 flex items-center pr-3"
+                                                >
+                                                    {showPassword ? (
+                                                        <EyeOff className="h-5 w-5 text-gray-400" />
+                                                    ) : (
+                                                        <Eye className="h-5 w-5 text-gray-400" />
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={handleLogin}
+                                            disabled={!loginEmail || !loginPassword || loading}
+                                            className={`w-full py-2.5 rounded-lg text-white font-medium transition-all ${
+                                                !loginEmail || !loginPassword || loading
+                                                    ? 'bg-gray-400 cursor-not-allowed'
+                                                    : 'bg-black hover:bg-gray-900'
+                                            }`}
+                                        >
+                                            {loading ? (
+                                                <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+                                            ) : (
+                                                'Đăng nhập'
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
-                            ) : (
-                                <button
-                                    onClick={createAccount}
-                                    disabled={!selectedDomain || !username || loading}
-                                    className={`w-full py-2.5 rounded-lg text-white font-medium transition-all ${
-                                        !selectedDomain || !username || loading
-                                            ? 'bg-gray-400 cursor-not-allowed'
-                                            : 'bg-black hover:bg-gray-900'
-                                    }`}
-                                >
-                                    {loading ? (
-                                        <Loader2 className="h-5 w-5 animate-spin mx-auto" />
-                                    ) : (
-                                        'Tạo email'
-                                    )}
-                                </button>
-                            )}
-                        </div>
+                            </>
+                        ) : (
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Email của bạn</label>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="text"
+                                            value={email}
+                                            readOnly
+                                            className="flex-1 p-2 bg-gray-50 border border-gray-200 rounded-lg"
+                                        />
+                                        <button
+                                            onClick={() => copyToClipboard(email)}
+                                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                            title="Sao chép email"
+                                        >
+                                            <Copy className="h-5 w-5" />
+                                        </button>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                            title="Đăng xuất"
+                                        >
+                                            <LogOut className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type={showPassword ? 'text' : 'password'}
+                                            value={password}
+                                            readOnly
+                                            className="flex-1 p-2 bg-gray-50 border border-gray-200 rounded-lg"
+                                        />
+                                        <button
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                            title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="h-5 w-5" />
+                                            ) : (
+                                                <Eye className="h-5 w-5" />
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={() => copyToClipboard(password)}
+                                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                            title="Sao chép mật khẩu"
+                                        >
+                                            <Copy className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Right Panel - Messages */}

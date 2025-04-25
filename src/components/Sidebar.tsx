@@ -2,19 +2,19 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  MdTranslate, 
-  MdSubtitles, 
-  MdQuiz, 
-  MdSchool, 
-  MdChat, 
-  MdShortText, 
-  MdEdit, 
-  MdSpellcheck, 
-  MdAutoFixHigh, 
-  MdGamepad, 
-  MdImage, 
-  MdFavorite, 
+import {
+  MdTranslate,
+  MdSubtitles,
+  MdQuiz,
+  MdSchool,
+  MdChat,
+  MdShortText,
+  MdEdit,
+  MdSpellcheck,
+  MdAutoFixHigh,
+  MdGamepad,
+  MdImage,
+  MdFavorite,
   MdOutlineMenuBook,
   MdCategory,
   MdCurrencyExchange,
@@ -41,7 +41,7 @@ interface MenuGroup {
 export default function Sidebar() {
   const pathname = usePathname();
   const { isOpen, setIsOpen } = useSidebar();
-  const [expandedGroups, setExpandedGroups] = useState<{[key: string]: boolean}>({
+  const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({
     'Công cụ AI': true,
     'Học tập': true,
     'Tiện ích': true
@@ -83,24 +83,23 @@ export default function Sidebar() {
           name: 'Cải thiện văn bản',
           path: '/enhance-text',
           icon: <MdAutoFixHigh className="w-5 h-5" />
-        }
-      ]
-    },
-    {
-      name: 'Học tập',
-      icon: <MdSchool className="w-5 h-5" />,
-      items: [
-        {
+        }, {
+          name: 'Hỗ trợ tán gái',
+          path: '/flirting',
+          icon: <MdFavorite className="w-5 h-5" />
+        }, {
           name: 'Tạo câu hỏi',
           path: '/quiz',
           icon: <MdQuiz className="w-5 h-5" />
-        },
-        {
+        }, {
+          name: 'Giải bài tập',
+          path: '/aisolver',
+          icon: <MdGamepad className="w-5 h-5" />
+        }, {
           name: 'Học từ vựng',
           path: '/vocabulary',
           icon: <MdSchool className="w-5 h-5" />
-        },
-        {
+        }, {
           name: 'Từ điển',
           path: '/dictionary',
           icon: <MdOutlineMenuBook className="w-5 h-5" />
@@ -120,11 +119,6 @@ export default function Sidebar() {
           name: 'Tạo tên người dùng',
           path: '/username-generator',
           icon: <MdEdit className="w-5 h-5" />
-        },
-        {
-          name: 'Hỗ trợ tán gái',
-          path: '/flirting',
-          icon: <MdFavorite className="w-5 h-5" />
         },
         {
           name: 'Chat với AI',
@@ -148,7 +142,7 @@ export default function Sidebar() {
       )}
 
       {/* Sidebar placeholder to maintain layout */}
-      <div className={`${isOpen ? 'w-[280px]' : 'w-0'} shrink-0 transition-all duration-300 md:w-[240px]`} />
+      <div className={`${isOpen ? 'w-[80px]' : 'w-0'} shrink-0 transition-all duration-300 md:w-[240px]`} />
 
       {/* Fixed sidebar */}
       <div className={`fixed left-0 top-0 h-[100dvh] w-[280px] max-w-[90vw] bg-card border-r border-[hsl(var(--border))] flex flex-col z-50 
@@ -157,7 +151,7 @@ export default function Sidebar() {
         md:shadow-none md:w-[240px] md:translate-x-0 md:h-screen`}>
         {/* Logo section */}
         <div className="h-[70px] md:h-16 flex items-center px-6 border-b border-[hsl(var(--border))]">
-          <Link 
+          <Link
             href="/"
             className="flex items-center gap-3 hover:opacity-80 transition-opacity outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--primary))] rounded-lg"
             onClick={() => {
@@ -194,7 +188,7 @@ export default function Sidebar() {
                 )}
               </button>
               <div className={`mt-1 space-y-1 overflow-hidden transition-all duration-200 ease-in-out
-                ${expandedGroups[group.name] ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                ${expandedGroups[group.name] ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}`}>
                 {group.items.map((item) => {
                   const isActive = pathname === item.path;
 

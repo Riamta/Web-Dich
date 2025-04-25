@@ -109,14 +109,7 @@ const categories: CategoryProps[] = [
                 icon: <Subtitles className="w-6 h-6 text-black" />,
                 stats: { stars: 245, views: 11399, uses: 2910 },
                 path: "/srt-translation"
-            },
-            {
-                title: "Tạo tên người dùng",
-                description: "Tạo tên người dùng sáng tạo",
-                icon: <User className="w-6 h-6 text-black" />,
-                stats: { stars: 1569, views: 14325, uses: 7194 },
-                path: "/username"
-            }, {
+            },{
                 title: "Từ điển",
                 description: "Tra cứu từ điển đa ngôn ngữ",
                 icon: <Book className="w-6 h-6 text-black" />,
@@ -158,37 +151,17 @@ const categories: CategoryProps[] = [
                 icon: <Brain className="w-6 h-6 text-black" />,
                 stats: { stars: 1569, views: 14325, uses: 7194 },
                 path: "/aisolver"
+            },
+            {
+                title: "Hỗ trợ tán gái",
+                description: "Hỗ trợ tán gái bằng AI",
+                icon: <Heart className="w-6 h-6 text-black" />,
+                stats: { stars: 602, views: 14205, uses: 4286 },
+                path: "/flirting"
             }
         ]
     },
     {
-        title: "Công cụ học tập",
-        description: "Các công cụ hỗ trợ học tập",
-        icon: <GraduationCap className="w-6 h-6 text-black" />,
-        features: [
-            {
-                title: "Từ điển",
-                description: "Tra cứu từ điển đa ngôn ngữ",
-                icon: <Book className="w-6 h-6 text-black" />,
-                stats: { stars: 813, views: 18184, uses: 4369 },
-                path: "/dictionary"
-            },
-            {
-                title: "Học từ vựng",
-                description: "Học và luyện tập từ vựng hiệu quả",
-                icon: <Brain className="w-6 h-6 text-black" />,
-                stats: { stars: 653, views: 6618, uses: 1305 },
-                path: "/vocabulary"
-            },
-            {
-                title: "Tạo câu hỏi",
-                description: "Tạo các bài tập và câu hỏi trắc nghiệm",
-                icon: <FileText className="w-6 h-6 text-black" />,
-                stats: { stars: 602, views: 14205, uses: 4286 },
-                path: "/quiz"
-            }
-        ]
-    }, {
         title: "Tiện ích",
         description: "Các công cụ hỗ trợ tiện ích",
         icon: <Wrench className="w-6 h-6 text-black" />,
@@ -206,7 +179,7 @@ const categories: CategoryProps[] = [
                 description: "Tạo tên người dùng sáng tạo",
                 icon: <User className="w-6 h-6 text-black" />,
                 stats: { stars: 1569, views: 14325, uses: 7194 },
-                path: "/username"
+                path: "/username-generator"
             },
             {
                 title: "Mã QR",
