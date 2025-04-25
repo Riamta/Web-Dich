@@ -1,13 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getMongoClient, inMemoryPageViews, isMongoDBAvailable } from '@/lib/mongodb';
+import { getMongoClient, inMemoryPageViews } from '@/lib/mongodb';
 import { PageView } from '@/models/PageView';
-
-// Check if MongoDB is available at startup
-let useMongoDB = false;
-isMongoDBAvailable().then(available => {
-  useMongoDB = available;
-  console.log(`Using ${useMongoDB ? 'MongoDB' : 'in-memory storage'} for page views`);
-});
 
 export async function POST(request: Request) {
   try {
@@ -20,37 +13,36 @@ export async function POST(request: Request) {
     console.log(`Tracking page view for path: ${path}`);
 
     // Try to use MongoDB first
-    if (useMongoDB) {
+    const client = await getMongoClient();
+    if (client) {
       try {
-        const client = await getMongoClient();
-        if (client) {
-          const db = client.db();
-          const collection = db.collection<PageView>('pageViews');
+        const db = client.db();
+        const collection = db.collection<PageView>('pageViews');
 
-          const result = await collection.findOneAndUpdate(
-            { path },
-            { 
-              $inc: { views: 1 },
-              $set: { lastUpdated: new Date() }
-            },
-            { 
-              upsert: true,
-              returnDocument: 'after'
-            }
-          );
-          
-          await client.close();
-          
-          // Update in-memory storage as backup
-          if (result && result.path) {
-            inMemoryPageViews[result.path] = result.views || 0;
+        const result = await collection.findOneAndUpdate(
+          { path },
+          { 
+            $inc: { views: 1 },
+            $set: { lastUpdated: new Date() }
+          },
+          { 
+            upsert: true,
+            returnDocument: 'after'
           }
-          
-          console.log(`Successfully tracked page view in MongoDB for path: ${path}`);
-          return NextResponse.json(result);
+        );
+        
+        await client.close();
+        
+        // Update in-memory storage as backup
+        if (result && result.path) {
+          inMemoryPageViews[result.path] = result.views || 0;
         }
+        
+        console.log(`Successfully tracked page view in MongoDB for path: ${path}`);
+        return NextResponse.json(result);
       } catch (error) {
         console.error('Error updating MongoDB:', error);
+        await client.close();
         // Fall back to in-memory storage if MongoDB fails
       }
     }
@@ -76,29 +68,28 @@ export async function GET() {
     console.log('Fetching page views');
     
     // Try to use MongoDB first
-    if (useMongoDB) {
+    const client = await getMongoClient();
+    if (client) {
       try {
-        const client = await getMongoClient();
-        if (client) {
-          const db = client.db();
-          const collection = db.collection<PageView>('pageViews');
-          
-          const pageViews = await collection.find({}).toArray();
-          
-          // Update in-memory storage as backup
-          for (const pv of pageViews) {
-            if (pv.path) {
-              inMemoryPageViews[pv.path] = pv.views || 0;
-            }
+        const db = client.db();
+        const collection = db.collection<PageView>('pageViews');
+        
+        const pageViews = await collection.find({}).toArray();
+        
+        // Update in-memory storage as backup
+        for (const pv of pageViews) {
+          if (pv.path) {
+            inMemoryPageViews[pv.path] = pv.views || 0;
           }
-          
-          await client.close();
-          
-          console.log(`Successfully fetched ${pageViews.length} page views from MongoDB`);
-          return NextResponse.json(pageViews);
         }
+        
+        await client.close();
+        
+        console.log(`Successfully fetched ${pageViews.length} page views from MongoDB`);
+        return NextResponse.json(pageViews);
       } catch (error) {
         console.error('Error fetching from MongoDB:', error);
+        await client.close();
         // Fall back to in-memory storage if MongoDB fails
       }
     }

@@ -3,40 +3,15 @@ import { MongoClient } from 'mongodb'
 // In-memory storage for page views when MongoDB is not available
 export const inMemoryPageViews: Record<string, number> = {};
 
-// Simple function to check if MongoDB is available
-export async function isMongoDBAvailable(): Promise<boolean> {
-  if (!process.env.NEXT_PUBLIC_MONGODB_URI) {
-    console.log('MongoDB URI not found. Using in-memory storage.');
-    return false;
-  }
-
-  try {
-    const client = new MongoClient(process.env.NEXT_PUBLIC_MONGODB_URI, {
-      connectTimeoutMS: 5000,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 5000,
-      maxPoolSize: 10,
-      minPoolSize: 0
-    });
-    
-    await client.connect();
-    await client.close();
-    console.log('MongoDB connection successful');
-    return true;
-  } catch (error) {
-    console.log('MongoDB connection failed, using in-memory storage:', error);
-    return false;
-  }
-}
-
 // Get MongoDB client if available
 export async function getMongoClient() {
-  if (!process.env.NEXT_PUBLIC_MONGODB_URI) {
+  if (!process.env.MONGODB_URI) {
+    console.log('MongoDB URI not found');
     return null;
   }
 
   try {
-    const client = new MongoClient(process.env.NEXT_PUBLIC_MONGODB_URI, {
+    const client = new MongoClient(process.env.MONGODB_URI, {
       connectTimeoutMS: 5000,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 5000,
@@ -49,6 +24,22 @@ export async function getMongoClient() {
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);
     return null;
+  }
+}
+
+// Simple function to check if MongoDB is available
+export async function isMongoDBAvailable(): Promise<boolean> {
+  const client = await getMongoClient();
+  if (!client) {
+    return false;
+  }
+  
+  try {
+    await client.close();
+    return true;
+  } catch (error) {
+    console.error('Error checking MongoDB availability:', error);
+    return false;
   }
 }
 
