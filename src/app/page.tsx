@@ -2,13 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import Features from '@/components/Features'
 
-export default function Home() {
-  const router = useRouter()
-
-  useEffect(() => {
-    router.push('/translate')
-  }, [router])
-
-  return null
+export default function HomePage() {
+  return <Features />
 } 
