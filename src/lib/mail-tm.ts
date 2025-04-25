@@ -56,8 +56,44 @@ export interface MessageDetails extends Omit<Message, 'intro'> {
     }>
 }
 
+export interface StoredAccount {
+    address: string
+    password: string
+    token: string
+    id: string
+}
+
 class MailTmService {
     private token: string | null = null
+    private currentAccount: StoredAccount | null = null
+
+    constructor() {
+        // Load saved account on initialization
+        this.loadSavedAccount()
+    }
+
+    private loadSavedAccount() {
+        if (typeof window === 'undefined') return
+
+        const savedAccount = localStorage.getItem('tempmail_account')
+        if (savedAccount) {
+            try {
+                const account = JSON.parse(savedAccount)
+                this.currentAccount = account
+                this.token = account.token
+            } catch (err) {
+                console.error('Failed to load saved account:', err)
+                localStorage.removeItem('tempmail_account')
+            }
+        }
+    }
+
+    private saveAccount(account: StoredAccount) {
+        if (typeof window === 'undefined') return
+
+        this.currentAccount = account
+        localStorage.setItem('tempmail_account', JSON.stringify(account))
+    }
 
     async getDomains(): Promise<Domain[]> {
         const response = await fetch(`${API_BASE_URL}/domains`)
@@ -78,7 +114,20 @@ class MailTmService {
             throw new Error('Failed to create account')
         }
 
-        return response.json()
+        const account = await response.json()
+        
+        // Login after creating account
+        const token = await this.login(address, password)
+        
+        // Save account info
+        this.saveAccount({
+            address,
+            password,
+            token,
+            id: account.id
+        })
+
+        return account
     }
 
     async login(address: string, password: string): Promise<string> {
@@ -168,6 +217,18 @@ class MailTmService {
 
     getToken(): string | null {
         return this.token
+    }
+
+    getCurrentAccount(): StoredAccount | null {
+        return this.currentAccount
+    }
+
+    logout() {
+        this.token = null
+        this.currentAccount = null
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('tempmail_account')
+        }
     }
 }
 

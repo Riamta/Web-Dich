@@ -1,8 +1,8 @@
- 'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
-import { mailTmService, type Domain, type Message, type MessageDetails } from '@/lib/mail-tm'
-import { Loader2, Mail, Trash2, RefreshCw, Copy, Eye, EyeOff } from 'lucide-react'
+import { mailTmService, type Domain, type Message, type MessageDetails, type StoredAccount } from '@/lib/mail-tm'
+import { Loader2, Mail, Trash2, RefreshCw, Copy, Eye, EyeOff, LogOut } from 'lucide-react'
 import { generatePassword } from '@/lib/utils'
 
 export function TempMail() {
@@ -18,12 +18,18 @@ export function TempMail() {
     const [copied, setCopied] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
 
-    // Fetch available domains on component mount
+    // Load saved account and fetch domains on mount
     useEffect(() => {
+        const savedAccount = mailTmService.getCurrentAccount()
+        if (savedAccount) {
+            setEmail(savedAccount.address)
+            setPassword(savedAccount.password)
+            fetchMessages()
+        }
         fetchDomains()
     }, [])
 
-    // Auto-refresh messages every 30 seconds
+    // Auto-refresh messages every 30 seconds if logged in
     useEffect(() => {
         if (email) {
             const interval = setInterval(fetchMessages, 30000)
@@ -35,7 +41,9 @@ export function TempMail() {
         try {
             const fetchedDomains = await mailTmService.getDomains()
             setDomains(fetchedDomains)
-            setSelectedDomain(fetchedDomains[0])
+            if (!selectedDomain) {
+                setSelectedDomain(fetchedDomains[0])
+            }
         } catch (err) {
             setError('Failed to fetch domains')
         }
@@ -49,19 +57,26 @@ export function TempMail() {
 
         try {
             const generatedPassword = generatePassword()
-            setPassword(generatedPassword)
-
             const address = `${username}@${selectedDomain.domain}`
+            
             await mailTmService.createAccount(address, generatedPassword)
-            const token = await mailTmService.login(address, generatedPassword)
             
             setEmail(address)
+            setPassword(generatedPassword)
             await fetchMessages()
         } catch (err) {
             setError('Failed to create account. Username might be taken.')
         } finally {
             setLoading(false)
         }
+    }
+
+    const logout = () => {
+        mailTmService.logout()
+        setEmail('')
+        setPassword('')
+        setMessages([])
+        setSelectedMessage(null)
     }
 
     const fetchMessages = async () => {
@@ -118,6 +133,15 @@ export function TempMail() {
                             <p className="text-sm text-gray-500">Tạo email tạm thời để nhận mã xác thực</p>
                         </div>
                     </div>
+                    {email && (
+                        <button
+                            onClick={logout}
+                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Đăng xuất"
+                        >
+                            <LogOut className="h-5 w-5" />
+                        </button>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
