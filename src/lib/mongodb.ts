@@ -15,11 +15,34 @@ export async function getMongoClient() {
   }
 
   try {
-    client = new MongoClient(process.env.MONGODB_URI)
-    clientPromise = client.connect()
+    // Set connection timeout to 5 seconds
+    const options = {
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 5000,
+      maxPoolSize: 10,
+      minPoolSize: 0
+    }
+    
+    client = new MongoClient(process.env.MONGODB_URI, options)
+    
+    // Set a timeout for the connection promise
+    clientPromise = Promise.race([
+      client.connect(),
+      new Promise<null>((_, reject) => 
+        setTimeout(() => {
+          console.warn('MongoDB connection timed out. Using mock client.')
+          reject(null)
+        }, 5000)
+      )
+    ]).catch(error => {
+      console.error('Error connecting to MongoDB:', error)
+      return null
+    })
+    
     return clientPromise
   } catch (error) {
-    console.error('Error connecting to MongoDB:', error)
+    console.error('Error setting up MongoDB connection:', error)
     return null
   }
 }
