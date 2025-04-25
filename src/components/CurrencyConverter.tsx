@@ -39,7 +39,7 @@ export default function CurrencyConverter() {
     const [result, setResult] = useState<number | null>(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [exchangeRates, setExchangeRates] = useState<{[key: string]: number} | null>(null)
+    const [exchangeRates, setExchangeRates] =     useState<{[key: string]: number} | null>(null)
 
     const fetchExchangeRates = useCallback(async () => {
         if (!amount || isNaN(Number(amount))) {

@@ -7,6 +7,7 @@ import { generatePassword } from '@/lib/utils'
 import { db, auth } from '@/lib/firebase'
 import { collection, addDoc, query, where, getDocs, orderBy, deleteDoc, doc } from 'firebase/firestore'
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface SavedEmail {
     id: string
@@ -17,6 +18,7 @@ interface SavedEmail {
 }
 
 export function TempMail() {
+    const { user } = useAuth()
     const [domains, setDomains] = useState<Domain[]>([])
     const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null)
     const [username, setUsername] = useState('')
@@ -32,7 +34,7 @@ export function TempMail() {
     const [showPassword, setShowPassword] = useState(false)
     const [savedEmails, setSavedEmails] = useState<SavedEmail[]>([])
     const [showSavedEmails, setShowSavedEmails] = useState(false)
-    const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const [isUserAuthenticated, setIsUserAuthenticated] = useState(false)
 
     // Load saved account and fetch domains on mount
     useEffect(() => {
@@ -43,8 +45,10 @@ export function TempMail() {
             fetchMessages()
         }
         fetchDomains()
-        fetchSavedEmails()
-    }, [])
+        if (user) {
+            fetchSavedEmails()
+        }
+    }, [user])
 
     // Auto-refresh messages every 30 seconds if logged in
     useEffect(() => {
@@ -54,28 +58,14 @@ export function TempMail() {
         }
     }, [email])
 
-    // Check auth state
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-            setIsAuthenticated(!!user)
-            if (user) {
-                fetchSavedEmails()
-            } else {
-                setSavedEmails([])
-            }
-        })
-
-        return () => unsubscribe()
-    }, [])
-
     const fetchSavedEmails = async () => {
         try {
-            if (!auth.currentUser) return
+            if (!user) return
 
             const emailsRef = collection(db, 'tempEmails')
             const q = query(
                 emailsRef,
-                where('userId', '==', auth.currentUser.uid),
+                where('userId', '==', user.uid),
                 orderBy('createdAt', 'desc')
             )
             
@@ -102,17 +92,18 @@ export function TempMail() {
 
     const saveEmailToFirebase = async () => {
         try {
-            if (!auth.currentUser || !email || !password) return
+            if (!user || !email || !password) return
 
             const emailsRef = collection(db, 'tempEmails')
             await addDoc(emailsRef, {
                 email,
                 password,
                 createdAt: new Date(),
-                userId: auth.currentUser.uid
+                userId: user.uid
             })
 
             await fetchSavedEmails()
+            console.log('Email saved successfully')
         } catch (err) {
             console.error('Failed to save email:', err)
             setError('Failed to save email to account')
@@ -172,8 +163,10 @@ export function TempMail() {
             await fetchMessages()
 
             // Save to Firebase if user is logged in
-            if (auth.currentUser) {
+            if (user) {
                 await saveEmailToFirebase()
+            } else {
+                console.log('User not logged in, skipping save to Firebase')
             }
         } catch (err) {
             setError('Failed to create account. Username might be taken.')
