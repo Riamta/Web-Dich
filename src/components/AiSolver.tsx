@@ -221,27 +221,21 @@ Do not use any other language in your response.`
 
             let result;
             if (selectedImage) {
-                // Convert image to base64
-                const base64Data = await new Promise<string>((resolve, reject) => {
-                    const reader = new FileReader()
-                    reader.onload = () => {
-                        const base64 = reader.result as string
-                        // Remove data URL prefix
-                        const base64Content = base64.split(',')[1]
-                        resolve(`data:${selectedImage.type};base64,${base64Content}`)
-                    }
-                    reader.onerror = reject
-                    reader.readAsDataURL(selectedImage)
+                // Upload file to Gemini
+                const uploadedFile = await ai.files.upload({
+                    file: selectedImage,
+                    config: { mimeType: selectedImage.type }
                 })
 
-                // Create image part
-                const imagePart = await createPartFromUri(base64Data, selectedImage.type)
+                if (!uploadedFile.uri || !uploadedFile.mimeType) {
+                    throw new Error('Failed to upload image')
+                }
 
                 // Generate content with image
                 result = await model.generateContent({
                     model: selectedModel,
                     contents: createUserContent([
-                        imagePart,
+                        createPartFromUri(uploadedFile.uri, uploadedFile.mimeType),
                         `${prompt}\n\nIMPORTANT: You MUST respond ONLY in ${selectedLanguage}. Do not use any other language in your response.`
                     ])
                 })
