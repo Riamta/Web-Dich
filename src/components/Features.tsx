@@ -30,7 +30,8 @@ import {
     Search,
     Cloud,
     Thermometer,
-    Wind
+    Wind,
+    Flag
 } from 'lucide-react'
 import { useEffect, useState } from 'react';
 import { PageView } from '@/models/PageView';
@@ -194,6 +195,13 @@ const categories: CategoryProps[] = [
         description: "Các công cụ hỗ trợ tiện ích",
         icon: <Wrench className="w-6 h-6 text-black" />,
         features: [
+            {
+                title: "Thông tin quốc gia",
+                description: "Thông tin chi tiết về quốc gia",
+                icon: <Flag className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/countries"
+            },
             {
                 title: "Dự báo thời tiết",
                 description: "Xem dự báo thời tiết chi tiết với bản đồ tương tác",
