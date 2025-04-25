@@ -3,6 +3,7 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { ExpenseManager } from '../../components/ExpenseManager';
 import { useEffect } from 'react';
+import GoogleLoginButton from '../../components/GoogleLoginButton';
 
 export default function MoneyLovePage() {
     const { user, loading } = useAuth();
@@ -26,12 +27,9 @@ export default function MoneyLovePage() {
                     </div>
                     <h2 className="text-xl font-semibold mb-2">Yêu cầu đăng nhập</h2>
                     <p className="text-gray-600 mb-6">Vui lòng đăng nhập để sử dụng tính năng quản lý chi tiêu</p>
-                    <button
-                        onClick={() => window.location.href = '/login'}
-                        className="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
-                    >
-                        Đăng nhập
-                    </button>
+                    <div className="flex justify-center">
+                        <GoogleLoginButton />
+                    </div>
                 </div>
             </div>
         );
