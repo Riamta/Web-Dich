@@ -2,8 +2,11 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { PhotoIcon, ArrowDownTrayIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline'
-import { aiService } from '@/lib/ai-service'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import {
+    GoogleGenAI,
+    createUserContent,
+    createPartFromUri
+} from "@google/genai"
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
@@ -11,6 +14,7 @@ import 'katex/dist/katex.min.css'
 import { InlineMath, BlockMath } from 'react-katex'
 import { Components } from 'react-markdown'
 import { SUPPORTED_LANGUAGES } from '@/constants/languages'
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Custom renderer components for ReactMarkdown
 const renderers: Partial<Components> = {
@@ -47,6 +51,7 @@ export function AiSolver() {
     const [needExplanation, setNeedExplanation] = useState(false)
     const [inputType, setInputType] = useState<'image' | 'text'>('image')
     const [exerciseText, setExerciseText] = useState('')
+    const [selectedModel, setSelectedModel] = useState<'gemini-2.5-flash-preview-04-17' | 'gemini-2.0-flash'>('gemini-2.5-flash-preview-04-17')
     const fileInputRef = useRef<HTMLInputElement>(null)
     const imageContainerRef = useRef<HTMLDivElement>(null)
     const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -209,8 +214,8 @@ Do not use any other language in your response.`
                 throw new Error('Gemini API key is not configured')
             }
 
-            const genAI = new GoogleGenerativeAI(geminiKey)
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+            const ai = new GoogleGenAI({ apiKey: geminiKey })
+            const model = ai.models
             const prompt = createSolverPrompt()
             const selectedLanguage = SUPPORTED_LANGUAGES.find(l => l.code === language)?.name || 'Vietnamese'
 
@@ -219,34 +224,39 @@ Do not use any other language in your response.`
                 // Convert image to base64
                 const base64Data = await new Promise<string>((resolve, reject) => {
                     const reader = new FileReader()
-                    reader.onload = () => resolve(reader.result as string)
+                    reader.onload = () => {
+                        const base64 = reader.result as string
+                        // Remove data URL prefix
+                        const base64Content = base64.split(',')[1]
+                        resolve(`data:${selectedImage.type};base64,${base64Content}`)
+                    }
                     reader.onerror = reject
                     reader.readAsDataURL(selectedImage)
                 })
 
-                // Remove data URL prefix
-                const base64Content = base64Data.split(',')[1]
+                // Create image part
+                const imagePart = await createPartFromUri(base64Data, selectedImage.type)
 
-                const imagePart = {
-                    inlineData: {
-                        data: base64Content,
-                        mimeType: selectedImage.type
-                    }
-                }
-
-                result = await model.generateContent([
-                    `${prompt}\n\nIMPORTANT: You MUST respond ONLY in ${selectedLanguage}. Do not use any other language in your response.`,
-                    imagePart
-                ])
+                // Generate content with image
+                result = await model.generateContent({
+                    model: selectedModel,
+                    contents: createUserContent([
+                        imagePart,
+                        `${prompt}\n\nIMPORTANT: You MUST respond ONLY in ${selectedLanguage}. Do not use any other language in your response.`
+                    ])
+                })
             } else {
-                // Use text input
-                result = await model.generateContent([
-                    `${prompt}\n\nIMPORTANT: You MUST respond ONLY in ${selectedLanguage}. Do not use any other language in your response.`,
-                    `Bài tập:\n${exerciseText}`
-                ])
+                // Generate content with text only
+                result = await model.generateContent({
+                    model: selectedModel,
+                    contents: createUserContent([
+                        `${prompt}\n\nIMPORTANT: You MUST respond ONLY in ${selectedLanguage}. Do not use any other language in your response.`,
+                        `Bài tập:\n${exerciseText}`
+                    ])
+                })
             }
 
-            const solution = result.response.text()
+            const solution = result.text || 'No solution generated'
             setSolution(solution)
         } catch (error) {
             console.error('Solving error:', error)
@@ -337,6 +347,18 @@ Do not use any other language in your response.`
                                     {lang.name}
                                 </option>
                             ))}
+                        </select>
+                    </div>
+
+                    <div className="flex-1 min-w-[200px]">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Model AI</label>
+                        <select
+                            value={selectedModel}
+                            onChange={(e) => setSelectedModel(e.target.value as typeof selectedModel)}
+                            className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        >
+                            <option value="gemini-2.5-flash-preview-04-17">Gemini 2.5 Flash (Preview)</option>
+                            <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
                         </select>
                     </div>
 
