@@ -5,13 +5,13 @@ export const inMemoryPageViews: Record<string, number> = {};
 
 // Simple function to check if MongoDB is available
 export async function isMongoDBAvailable(): Promise<boolean> {
-  if (!process.env.MONGODB_URI) {
+  if (!process.env.NEXT_PUBLIC_MONGODB_URI) {
     console.log('MongoDB URI not found. Using in-memory storage.');
     return false;
   }
 
   try {
-    const client = new MongoClient(process.env.MONGODB_URI, {
+    const client = new MongoClient(process.env.NEXT_PUBLIC_MONGODB_URI, {
       connectTimeoutMS: 5000,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 5000,
@@ -31,12 +31,12 @@ export async function isMongoDBAvailable(): Promise<boolean> {
 
 // Get MongoDB client if available
 export async function getMongoClient() {
-  if (!process.env.MONGODB_URI) {
+  if (!process.env.NEXT_PUBLIC_MONGODB_URI) {
     return null;
   }
 
   try {
-    const client = new MongoClient(process.env.MONGODB_URI, {
+    const client = new MongoClient(process.env.NEXT_PUBLIC_MONGODB_URI, {
       connectTimeoutMS: 5000,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 5000,
