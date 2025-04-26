@@ -10,7 +10,6 @@ import { useToast, ToastContainer } from '@/utils/toast';
 import { SUPPORTED_LANGUAGES } from '@/constants/languages';
 import { extractYouTubeVideoId } from '@/lib/youtube-util';
 import YouTubePreview from '@/components/YouTubePreview';
-import SubtitledVideoPlayer from '@/components/SubtitledVideoPlayer';
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody} from '@/components/ui/modal';
 import { FaBook, FaCopy, FaDownload } from 'react-icons/fa';
 import YouTubePlayer from '@/components/YouTubePlayer';
