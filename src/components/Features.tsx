@@ -336,61 +336,88 @@ export default function Features() {
         }))
         .filter(category => category.features.length > 0);
 
-    useEffect(() => {
-        const CACHE_KEY = 'page_views_cache';
-        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
-
-        const fetchPageViews = async () => {
-            try {
-                // Check cache first
-                const cachedData = localStorage.getItem(CACHE_KEY);
-                if (cachedData) {
-                    const { data, timestamp } = JSON.parse(cachedData);
-                    const now = Date.now();
-                    
-                    // If cache is still valid (less than 5 minutes old)
-                    if (now - timestamp < CACHE_DURATION) {
-                        console.log('Using cached page views');
-                        setPageViews(data);
-                        updateTopPages(data);
-                        return;
-                    }
-                }
-
-                // If no cache or cache expired, fetch new data
-                console.log('Fetching fresh page views');
-                const response = await fetch('/api/page-views');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                const viewsMap = data.reduce((acc: Record<string, number>, view: { path: string; views: number }) => {
-                    acc[view.path] = view.views;
-                    return acc;
-                }, {} as Record<string, number>);
-
-                // Update state and cache
-                setPageViews(viewsMap);
-                updateTopPages(viewsMap);
-                localStorage.setItem(CACHE_KEY, JSON.stringify({
-                    data: viewsMap,
-                    timestamp: Date.now()
-                }));
-            } catch (error) {
-                console.error('Error fetching page views:', error);
-                // If fetch fails and we have cached data, use it as fallback
-                const cachedData = localStorage.getItem(CACHE_KEY);
-                if (cachedData) {
-                    const { data } = JSON.parse(cachedData);
-                    setPageViews(data);
-                    updateTopPages(data);
-                } else {
-                    setPageViews({});
-                    setTopPages([]);
-                }
+    // Cách 1: Sử dụng useSWR (khuyên dùng)
+    // Cần cài đặt: npm install swr
+    const fetchPageViews = async () => {
+        try {
+            const response = await fetch('/api/page-views');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-        };
+            const data = await response.json();
+            return data.reduce((acc: Record<string, number>, view: { path: string; views: number }) => {
+                acc[view.path] = view.views;
+                return acc;
+            }, {} as Record<string, number>);
+        } catch (error) {
+            console.error('Error fetching page views:', error);
+            return {};
+        }
+    };
 
+    // Thay thế cách sử dụng bằng SWR (bỏ comment và cài đặt thư viện)
+    // import useSWR from 'swr'
+    // const { data: viewsData, error } = useSWR('/api/page-views', fetchPageViews, {
+    //   refreshInterval: 5 * 60 * 1000, // Refresh every 5 minutes
+    //   revalidateOnFocus: false,
+    //   dedupingInterval: 60 * 1000, // Dedupe requests within 1 minute
+    // });
+    // 
+    // useEffect(() => {
+    //   if (viewsData) {
+    //     setPageViews(viewsData);
+    //     updateTopPages(viewsData);
+    //   }
+    // }, [viewsData]);
+
+    // Cách 2: Sử dụng React Query (alternative)
+    // Cần cài đặt: npm install @tanstack/react-query
+    // import { useQuery } from '@tanstack/react-query';
+    // const { data: viewsData } = useQuery({
+    //    queryKey: ['pageViews'],
+    //    queryFn: fetchPageViews,
+    //    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    //    refetchOnWindowFocus: false,
+    // });
+    //
+    // useEffect(() => {
+    //   if (viewsData) {
+    //     setPageViews(viewsData);
+    //     updateTopPages(viewsData);
+    //   }
+    // }, [viewsData]);
+
+    // Cách 3: Sử dụng Server-Side Caching với Next.js middleware
+    // Tạo file middleware.ts trong thư mục gốc:
+    // 
+    // import { NextResponse } from 'next/server'
+    // import type { NextRequest } from 'next/server'
+    //
+    // export async function middleware(request: NextRequest) {
+    //   if (request.nextUrl.pathname === '/api/page-views') {
+    //     const cacheKey = 'page_views_cache'
+    //     const cachedData = request.cookies.get(cacheKey)?.value
+    //     
+    //     if (cachedData) {
+    //       try {
+    //         const parsedData = JSON.parse(cachedData)
+    //         const now = Date.now()
+    //         if (now - parsedData.timestamp < 5 * 60 * 1000) {
+    //           return NextResponse.json(parsedData.data)
+    //         }
+    //       } catch (e) {
+    //         // Invalid cache, continue to API
+    //       }
+    //     }
+    //   }
+    //   return NextResponse.next()
+    // }
+
+    // Cách 4: Sử dụng server-side component chứ không cần client-side cache (Next.js App Router)
+    // Tạo một trang server component để load dữ liệu và truyền xuống client component
+
+    // Giữ lại phương pháp cũ trong thời gian chuyển đổi
+    useEffect(() => {
         // Helper function to update top pages
         const updateTopPages = (viewsMap: Record<string, number>) => {
             // Get all paths and sort by views
@@ -402,12 +429,14 @@ export default function Features() {
             setTopPages(sortedPaths);
         };
 
-        fetchPageViews();
+        const fetchData = async () => {
+            const data = await fetchPageViews();
+            setPageViews(data);
+            updateTopPages(data);
+        };
 
-        // Set up interval to refresh cache every 5 minutes
-        const intervalId = setInterval(fetchPageViews, CACHE_DURATION);
-
-        // Cleanup interval on component unmount
+        fetchData();
+        const intervalId = setInterval(fetchData, 5 * 60 * 1000);
         return () => clearInterval(intervalId);
     }, []);
 
