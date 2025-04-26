@@ -1,6 +1,5 @@
 import { db } from './firebase';
 import { collection, addDoc, query, where, getDocs, deleteDoc, doc, updateDoc, orderBy, limit, setDoc, getDoc } from 'firebase/firestore';
-import { aiService } from './ai-service';
 
 export interface UserSettings {
     currency: {
@@ -20,10 +19,6 @@ export interface Expense {
     date: Date;
     createdAt: Date;
     type: 'income' | 'expense';
-    aiAnalysis?: {
-        suggestions: string[];
-        lastUpdated: Date;
-    };
 }
 
 export interface Wallet {
@@ -65,18 +60,9 @@ export class ExpenseService {
                 lastUpdated: new Date()
             });
 
-            // Tạo AI analysis sau khi đã cập nhật số dư
-            const analysis = await this.generateAIAnalysis(expense.userId);
-            
-            // Cập nhật giao dịch với AI analysis
-            await updateDoc(doc(db, 'expenses', docRef.id), {
-                aiAnalysis: analysis
-            });
-
             return {
                 ...expenseData,
-                id: docRef.id,
-                aiAnalysis: analysis
+                id: docRef.id
             };
         } catch (error) {
             console.error('Error adding expense:', error);
@@ -98,11 +84,7 @@ export class ExpenseService {
                     ...data,
                     id: doc.id,
                     date: data.date?.toDate?.() || new Date(),
-                    createdAt: data.createdAt?.toDate?.() || new Date(),
-                    aiAnalysis: data.aiAnalysis ? {
-                        ...data.aiAnalysis,
-                        lastUpdated: data.aiAnalysis.lastUpdated?.toDate?.() || new Date()
-                    } : undefined
+                    createdAt: data.createdAt?.toDate?.() || new Date()
                 } as Expense;
             });
         } catch (error) {
@@ -160,61 +142,6 @@ export class ExpenseService {
         } catch (error) {
             console.error('Error updating expense:', error);
             throw error;
-        }
-    }
-
-    private async generateAIAnalysis(userId: string): Promise<{ suggestions: string[]; lastUpdated: Date }> {
-        try {
-            const q = query(
-                collection(db, 'expenses'),
-                where('userId', '==', userId),
-                orderBy('date', 'desc'),
-                limit(10)
-            );
-            const querySnapshot = await getDocs(q);
-            const recentExpenses = querySnapshot.docs.map(doc => ({
-                ...doc.data(),
-                date: doc.data().date.toDate()
-            })) as Expense[];
-
-            const prompt = `Phân tích các giao dịch sau và đưa ra 3 gợi ý để quản lý tài chính tốt hơn:
-            ${recentExpenses.map(expense => 
-                `${expense.type === 'income' ? 'Thu nhập' : 'Chi tiêu'}: ${expense.amount.toLocaleString('vi-VN')}đ - ${expense.category} - ${expense.description}`
-            ).join('\n')}
-            
-            Yêu cầu:
-            1. Đưa ra 3 gợi ý cụ thể và thực tế
-            2. Dựa trên xu hướng chi tiêu/thu nhập
-            3. Có thể bao gồm cả lời khuyên về tiết kiệm và đầu tư
-            
-            Chỉ trả về JSON với mảng suggestions, không thêm bất kỳ text nào khác:
-            {
-                "suggestions": ["string", "string", "string"]
-            }`;
-
-            const result = await aiService.processWithAI(prompt);
-            
-            const cleanResult = result
-                .replace(/```json/g, '')
-                .replace(/```/g, '')
-                .trim();
-            
-            const analysis = JSON.parse(cleanResult);
-
-            return {
-                suggestions: analysis.suggestions,
-                lastUpdated: new Date()
-            };
-        } catch (error) {
-            console.error('Error generating AI analysis:', error);
-            return {
-                suggestions: [
-                    "Hãy theo dõi chi tiêu thường xuyên",
-                    "Cân nhắc tạo quỹ tiết kiệm khẩn cấp",
-                    "Xem xét đầu tư để tăng thu nhập thụ động"
-                ],
-                lastUpdated: new Date()
-            };
         }
     }
 

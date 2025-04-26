@@ -29,7 +29,8 @@ import {
     EyeIcon,
     MagnifyingGlassIcon,
     CloudIcon,
-    FlagIcon
+    FlagIcon,
+    ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react';
 import { PageView } from '@/models/PageView';
@@ -102,6 +103,14 @@ const categories: CategoryProps[] = [
         description: "Các công cụ sử dụng trí tuệ nhân tạo",
         icon: <SparklesIcon className="w-6 h-6 text-black" />,
         features: [
+            {
+                title: "Chat với AI",
+                description: "Trò chuyện thông minh với AI",
+                icon: <ChatBubbleLeftRightIcon className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/chat-with-ai",
+                badge: "New"
+            },
             {
                 title: "Dịch thuật AI",
                 description: "Dịch văn bản giữa các ngôn ngữ bằng AI",
@@ -185,6 +194,14 @@ const categories: CategoryProps[] = [
                 icon: <BeakerIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/recipe-generator"
+            },
+            {
+                title: "Random Text",
+                description: "Tạo text ngẫu nhiên từ danh sách lựa chọn",
+                icon: <ArrowPathIcon className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/random-text",
+                badge: "New"
             }
         ]
     },

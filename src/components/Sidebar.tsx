@@ -48,6 +48,11 @@ const menuGroups: MenuGroup[] = [
     icon: <SparklesIcon className="w-5 h-5" />,
     items: [
       {
+        name: 'Chat với AI',
+        path: '/chat-with-ai',
+        icon: <ChatBubbleLeftRightIcon className="w-5 h-5" />
+      },
+      {
         name: 'Dịch văn bản',
         path: '/translate',
         icon: <LanguageIcon className="w-5 h-5" />
@@ -127,13 +132,6 @@ const menuGroups: MenuGroup[] = [
         name: 'Email tạm thời',
         path: '/temp-mail',
         icon: <EnvelopeIcon className="w-5 h-5" />
-      },
-      {
-        name: 'Chat với AI',
-        path: 'https://chat.amri2k.com',
-        icon: <ChatBubbleLeftRightIcon className="w-5 h-5" />,
-        isExternal: true,
-        target: '_blank'
       }
     ]
   }
