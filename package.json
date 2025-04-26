@@ -26,7 +26,7 @@
     "@types/xml-js": "^0.9.0",
     "@vercel/analytics": "^1.5.0",
     "autoprefixer": "^10.4.17",
-    "axios": "^1.9.0",
+    "axios": "^1.6.7",
     "chart.js": "^4.4.9",
     "cheerio": "1.0.0-rc.12",
     "class-variance-authority": "^0.7.1",
@@ -66,6 +66,7 @@
     "typescript": "^5.3.3",
     "xml-js": "^1.6.11",
     "youtube-dl-exec": "^2.5.6",
+    "youtube-transcript": "^1.2.1",
     "ytdl-core": "^4.11.5"
   },
   "devDependencies": {

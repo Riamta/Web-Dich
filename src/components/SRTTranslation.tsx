@@ -1,18 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { DocumentArrowUpIcon, LanguageIcon } from '@heroicons/react/24/outline';
-import { MdBook, MdContentCopy, MdDownload, MdEdit, MdOutlineMenuBook, MdTranslate, MdVideoLibrary, MdOndemandVideo } from 'react-icons/md';
+import { MdBook, MdContentCopy, MdDownload, MdEdit, MdOutlineMenuBook, MdTranslate } from 'react-icons/md';
 import Dictionary from '@/components/Dictionary';
 import { dictionaryService } from '@/lib/dictionary-service';
 import { aiService } from '@/lib/ai-service';
 import { useToast, ToastContainer } from '@/utils/toast';
 import { SUPPORTED_LANGUAGES } from '@/constants/languages';
-import { extractYouTubeVideoId } from '@/lib/youtube-util';
-import YouTubePreview from '@/components/YouTubePreview';
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody} from '@/components/ui/modal';
-import { FaBook, FaCopy, FaDownload } from 'react-icons/fa';
-import YouTubePlayer from '@/components/YouTubePlayer';
+import { FaBook, FaCopy, FaDownload, FaYoutube } from 'react-icons/fa';
+import { youtubeService } from '@/lib/youtube-service';
 
 interface ComparisonModalProps {
   isOpen: boolean;
@@ -269,74 +267,9 @@ export default function SRTTranslation() {
   const [batchSize, setBatchSize] = useState(50);
   const [isImprovingTranslation, setIsImprovingTranslation] = useState(false);
   const [isRetryingFailedTranslations, setIsRetryingFailedTranslations] = useState(false);
-
-  // YouTube subtitle download states
+  const [isLoadingYoutube, setIsLoadingYoutube] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState('');
-  const [isFetchingSubtitles, setIsFetchingSubtitles] = useState(false);
-  const [fetchedLanguages, setFetchedLanguages] = useState<Array<{code: string, name: string}>>([]);
-  const [subtitleLanguage, setSubtitleLanguage] = useState('en');
-  const [videoId, setVideoId] = useState<string | null>(null);
-  
-  // Video player state
-  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
-  const [currentSubtitle, setCurrentSubtitle] = useState('');
-  const [isPlaying, setIsPlaying] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const timeIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Update videoId when youtubeUrl changes
-  useEffect(() => {
-    const id = extractVideoId(youtubeUrl);
-    setVideoId(id);
-  }, [youtubeUrl]);
-
-  useEffect(() => {
-    if (showVideoPlayer && videoRef.current) {
-      videoRef.current.addEventListener('timeupdate', handleTimeUpdate);
-      videoRef.current.addEventListener('play', () => setIsPlaying(true));
-      videoRef.current.addEventListener('pause', () => setIsPlaying(false));
-    }
-
-    return () => {
-      if (timeIntervalRef.current) {
-        clearInterval(timeIntervalRef.current);
-      }
-      if (videoRef.current) {
-        videoRef.current.removeEventListener('timeupdate', handleTimeUpdate);
-      }
-    };
-  }, [showVideoPlayer]);
-
-  const handleTimeUpdate = () => {
-    if (!videoRef.current) return;
-    const currentTime = videoRef.current.currentTime;
-    updateCurrentSubtitle(currentTime);
-  };
-
-  const parseTimecode = (timecode: string): number => {
-    const [hours, minutes, seconds] = timecode.split(':');
-    const [secs, ms] = seconds.split(',');
-    return (
-      parseInt(hours) * 3600 +
-      parseInt(minutes) * 60 +
-      parseInt(secs) +
-      parseInt(ms) / 1000
-    );
-  };
-
-  const updateCurrentSubtitle = (currentTime: number) => {
-    const activeSubtitle = entries.find(entry => {
-      const fromTime = parseTimecode(entry.from);
-      const toTime = parseTimecode(entry.to);
-      return currentTime >= fromTime && currentTime <= toTime;
-    });
-
-    if (activeSubtitle) {
-      setCurrentSubtitle(activeSubtitle.translation || activeSubtitle.text);
-    } else {
-      setCurrentSubtitle('');
-    }
-  };
+  const [showYoutubeInput, setShowYoutubeInput] = useState(false);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -380,6 +313,61 @@ export default function SRTTranslation() {
     } catch (error) {
       console.error('Error reading file:', error);
       setError('Error reading SRT file');
+    }
+  };
+
+  const handleYoutubeSubtitles = async () => {
+    if (!youtubeUrl.trim()) {
+      showError('Please enter a YouTube URL');
+      return;
+    }
+
+    setIsLoadingYoutube(true);
+    const toastId = loading('Đang tải phụ đề từ YouTube...');
+
+    try {
+      const data = await youtubeService.fetchSubtitles(youtubeUrl);
+      const srtContent = data.subtitles;
+      
+      // Set the filename using video ID
+      setFileName(`youtube_${data.videoId}.srt`);
+      
+      // Process the SRT content
+      const blocks = srtContent.trim().split(/\n\s*\n/);
+      const parsedEntries: Array<SRTEntry> = [];
+      
+      blocks.forEach((block, index) => {
+        const lines = block.trim().split('\n');
+        if (lines.length >= 3) {
+          const id = lines[0].trim();
+          const timecode = lines[1].trim();
+          const [from, to] = timecode.split(' --> ').map(t => t.trim());
+          const text = lines.slice(2).join('\n').trim();
+          
+          parsedEntries.push({
+            id,
+            from,
+            to,
+            text,
+            translation: text,
+            status: 'pending'
+          });
+        }
+      });
+
+      setEntries(parsedEntries);
+      setSrtContent(srtContent);
+      setError(null);
+      setShowYoutubeInput(false);
+      setYoutubeUrl('');
+      
+      removeToast(toastId);
+      success('Đã tải phụ đề thành công!');
+    } catch (error: any) {
+      console.error('Error fetching YouTube subtitles:', error);
+      showError(error.message || 'Failed to fetch subtitles from YouTube');
+    } finally {
+      setIsLoadingYoutube(false);
     }
   };
 
@@ -888,145 +876,6 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
   // Calculate translation statistics
   const stats = getTranslationStats();
 
-  // Extract YouTube Video ID from URL
-  const extractVideoId = (url: string): string | null => {
-    return extractYouTubeVideoId(url);
-  };
-
-  // Fetch available subtitles for a YouTube video
-  const fetchAvailableSubtitles = async (videoId: string) => {
-    try {
-      setIsFetchingSubtitles(true);
-      const toastId = loading('Đang kiểm tra phụ đề có sẵn...');
-      
-      // This would be replaced with your actual API call to get available subtitles
-      const response = await fetch(`/api/youtube/subtitles/languages?videoId=${videoId}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch available subtitles');
-      }
-      
-      const data = await response.json();
-      setFetchedLanguages(data.languages || []);
-      
-      if (data.languages && data.languages.length > 0) {
-        // Default to English if available, otherwise use the first available language
-        const hasEnglish = data.languages.some((lang: {code: string}) => lang.code === 'en');
-        setSubtitleLanguage(hasEnglish ? 'en' : data.languages[0].code);
-      }
-
-      removeToast(toastId);
-      success('Đã tìm thấy phụ đề');
-    } catch (error: any) {
-      console.error('Error fetching available subtitles:', error);
-      showError('Không thể tìm thấy phụ đề. Vui lòng kiểm tra URL và thử lại.');
-    } finally {
-      setIsFetchingSubtitles(false);
-    }
-  };
-
-  // Download subtitles from YouTube
-  const handleYoutubeSubtitleDownload = async () => {
-    const videoId = extractVideoId(youtubeUrl);
-    
-    if (!videoId) {
-      showError('URL YouTube không hợp lệ. Vui lòng kiểm tra và thử lại.');
-      return;
-    }
-    
-    try {
-      setIsLoading(true);
-      const toastId = loading('Đang tải phụ đề từ YouTube...');
-
-      // Find the index of currently selected language
-      const selectedIndex = fetchedLanguages.findIndex(lang => lang.code === subtitleLanguage);
-      // Get the previous language code, if it's first language, use the last one
-      const targetIndex = selectedIndex === 0 ? fetchedLanguages.length - 1 : selectedIndex - 1;
-      const targetLanguage = fetchedLanguages[targetIndex].code;
-      
-      const response = await fetch(`/api/youtube/subtitles?videoId=${videoId}&lang=${targetLanguage}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to download subtitles');
-      }
-      
-      const data = await response.json();
-      
-      if (!data.content) {
-        throw new Error('No subtitle content received');
-      }
-      
-      // Parse the SRT content
-      setSrtContent(data.content);
-      setFileName(`youtube_${videoId}_${targetLanguage}.srt`);
-      
-      // Parse the subtitles
-      const blocks = data.content.trim().split(/\n\s*\n/);
-      const parsedEntries: Array<SRTEntry> = [];
-      
-      blocks.forEach((block: string, index: number) => {
-        const lines = block.trim().split('\n');
-        if (lines.length >= 3) {
-          const id = lines[0].trim();
-          const timecode = lines[1].trim();
-          const [from, to] = timecode.split(' --> ').map(t => t.trim());
-          const text = lines.slice(2).join('\n').trim();
-          
-          parsedEntries.push({
-            id,
-            from,
-            to,
-            text,
-            translation: text,
-            status: 'pending'
-          });
-        }
-      });
-      
-      setEntries(parsedEntries);
-      setError(null);
-      
-      removeToast(toastId);
-      success('Đã tải phụ đề thành công');
-    } catch (error: any) {
-      console.error('Error downloading subtitles:', error);
-      showError('Không thể tải phụ đề. Vui lòng thử lại sau.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubtitleDownload = (content: string) => {
-    setSrtContent(content);
-    setFileName(`youtube_${videoId}_${subtitleLanguage}.srt`);
-    
-    // Parse the subtitles
-    const blocks = content.trim().split(/\n\s*\n/);
-    const parsedEntries: Array<SRTEntry> = [];
-    
-    blocks.forEach((block: string, index: number) => {
-      const lines = block.trim().split('\n');
-      if (lines.length >= 3) {
-        const id = lines[0].trim();
-        const timecode = lines[1].trim();
-        const [from, to] = timecode.split(' --> ').map(t => t.trim());
-        const text = lines.slice(2).join('\n').trim();
-        
-        parsedEntries.push({
-          id,
-          from,
-          to,
-          text,
-          translation: text, // Copy original text to translation when importing
-          status: 'pending'
-        });
-      }
-    });
-    
-    setEntries(parsedEntries);
-    setError(null);
-  };
-
   return (
     <div className="space-y-4">
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
@@ -1040,6 +889,13 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
                 accept=".srt"
                 className="w-64 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
               />
+              <button
+                onClick={() => setShowYoutubeInput(!showYoutubeInput)}
+                className="flex items-center gap-2 px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                <FaYoutube className="h-5 w-5" />
+                YouTube
+              </button>
               <select
                 value={targetLanguage}
                 onChange={(e) => setTargetLanguage(e.target.value)}
@@ -1073,117 +929,54 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
             </button>
           </div>
 
-          {/* YouTube Subtitle Section */}
-          <div className="flex flex-col gap-4 border-t pt-4">
-            <div className="flex-1 flex items-center gap-4">
-              <div className="flex items-center">
-                <MdVideoLibrary className="h-5 w-5 text-red-500 mr-2" />
-                <span className="text-sm font-medium">Tải phụ đề từ YouTube:</span>
-              </div>
+          {/* YouTube URL input */}
+          {showYoutubeInput && (
+            <div className="flex gap-2">
               <input
                 type="text"
                 value={youtubeUrl}
                 onChange={(e) => setYoutubeUrl(e.target.value)}
-                placeholder="Nhập URL video YouTube"
-                className="flex-1 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                placeholder="Nhập URL video YouTube..."
+                className="flex-1 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
-              {fetchedLanguages.length > 0 && (
-                <select
-                  value={subtitleLanguage}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                    // Keep the UI showing the selected language
-                    setSubtitleLanguage(e.target.value);
-                  }}
-                  className="w-48 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-                >
-                  {fetchedLanguages.map((lang) => (
-                    <option key={lang.code} value={lang.code}>
-                      {lang.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-              {fetchedLanguages.length === 0 ? (
-                <button
-                  onClick={() => {
-                    const videoId = extractVideoId(youtubeUrl);
-                    if (videoId) fetchAvailableSubtitles(videoId);
-                  }}
-                  disabled={isFetchingSubtitles || !youtubeUrl || !extractVideoId(youtubeUrl)}
-                  className={`py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center gap-2 ${
-                    isFetchingSubtitles || !youtubeUrl || !extractVideoId(youtubeUrl)
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-red-500 hover:bg-red-600 shadow-sm hover:shadow-md'
-                  }`}
-                >
-                  {isFetchingSubtitles ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      Đang kiểm tra...
-                    </span>
-                  ) : (
-                    'Kiểm tra phụ đề'
-                  )}
-                </button>
-              ) : (
-                <button
-                  onClick={handleYoutubeSubtitleDownload}
-                  disabled={isLoading || isFetchingSubtitles}
-                  className={`py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center gap-2 ${
-                    isLoading || isFetchingSubtitles
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-red-500 hover:bg-red-600 shadow-sm hover:shadow-md'
-                  }`}
-                >
-                  {isLoading ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      Đang tải...
-                    </span>
-                  ) : (
-                    'Tải phụ đề'
-                  )}
-                </button>
-              )}
+              <button
+                onClick={handleYoutubeSubtitles}
+                disabled={isLoadingYoutube || !youtubeUrl.trim()}
+                className={`px-4 py-2 rounded-lg text-white font-medium transition-all duration-200 flex items-center gap-2 ${
+                  isLoadingYoutube || !youtubeUrl.trim()
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700'
+                }`}
+              >
+                {isLoadingYoutube ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Đang tải...
+                  </span>
+                ) : (
+                  <>
+                    <FaYoutube className="h-5 w-5" />
+                    Tải phụ đề
+                  </>
+                )}
+              </button>
             </div>
-            
-            {/* YouTube video preview */}
-            {videoId && (
-              <div className="mt-2">
-                <YouTubePreview videoId={videoId} className="max-w-md" />
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Translation actions and stats */}
           {entries.length > 0 && (
@@ -1227,16 +1020,6 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
                     </>
                   )}
                 </button>
-                
-                {videoId && (
-                  <button
-                    onClick={() => setShowVideoPlayer(!showVideoPlayer)}
-                    className="py-2 px-4 rounded-lg text-white bg-red-500 hover:bg-red-600 transition-all duration-200 flex items-center gap-2"
-                  >
-                    <MdOndemandVideo className="h-5 w-5" />
-                    {showVideoPlayer ? 'Ẩn trình phát' : 'Xem video với phụ đề'}
-                  </button>
-                )}
               </div>
               
               <div className="flex items-center gap-4">
@@ -1594,25 +1377,7 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
           </div>
         )}
 
-        {/* Video Player with Subtitles */}
-        {showVideoPlayer && videoId && entries.length > 0 && (
-          <Modal isOpen={showVideoPlayer} onClose={() => setShowVideoPlayer(false)} size="6xl">
-            <ModalHeader>
-              <h3 className="text-lg font-medium">Xem video với phụ đề đã dịch</h3>
-              <ModalCloseButton />
-            </ModalHeader>
-            <ModalBody>
-              <div className="space-y-4">
-                <YouTubePlayer
-                  videoId={videoId}
-                  currentSubtitle={currentSubtitle}
-                  onTimeUpdate={updateCurrentSubtitle}
-                  onPlayStateChange={setIsPlaying}
-                />
-              </div>
-            </ModalBody>
-          </Modal>
-        )}
+
       </div>
 
       <Dictionary
