@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ArrowRightLeft, RefreshCw } from 'lucide-react'
+import { ArrowsRightLeftIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 
 interface Currency {
     code: string
@@ -174,7 +174,7 @@ export default function CurrencyConverter() {
                                     className="mt-6 p-2 rounded-full hover:bg-gray-100"
                                     title="Đảo ngược tiền tệ"
                                 >
-                                    <ArrowRightLeft className="w-5 h-5" />
+                                    <ArrowsRightLeftIcon className="w-5 h-5" />
                                 </button>
 
                                 <div className="flex-1">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { mailTmService, type Domain, type Message, type MessageDetails } from '@/lib/mail-tm'
-import { Loader2, Mail, Trash2, RefreshCw, Copy, Eye, EyeOff, LogOut, RefreshCcw } from 'lucide-react'
+import { EnvelopeIcon, TrashIcon, ArrowPathIcon, ClipboardDocumentIcon, EyeIcon, EyeSlashIcon, ArrowRightOnRectangleIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline'
 import { generatePassword, generateRandomUsername } from '@/lib/utils'
 
 export function TempMail() {
@@ -155,7 +155,7 @@ export function TempMail() {
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
                     <div className="flex items-center space-x-2">
                         <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center">
-                            <Mail className="h-6 w-6 text-white" />
+                            <EnvelopeIcon className="h-6 w-6 text-white" />
                         </div>
                         <div>
                             <h1 className="text-xl font-semibold">Temp Mail</h1>
@@ -190,7 +190,7 @@ export function TempMail() {
                                                 className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                                                 title="Tạo ngẫu nhiên"
                                             >
-                                                <RefreshCcw className="h-5 w-5" />
+                                                <ArrowPathRoundedSquareIcon className="h-5 w-5" />
                                             </button>
                                         </div>
                                     </div>
@@ -220,7 +220,7 @@ export function TempMail() {
                                         }`}
                                     >
                                         {loading ? (
-                                            <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+                                            <ArrowPathIcon className="h-5 w-5 animate-spin mx-auto" />
                                         ) : (
                                             'Tạo email'
                                         )}
@@ -263,9 +263,9 @@ export function TempMail() {
                                                     className="absolute inset-y-0 right-0 flex items-center pr-3"
                                                 >
                                                     {showPassword ? (
-                                                        <EyeOff className="h-5 w-5 text-gray-400" />
+                                                        <EyeSlashIcon className="h-5 w-5 text-gray-400" />
                                                     ) : (
-                                                        <Eye className="h-5 w-5 text-gray-400" />
+                                                        <EyeIcon className="h-5 w-5 text-gray-400" />
                                                     )}
                                                 </button>
                                             </div>
@@ -281,7 +281,7 @@ export function TempMail() {
                                             }`}
                                         >
                                             {loading ? (
-                                                <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+                                                <ArrowPathIcon className="h-5 w-5 animate-spin mx-auto" />
                                             ) : (
                                                 'Đăng nhập'
                                             )}
@@ -305,14 +305,14 @@ export function TempMail() {
                                             className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                                             title="Sao chép email"
                                         >
-                                            <Copy className="h-5 w-5" />
+                                            <ClipboardDocumentIcon className="h-5 w-5" />
                                         </button>
                                         <button
                                             onClick={handleLogout}
                                             className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                                             title="Đăng xuất"
                                         >
-                                            <LogOut className="h-5 w-5" />
+                                            <ArrowRightOnRectangleIcon className="h-5 w-5" />
                                         </button>
                                     </div>
                                 </div>
@@ -332,9 +332,9 @@ export function TempMail() {
                                             title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                                         >
                                             {showPassword ? (
-                                                <EyeOff className="h-5 w-5" />
+                                                <EyeSlashIcon className="h-5 w-5" />
                                             ) : (
-                                                <Eye className="h-5 w-5" />
+                                                <EyeIcon className="h-5 w-5" />
                                             )}
                                         </button>
                                         <button
@@ -342,7 +342,7 @@ export function TempMail() {
                                             className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                                             title="Sao chép mật khẩu"
                                         >
-                                            <Copy className="h-5 w-5" />
+                                            <ClipboardDocumentIcon className="h-5 w-5" />
                                         </button>
                                     </div>
                                 </div>
@@ -363,7 +363,7 @@ export function TempMail() {
                                     className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                                     title="Làm mới"
                                 >
-                                    <RefreshCw className="h-5 w-5" />
+                                    <ArrowPathIcon className="h-5 w-5" />
                                 </button>
                             )}
                         </div>
@@ -374,7 +374,7 @@ export function TempMail() {
                                 <div className="space-y-2">
                                     {messages.length === 0 ? (
                                         <div className="text-center py-8 text-gray-500">
-                                            <Mail className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                            <EnvelopeIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
                                             <p className="text-sm">Chưa có email nào</p>
                                         </div>
                                     ) : (
@@ -402,7 +402,7 @@ export function TempMail() {
                                                         className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                                         title="Xóa email"
                                                     >
-                                                        <Trash2 className="h-4 w-4" />
+                                                        <TrashIcon className="h-4 w-4" />
                                                     </button>
                                                 </div>
                                             </div>
@@ -434,7 +434,7 @@ export function TempMail() {
                             </div>
                         ) : (
                             <div className="text-center py-12 text-gray-500">
-                                <Mail className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                                <EnvelopeIcon className="h-16 w-16 mx-auto mb-4 opacity-50" />
                                 <p>Tạo email để bắt đầu nhận thư</p>
                             </div>
                         )}

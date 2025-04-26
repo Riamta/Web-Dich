@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, MapPin, Globe2, Users, Languages, Phone, DollarSign, Loader2, Building2, ChevronRight, X } from 'lucide-react'
+import { MagnifyingGlassIcon, MapPinIcon, GlobeAltIcon, UsersIcon, LanguageIcon, PhoneIcon, CurrencyDollarIcon, ArrowPathIcon, BuildingOfficeIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 interface Country {
     name: {
@@ -221,7 +221,7 @@ export default function Countries() {
             <div className="mb-4 sm:mb-8 flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
                     <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
-                        <Search className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                        <MagnifyingGlassIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                     </div>
                     <input
                         type="text"
@@ -269,13 +269,13 @@ export default function Countries() {
                                 onClick={() => setSelectedCountry(null)}
                                 className="p-1 hover:bg-gray-100 rounded-full"
                             >
-                                <X className="h-5 w-5" />
+                                <XMarkIcon className="h-5 w-5" />
                             </button>
                         </div>
                         <div className="p-4 overflow-y-auto max-h-[calc(80vh-4rem)]">
                             {loadingCities ? (
                                 <div className="flex justify-center items-center h-40">
-                                    <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                                    <ArrowPathIcon className="h-8 w-8 animate-spin text-gray-400" />
                                 </div>
                             ) : citiesError ? (
                                 <div className="text-red-500 text-center">
@@ -295,7 +295,7 @@ export default function Countries() {
                                             >
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
-                                                        <Building2 className="h-5 w-5 text-gray-500" />
+                                                        <BuildingOfficeIcon className="h-5 w-5 text-gray-500" />
                                                         <div>
                                                             <h3 className="font-medium flex items-center gap-2">
                                                                 {city.name}
@@ -360,7 +360,7 @@ export default function Countries() {
             {/* Countries Grid */}
             {loading ? (
                 <div className="flex justify-center items-center min-h-[400px]">
-                    <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                    <ArrowPathIcon className="h-8 w-8 animate-spin text-gray-400" />
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -382,33 +382,33 @@ export default function Countries() {
                                 <div className="space-y-2 text-sm">
                                     {country.capital && (
                                         <div className="flex items-center gap-2">
-                                            <MapPin className="h-4 w-4 text-gray-500" />
+                                            <MapPinIcon className="h-4 w-4 text-gray-500" />
                                             <span>Thủ đô: {country.capital.join(', ')}</span>
                                         </div>
                                     )}
                                     <div className="flex items-center gap-2">
-                                        <Globe2 className="h-4 w-4 text-gray-500" />
+                                        <GlobeAltIcon className="h-4 w-4 text-gray-500" />
                                         <span>Khu vực: {country.region}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Users className="h-4 w-4 text-gray-500" />
+                                        <UsersIcon className="h-4 w-4 text-gray-500" />
                                         <span>Dân số: {formatNumber(country.population)}</span>
                                     </div>
                                     {country.languages && (
                                         <div className="flex items-center gap-2">
-                                            <Languages className="h-4 w-4 text-gray-500" />
+                                            <LanguageIcon className="h-4 w-4 text-gray-500" />
                                             <span>Ngôn ngữ: {Object.values(country.languages).join(', ')}</span>
                                         </div>
                                     )}
                                     {country.idd.root && (
                                         <div className="flex items-center gap-2">
-                                            <Phone className="h-4 w-4 text-gray-500" />
+                                            <PhoneIcon className="h-4 w-4 text-gray-500" />
                                             <span>Mã vùng: {country.idd.root}{country.idd.suffixes?.[0]}</span>
                                         </div>
                                     )}
                                     {country.currencies && (
                                         <div className="flex items-center gap-2">
-                                            <DollarSign className="h-4 w-4 text-gray-500" />
+                                            <CurrencyDollarIcon className="h-4 w-4 text-gray-500" />
                                             <span>Tiền tệ: {
                                                 Object.values(country.currencies)
                                                     .map(currency => `${currency.name} (${currency.symbol})`)
@@ -420,7 +420,7 @@ export default function Countries() {
                             </div>
                             <div className="p-4 border-t border-gray-100 flex items-center justify-between text-sm text-blue-600 hover:text-blue-800">
                                 <span>Xem các thành phố lớn</span>
-                                <ChevronRight className="h-4 w-4" />
+                                <ChevronRightIcon className="h-4 w-4" />
                             </div>
                         </div>
                     ))}

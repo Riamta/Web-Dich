@@ -1,15 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DocumentArrowUpIcon, LanguageIcon } from '@heroicons/react/24/outline';
-import { MdBook, MdContentCopy, MdDownload, MdEdit, MdOutlineMenuBook, MdTranslate } from 'react-icons/md';
+import { DocumentArrowUpIcon, LanguageIcon, BookOpenIcon, ClipboardIcon, ArrowDownTrayIcon, PencilIcon, XMarkIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
+import { Dialog } from '@headlessui/react';
 import Dictionary from '@/components/Dictionary';
 import { dictionaryService } from '@/lib/dictionary-service';
 import { aiService } from '@/lib/ai-service';
 import { useToast, ToastContainer } from '@/utils/toast';
 import { SUPPORTED_LANGUAGES } from '@/constants/languages';
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody} from '@/components/ui/modal';
-import { FaBook, FaCopy, FaDownload, FaYoutube } from 'react-icons/fa';
 import { youtubeService } from '@/lib/youtube-service';
 
 interface ComparisonModalProps {
@@ -133,33 +131,48 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="6xl">
-      <ModalOverlay />
-      <ModalContent height="90vh">
-        <ModalHeader>Compare and Edit Subtitles</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <div className="flex flex-col h-full">
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      className="fixed inset-0 z-50 overflow-y-auto"
+    >
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="fixed inset-0 bg-black opacity-30" />
+        
+        <div className="relative bg-white rounded-lg w-[90vw] h-[90vh] p-4 shadow-xl">
+          <div className="flex justify-between items-center mb-4">
+            <Dialog.Title className="text-lg font-medium">
+              Compare and Edit Subtitles
+            </Dialog.Title>
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-gray-100 rounded-full"
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="flex flex-col h-[calc(100%-4rem)]">
             <div className="flex gap-4 mb-4">
               <button
                 onClick={handleDictionaryClick}
                 className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600"
               >
-                <FaBook />
+                <BookOpenIcon className="w-5 h-5" />
                 Dictionary
               </button>
               <button
                 onClick={handleCopy}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
-                <FaCopy />
+                <ClipboardIcon className="w-5 h-5" />
                 Copy
               </button>
               <button
                 onClick={handleDownload}
                 className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
               >
-                <FaDownload />
+                <ArrowDownTrayIcon className="w-5 h-5" />
                 Download
               </button>
             </div>
@@ -229,14 +242,14 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
               </button>
             </div>
           </div>
-        </ModalBody>
-      </ModalContent>
+        </div>
+      </div>
 
       <Dictionary
         isOpen={isDictionaryOpen}
         onClose={() => setIsDictionaryOpen(false)}
       />
-    </Modal>
+    </Dialog>
   );
 };
 
@@ -893,7 +906,7 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
                 onClick={() => setShowYoutubeInput(!showYoutubeInput)}
                 className="flex items-center gap-2 px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
               >
-                <FaYoutube className="h-5 w-5" />
+                <VideoCameraIcon className="h-5 w-5" />
                 YouTube
               </button>
               <select
@@ -924,7 +937,7 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
               onClick={() => setIsDictionaryOpen(true)}
               className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors duration-200"
             >
-              <MdBook className="h-5 w-5" />
+              <BookOpenIcon className="h-5 w-5" />
               <span>Từ điển</span>
             </button>
           </div>
@@ -970,7 +983,7 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
                   </span>
                 ) : (
                   <>
-                    <FaYoutube className="h-5 w-5" />
+                    <VideoCameraIcon className="h-5 w-5" />
                     Tải phụ đề
                   </>
                 )}
@@ -1090,7 +1103,7 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
                     </span>
                   ) : (
                     <>
-                      <MdOutlineMenuBook className="h-5 w-5" />
+                      <BookOpenIcon className="h-5 w-5" />
                       {customContext.trim() ? "Tạo ngữ cảnh" : "Tạo ngữ cảnh bằng AI"}
                     </>
                   )}
@@ -1126,7 +1139,7 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
                   </span>
                 ) : (
                   <>
-                    <MdTranslate className="h-5 w-5" />
+                    <LanguageIcon className="h-5 w-5" />
                     Bắt đầu dịch
                   </>
                 )}
@@ -1196,14 +1209,14 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
                 onClick={handleDownloadOriginal}
                 className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <MdDownload className="h-4 w-4" />
+                <ArrowDownTrayIcon className="h-4 w-4" />
                 Tải phụ đề gốc
               </button>
               <button
                 onClick={handleDownloadTranslated}
                 className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <MdDownload className="h-4 w-4" />
+                <ArrowDownTrayIcon className="h-4 w-4" />
                 Tải phụ đề đã dịch
               </button>
             </div>
@@ -1213,14 +1226,14 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
                 onClick={handleCopyOriginal}
                 className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <MdContentCopy className="h-4 w-4" />
+                <ClipboardIcon className="h-4 w-4" />
                 Sao chép phụ đề gốc
               </button>
               <button
                 onClick={handleCopyTranslated}
                 className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <MdContentCopy className="h-4 w-4" />
+                <ClipboardIcon className="h-4 w-4" />
                 Sao chép phụ đề đã dịch
               </button>
             </div>
@@ -1288,7 +1301,7 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
                           className="self-start p-2 text-gray-500 hover:text-primary hover:bg-primary/10 rounded transition-colors"
                           title="Dịch dòng này"
                         >
-                          <MdTranslate className="h-5 w-5" />
+                          <LanguageIcon className="h-5 w-5" />
                         </button>
                       </div>
                     </td>

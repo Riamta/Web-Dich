@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { DocumentArrowUpIcon, PhotoIcon, FolderArrowDownIcon } from '@heroicons/react/24/outline';
-import { MdContentCopy, MdEdit, MdClose, MdDelete, MdArrowDownward } from 'react-icons/md';
+import { DocumentArrowUpIcon, PhotoIcon, FolderArrowDownIcon, ArrowDownIcon, ClipboardIcon, PencilIcon, XMarkIcon, TrashIcon } from '@heroicons/react/24/outline';
 import ReactMarkdown from 'react-markdown';
 import { useTabState } from '../hooks/useTabState';
-import { Tooltip } from 'react-tooltip';
+import { Tooltip } from '@/components/ui/tooltip';
 import { SUPPORTED_LANGUAGES } from '@/constants/languages';
 import { toast } from 'react-hot-toast';
 
@@ -271,19 +270,19 @@ export default function TextSummarization() {
                             <button
                                 onClick={() => setShowFileUpload(true)}
                                 className="p-2 hover:bg-gray-50 rounded-full transition-colors duration-200"
-                                data-tooltip-id="upload-tooltip"
-                                data-tooltip-content="Tải lên file"
                             >
-                                <FolderArrowDownIcon className="h-5 w-5 text-gray-500" />
+                                <Tooltip content="Tải lên file">
+                                    <FolderArrowDownIcon className="h-5 w-5 text-gray-500" />
+                                </Tooltip>
                             </button>
                             {(text || files.length > 0) && (
                                 <button
                                     onClick={handleClearText}
                                     className="p-2 hover:bg-red-50 rounded-full transition-colors duration-200"
-                                    data-tooltip-id="clear-tooltip"
-                                    data-tooltip-content="Xóa nội dung"
                                 >
-                                    <MdDelete className="h-5 w-5 text-red-500" />
+                                    <Tooltip content="Xóa nội dung">
+                                        <TrashIcon className="h-5 w-5 text-red-500" />
+                                    </Tooltip>
                                 </button>
                             )}
                         </div>
@@ -299,7 +298,7 @@ export default function TextSummarization() {
                                         onClick={() => setShowFileUpload(false)}
                                         className="p-1 hover:bg-gray-100 rounded-full transition-colors duration-200"
                                     >
-                                        <MdClose className="h-6 w-6 text-gray-500" />
+                                        <XMarkIcon className="h-6 w-6 text-gray-500" />
                                     </button>
                                 </div>
                                 <div className="space-y-4">
@@ -346,7 +345,7 @@ export default function TextSummarization() {
                                                             onClick={() => handleRemoveFile(index)}
                                                             className="p-1 hover:bg-red-50 rounded-full transition-colors duration-200"
                                                         >
-                                                            <MdDelete className="h-5 w-5 text-red-500" />
+                                                            <TrashIcon className="h-5 w-5 text-red-500" />
                                                         </button>
                                                     </div>
                                                 ))}
@@ -381,7 +380,7 @@ export default function TextSummarization() {
                                                 onClick={() => handleRemoveFile(index)}
                                                 className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                                             >
-                                                <MdDelete className="h-4 w-4" />
+                                                <TrashIcon className="h-4 w-4" />
                                             </button>
                                         </div>
                                     )
@@ -435,7 +434,7 @@ export default function TextSummarization() {
                         ) : (
                             <>
                                 Tóm tắt nội dung
-                                <MdArrowDownward className="h-5 w-5" />
+                                <ArrowDownIcon className="h-5 w-5" />
                             </>
                         )}
                     </button>
@@ -459,19 +458,19 @@ export default function TextSummarization() {
                             <button
                                 onClick={handleOpenEditModal}
                                 className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors duration-200"
-                                data-tooltip-id="edit-tooltip"
-                                data-tooltip-content="Chỉnh sửa kết quả"
                             >
-                                <MdEdit className="h-5 w-5" />
+                                <Tooltip content="Chỉnh sửa kết quả">
+                                    <PencilIcon className="h-5 w-5" />
+                                </Tooltip>
                                 <span className="hidden sm:inline">Chỉnh sửa</span>
                             </button>
                             <button
                                 onClick={() => copyToClipboard(summary)}
                                 className="flex items-center gap-2 text-primary hover:text-primary/90 transition-colors duration-200"
-                                data-tooltip-id="copy-tooltip"
-                                data-tooltip-content="Sao chép vào clipboard"
                             >
-                                <MdContentCopy className="h-5 w-5" />
+                                <Tooltip content="Sao chép vào clipboard">
+                                    <ClipboardIcon className="h-5 w-5" />
+                                </Tooltip>
                                 <span className="hidden sm:inline">Sao chép</span>
                             </button>
                         </div>
@@ -493,7 +492,9 @@ export default function TextSummarization() {
                                             onClick={() => copyToClipboard(fileSummary.content)}
                                             className="flex items-center gap-2 text-primary hover:text-primary/90 transition-colors duration-200"
                                         >
-                                            <MdContentCopy className="h-5 w-5" />
+                                            <Tooltip content="Sao chép vào clipboard">
+                                                <ClipboardIcon className="h-5 w-5" />
+                                            </Tooltip>
                                             <span className="hidden sm:inline">Sao chép</span>
                                         </button>
                                     </div>
@@ -521,12 +522,6 @@ export default function TextSummarization() {
                 </div>
             </div>
 
-            {/* Tooltips */}
-            <Tooltip id="clear-tooltip" />
-            <Tooltip id="edit-tooltip" />
-            <Tooltip id="copy-tooltip" />
-            <Tooltip id="upload-tooltip" />
-
             {/* Edit Modal */}
             {showEditModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -537,7 +532,7 @@ export default function TextSummarization() {
                                 onClick={() => setShowEditModal(false)}
                                 className="p-1 hover:bg-gray-100 rounded-full transition-colors duration-200"
                             >
-                                <MdClose className="h-6 w-6 text-gray-500" />
+                                <XMarkIcon className="h-6 w-6 text-gray-500" />
                             </button>
                         </div>
 

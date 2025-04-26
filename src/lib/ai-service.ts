@@ -29,6 +29,12 @@ interface TranslationTone {
 }
 
 export const TRANSLATION_TONES: Record<string, TranslationTone> = {
+    custom: {
+        name: 'Tùy chỉnh',
+        description: 'Tự định nghĩa phong cách dịch theo ý muốn',
+        style: '',
+        specialInstructions: ''
+    },
     normal: {
         name: 'Thông thường',
         description: 'Dịch thông thường, phù hợp với văn bản chung',

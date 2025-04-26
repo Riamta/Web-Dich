@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { useTabState } from '@/hooks/useTabState'
 import { translatorService } from '@/lib/translator-service'
 import { TRANSLATION_TONES } from '@/lib/ai-service'
@@ -15,13 +15,16 @@ import {
   SparklesIcon,
   StopIcon,
   PhotoIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  DocumentIcon,
+  ClipboardIcon,
+  PencilSquareIcon
 } from '@heroicons/react/24/outline'
-import { MdTextFields, MdContentPaste } from 'react-icons/md'
 import ReactMarkdown from 'react-markdown'
 import { SUPPORTED_LANGUAGES } from '@/constants/languages'
 import JSZip from 'jszip'
 import { useDebounce } from '@/hooks/useDebounce'
+import { Dialog, Transition } from '@headlessui/react'
 
 export default function Translator() {
   const [mounted, setMounted] = useState(false)
@@ -36,10 +39,15 @@ export default function Translator() {
   const [sourceLanguage, setSourceLanguage] = useTabState('sourceLanguage', 'auto')
   const [targetLanguage, setTargetLanguage] = useTabState('targetLanguage', 'dđ')
   const [translationTone, setTranslationTone] = useTabState('translationTone', 'normal')
+  const [customToneStyle, setCustomToneStyle] = useTabState('customToneStyle', '')
+  const [customToneInstructions, setCustomToneInstructions] = useTabState('customToneInstructions', '')
+  const [showCustomToneInputs, setShowCustomToneInputs] = useState(false)
   const [useMarkdown, setUseMarkdown] = useTabState('useMarkdown', false)
   const [useFormat, setUseFormat] = useTabState('useFormat', false)
   const [useMarkdownFormat, setUseMarkdownFormat] = useTabState('useMarkdownFormat', false)
   const [useMarkdownDisplay, setUseMarkdownDisplay] = useTabState('useMarkdownDisplay', false)
+  const [isCustomToneModalOpen, setIsCustomToneModalOpen] = useState(false)
+  const customToneStyleRef = useRef<HTMLTextAreaElement>(null)
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -719,7 +727,12 @@ export default function Translator() {
             <div className="relative group flex-1 sm:flex-none">
               <select
                 value={translationTone}
-                onChange={(e) => setTranslationTone(e.target.value)}
+                onChange={(e) => {
+                  setTranslationTone(e.target.value)
+                  if (e.target.value === 'custom') {
+                    setIsCustomToneModalOpen(true)
+                  }
+                }}
                 className="w-full sm:w-auto appearance-none pl-3 sm:pl-4 pr-8 sm:pr-10 py-2 sm:py-2.5 rounded-xl bg-white border border-gray-200 hover:border-primary/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm sm:text-base font-medium min-w-0 sm:min-w-[160px] cursor-pointer"
               >
                 {Object.entries(TRANSLATION_TONES).map(([key, tone]) => (
@@ -728,8 +741,133 @@ export default function Translator() {
                   </option>
                 ))}
               </select>
+              {translationTone === 'custom' && (
+                <button
+                  onClick={() => setIsCustomToneModalOpen(true)}
+                  className="absolute right-8 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600"
+                  title="Edit custom tone"
+                >
+                  <PencilSquareIcon className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
+
+          {/* Custom Tone Modal */}
+          <Transition appear show={isCustomToneModalOpen} as={Fragment}>
+            <Dialog 
+              as="div" 
+              className="relative z-50"
+              onClose={() => {
+                // Only close if custom tone has content
+                if (customToneStyle.trim() || translationTone !== 'custom') {
+                  setIsCustomToneModalOpen(false)
+                }
+              }}
+              initialFocus={customToneStyleRef}
+            >
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-black bg-opacity-25" />
+              </Transition.Child>
+
+              <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-center justify-center p-4 text-center">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
+                  >
+                    <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                      <Dialog.Title
+                        as="h3"
+                        className="text-lg font-medium leading-6 text-gray-900 mb-4"
+                      >
+                        Tùy chỉnh phong cách dịch
+                      </Dialog.Title>
+
+                      <div className="mt-4 space-y-4">
+                        <div>
+                          <label htmlFor="customToneStyle" className="block text-sm font-medium text-gray-700 mb-2">
+                            Phong cách dịch <span className="text-red-500">*</span>
+                          </label>
+                          <textarea
+                            ref={customToneStyleRef}
+                            id="customToneStyle"
+                            value={customToneStyle}
+                            onChange={(e) => {
+                              setCustomToneStyle(e.target.value)
+                              TRANSLATION_TONES.custom.style = e.target.value
+                            }}
+                            placeholder="Ví dụ: Dịch theo phong cách trang trọng và chuyên nghiệp..."
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm"
+                            rows={3}
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="customToneInstructions" className="block text-sm font-medium text-gray-700 mb-2">
+                            Hướng dẫn đặc biệt (tùy chọn)
+                          </label>
+                          <textarea
+                            id="customToneInstructions"
+                            value={customToneInstructions}
+                            onChange={(e) => {
+                              setCustomToneInstructions(e.target.value)
+                              TRANSLATION_TONES.custom.specialInstructions = e.target.value
+                            }}
+                            placeholder="Ví dụ:&#13;- Sử dụng từ vựng chuyên ngành&#13;- Giữ nguyên các thuật ngữ kỹ thuật&#13;- Thêm chú thích cho các từ khó"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm"
+                            rows={4}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-6 flex justify-end gap-3">
+                        <button
+                          type="button"
+                          className="inline-flex justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
+                          onClick={() => {
+                            if (translationTone === 'custom' && !customToneStyle.trim()) {
+                              setTranslationTone('normal')
+                            }
+                            setIsCustomToneModalOpen(false)
+                          }}
+                        >
+                          Hủy
+                        </button>
+                        <button
+                          type="button"
+                          className="inline-flex justify-center rounded-xl border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                          onClick={() => {
+                            if (!customToneStyle.trim()) {
+                              customToneStyleRef.current?.focus()
+                              return
+                            }
+                            setIsCustomToneModalOpen(false)
+                          }}
+                        >
+                          Xác nhận
+                        </button>
+                      </div>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
+              </div>
+            </Dialog>
+          </Transition>
 
           <div className="flex items-center gap-2">
             <button
@@ -766,7 +904,7 @@ export default function Translator() {
                 }`}
               title="Toggle Markdown formatting"
             >
-              <MdTextFields className="h-4 w-4" />
+              <DocumentIcon className="h-4 w-4" />
               Markdown Format
             </button>
 
@@ -951,7 +1089,7 @@ export default function Translator() {
                       onClick={() => handleCopy(translatedText)}
                       title="Copy to clipboard"
                     >
-                      <ClipboardDocumentIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
+                      <ClipboardIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
                       <span className="text-xs sm:text-sm"></span>
                     </button>
                     <button
@@ -971,7 +1109,7 @@ export default function Translator() {
                       onClick={() => setUseMarkdownDisplay(!useMarkdownDisplay)}
                       title={useMarkdownDisplay ? "Chuyển sang hiển thị văn bản thường" : "Chuyển sang hiển thị markdown"}
                     >
-                      <MdTextFields className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
+                      <DocumentIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
                       <span className="text-xs sm:text-sm"></span>
                     </button>
                     <button

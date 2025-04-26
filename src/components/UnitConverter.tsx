@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Ruler, Scale, Thermometer, Droplet, AreaChart } from 'lucide-react'
+import { RectangleGroupIcon, ScaleIcon, BeakerIcon, CloudIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 
 interface Unit {
     name: string
@@ -19,7 +19,7 @@ interface Category {
 const categories: Category[] = [
     {
         name: 'Độ dài',
-        icon: <Ruler className="w-5 h-5" />,
+        icon: <RectangleGroupIcon className="w-5 h-5" />,
         units: [
             { name: 'Kilometer', symbol: 'km', toBase: (v) => v * 1000, fromBase: (v) => v / 1000 },
             { name: 'Meter', symbol: 'm', toBase: (v) => v, fromBase: (v) => v },
@@ -33,7 +33,7 @@ const categories: Category[] = [
     },
     {
         name: 'Khối lượng',
-        icon: <Scale className="w-5 h-5" />,
+        icon: <ScaleIcon className="w-5 h-5" />,
         units: [
             { name: 'Kilogram', symbol: 'kg', toBase: (v) => v, fromBase: (v) => v },
             { name: 'Gram', symbol: 'g', toBase: (v) => v / 1000, fromBase: (v) => v * 1000 },
@@ -44,7 +44,7 @@ const categories: Category[] = [
     },
     {
         name: 'Nhiệt độ',
-        icon: <Thermometer className="w-5 h-5" />,
+        icon: <BeakerIcon className="w-5 h-5" />,
         units: [
             { 
                 name: 'Celsius', 
@@ -68,7 +68,7 @@ const categories: Category[] = [
     },
     {
         name: 'Thể tích',
-        icon: <Droplet className="w-5 h-5" />,
+        icon: <CloudIcon className="w-5 h-5" />,
         units: [
             { name: 'Liter', symbol: 'L', toBase: (v) => v, fromBase: (v) => v },
             { name: 'Milliliter', symbol: 'mL', toBase: (v) => v / 1000, fromBase: (v) => v * 1000 },
@@ -79,7 +79,7 @@ const categories: Category[] = [
     },
     {
         name: 'Diện tích',
-        icon: <AreaChart className="w-5 h-5" />,
+        icon: <ChartBarIcon className="w-5 h-5" />,
         units: [
             { name: 'Square Meter', symbol: 'm²', toBase: (v) => v, fromBase: (v) => v },
             { name: 'Square Kilometer', symbol: 'km²', toBase: (v) => v * 1000000, fromBase: (v) => v / 1000000 },

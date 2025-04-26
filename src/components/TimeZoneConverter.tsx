@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Clock, Globe, Sun, Moon } from 'lucide-react'
+import { ClockIcon, ArrowsRightLeftIcon, SunIcon, MoonIcon } from '@heroicons/react/24/outline'
 
 interface City {
     name: string
@@ -87,7 +87,7 @@ export default function TimeZoneConverter() {
         <div className="max-w-4xl mx-auto p-6">
             <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center gap-2 mb-6">
-                    <Globe className="w-6 h-6" />
+                    <ArrowsRightLeftIcon className="h-6 w-6" />
                     <h2 className="text-2xl font-bold">Chuyển đổi múi giờ</h2>
                 </div>
 
@@ -115,7 +115,7 @@ export default function TimeZoneConverter() {
 
                         <div className="p-4 bg-gray-50 rounded-md">
                             <div className="flex items-center gap-2 mb-2">
-                                <Clock className="w-5 h-5" />
+                                <ClockIcon className="h-6 w-6 text-white" />
                                 <span className="font-medium">Thời gian hiện tại</span>
                             </div>
                             <div className="text-3xl font-bold mb-1">
@@ -131,7 +131,7 @@ export default function TimeZoneConverter() {
 
                         <div className="p-4 bg-gray-50 rounded-md">
                             <div className="flex items-center gap-2 mb-2">
-                                <Globe className="w-5 h-5" />
+                                <ArrowsRightLeftIcon className="h-5 w-5" />
                                 <span className="font-medium">Giờ GMT</span>
                             </div>
                             <div className="text-2xl font-bold mb-1">
@@ -145,9 +145,9 @@ export default function TimeZoneConverter() {
                         <div className="p-4 bg-gray-50 rounded-md">
                             <div className="flex items-center gap-2 mb-2">
                                 {isDaytime ? (
-                                    <Sun className="w-5 h-5 text-yellow-500" />
+                                    <SunIcon className="w-5 h-5 text-yellow-500" />
                                 ) : (
-                                    <Moon className="w-5 h-5 text-blue-500" />
+                                    <MoonIcon className="w-5 h-5 text-blue-500" />
                                 )}
                                 <span className="font-medium">
                                     {isDaytime ? 'Ban ngày' : 'Ban đêm'}

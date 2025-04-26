@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { MdAutoFixHigh, MdContentCopy, MdTextFields } from 'react-icons/md'
 import { 
   ClipboardDocumentIcon, 
   ArrowDownTrayIcon,
@@ -13,6 +12,7 @@ import { aiService } from '@/lib/ai-service'
 import { useToast, ToastContainer } from '@/utils/toast'
 import ReactMarkdown from 'react-markdown'
 import { useDebounce } from '@/hooks/useDebounce'
+import { SparklesIcon, ClipboardIcon } from '@heroicons/react/24/outline'
 
 export default function TextEnhancement() {
     const [mounted, setMounted] = useState(false)
@@ -206,7 +206,7 @@ export default function TextEnhancement() {
                             }`}
                             title="Toggle Markdown rendering"
                         >
-                            <MdTextFields className="h-4 w-4" />
+                            <DocumentTextIcon className="h-5 w-5" />
                             Markdown
                         </button>
                     </div>
@@ -230,7 +230,7 @@ export default function TextEnhancement() {
                                     }`}
                                     title="Toggle Markdown rendering"
                                 >
-                                    <MdTextFields className="h-3 w-3" />
+                                    <DocumentTextIcon className="h-3 w-3" />
                                     MD
                                 </button>
                             </div>
@@ -240,7 +240,7 @@ export default function TextEnhancement() {
                                     onClick={handleTextPaste}
                                     title="Paste from clipboard"
                                 >
-                                    <MdContentCopy className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
+                                    <ClipboardIcon className="h-5 w-5" />
                                     <span className="text-xs sm:text-sm"></span>
                                 </button>
                                 <button 
@@ -248,7 +248,7 @@ export default function TextEnhancement() {
                                     onClick={() => handleCopy(text)}
                                     title="Copy to clipboard"
                                 >
-                                    <ClipboardDocumentIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
+                                    <ClipboardIcon className="h-5 w-5" />
                                     <span className="text-xs sm:text-sm"></span>
                                 </button>
                                 <button 
@@ -299,7 +299,7 @@ export default function TextEnhancement() {
                                     onClick={() => handleCopy(enhancedText)}
                                     title="Copy to clipboard"
                                 >
-                                    <ClipboardDocumentIcon className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
+                                    <ClipboardIcon className="h-5 w-5" />
                                     <span className="text-xs sm:text-sm"></span>
                                 </button>
                                 <button
@@ -348,7 +348,7 @@ export default function TextEnhancement() {
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-3">
                                     <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
-                                        <MdAutoFixHigh className="h-6 sm:h-8 w-6 sm:w-8 text-gray-300" />
+                                        <SparklesIcon className="h-5 w-5" />
                                     </div>
                                     <span className="text-sm sm:text-base font-medium text-center">
                                         Enter text to enhance

@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { DocumentArrowUpIcon, LanguageIcon } from '@heroicons/react/24/outline'
-import { MdCheck, MdClose } from 'react-icons/md'
+import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { aiService } from '@/lib/ai-service'
 import { SUPPORTED_LANGUAGES } from '@/constants/languages'
+import { useTabState } from '@/hooks/useTabState'
 
 interface Question {
   id: number
@@ -325,9 +326,9 @@ export default function QuizGenerator() {
                         {hasAnswered && (isSelected || isCorrect) && (
                           <div className="shrink-0">
                             {isCorrect ? (
-                              <MdCheck className={`h-6 w-6 ${isSelected ? 'text-green-600 scale-125' : 'text-green-500'}`} />
+                              <CheckIcon className="h-5 w-5" />
                             ) : (
-                              isSelected && <MdClose className="h-6 w-6 text-red-600 scale-125" />
+                              isSelected && <XMarkIcon className="h-5 w-5" />
                             )}
                           </div>
                         )}
@@ -346,9 +347,9 @@ export default function QuizGenerator() {
                   }`}>
                     <div className="shrink-0">
                       {isAnswerCorrect(question.id) ? (
-                        <MdCheck className="h-6 w-6" />
+                        <CheckIcon className="h-5 w-5" />
                       ) : (
-                        <MdClose className="h-6 w-6" />
+                        <XMarkIcon className="h-5 w-5" />
                       )}
                     </div>
                     <div className="flex-1">

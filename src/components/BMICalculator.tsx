@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Scale, Ruler, Activity, Heart, Info, Bot, Calculator } from 'lucide-react'
+import { ScaleIcon, ArrowsUpDownIcon, BoltIcon, HeartIcon, InformationCircleIcon, CommandLineIcon, CalculatorIcon } from '@heroicons/react/24/outline'
 import { aiService } from '@/lib/ai-service'
 import ReactMarkdown from 'react-markdown'
 
@@ -245,7 +245,7 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
         <div className="max-w-4xl mx-auto p-6">
             <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center gap-2 mb-6">
-                    <Activity className="w-6 h-6" />
+                    <BoltIcon className="w-6 h-6" />
                     <h2 className="text-2xl font-bold">Tính chỉ số BMI</h2>
                 </div>
 
@@ -264,7 +264,7 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
                                     placeholder="Nhập chiều cao"
                                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
                                 />
-                                <Ruler className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <ScaleIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                             </div>
                         </div>
 
@@ -281,7 +281,7 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
                                     placeholder="Nhập cân nặng"
                                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
                                 />
-                                <Scale className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <ScaleIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                             </div>
                         </div>
 
@@ -298,7 +298,7 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
                                     placeholder="Nhập tuổi"
                                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
                                 />
-                                <Activity className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <BoltIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                             </div>
                         </div>
 
@@ -325,7 +325,7 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
                             disabled={!height || !weight || isLoading}
                             className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
-                            <Calculator className="w-5 h-5" />
+                            <CalculatorIcon className="w-5 h-5" />
                             Tính BMI
                         </button>
                     </div>
@@ -335,7 +335,7 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
                             <div className="p-4 bg-gray-50 rounded-md">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
-                                        <Activity className="w-5 h-5" />
+                                        <BoltIcon className="w-5 h-5" />
                                         <span className="font-medium">Kết quả BMI</span>
                                     </div>
                                     <div className={`${getHealthScoreColor(bmiResult.healthScore)} w-16 h-16 rounded-full flex flex-col items-center justify-center`}>
@@ -364,7 +364,7 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
                                 <div className="space-y-4">
                                     <div className="p-4 bg-gray-50 rounded-md">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <Heart className="w-5 h-5" />
+                                            <HeartIcon className="w-5 h-5" />
                                             <span className="font-medium">Cân nặng lý tưởng</span>
                                         </div>
                                         <div className="space-y-1">
@@ -375,7 +375,7 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
 
                                     <div className="p-4 bg-gray-50 rounded-md">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <Info className="w-5 h-5" />
+                                            <InformationCircleIcon className="w-5 h-5" />
                                             <span className="font-medium">Nguy cơ sức khỏe</span>
                                             {isLoading && (
                                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 ml-2"></div>
@@ -392,7 +392,7 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
                                 <div className="space-y-4">
                                     <div className="p-4 bg-gray-50 rounded-md">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <Info className="w-5 h-5" />
+                                            <InformationCircleIcon className="w-5 h-5" />
                                             <span className="font-medium">Khuyến nghị</span>
                                             {isLoading && (
                                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 ml-2"></div>
@@ -407,7 +407,7 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
 
                                     <div className="p-4 bg-gray-50 rounded-md">
                                         <div className="flex items-center gap-2 mb-4">
-                                            <Bot className="w-5 h-5" />
+                                            <CommandLineIcon className="w-5 h-5" />
                                             <span className="font-medium">Tư vấn AI</span>
                                             {isLoading && (
                                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 ml-2"></div>

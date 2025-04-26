@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { aiService } from '@/lib/ai-service'
-import { Loader2, Sparkles, RefreshCw, Moon, Sun, Heart, Star, Zap, HelpCircle } from 'lucide-react'
+import { ArrowPathIcon, SparklesIcon, MoonIcon, SunIcon, HeartIcon, StarIcon, BoltIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline'
 import ReactMarkdown from 'react-markdown'
 
 interface FortuneCategory {
@@ -19,7 +19,7 @@ const FORTUNE_CATEGORIES: FortuneCategory[] = [
     id: 'love',
     name: 'Tình yêu',
     description: 'Xem bói về tình yêu, hôn nhân và các mối quan hệ',
-    icon: <Heart className="h-6 w-6 text-pink-500" />,
+    icon: <HeartIcon className="h-6 w-6 text-pink-500" />,
     allowCustomQuestion: false,
     prompt: `Bạn là một nhà chiêm tinh học chuyên nghiệp. Hãy xem bói về tình yêu cho người dùng dựa trên thông tin sau:
     - Tên: {name}
@@ -38,7 +38,7 @@ const FORTUNE_CATEGORIES: FortuneCategory[] = [
     id: 'career',
     name: 'Sự nghiệp',
     description: 'Xem bói về công việc, sự nghiệp và tài chính',
-    icon: <Star className="h-6 w-6 text-yellow-500" />,
+    icon: <StarIcon className="h-6 w-6 text-yellow-500" />,
     allowCustomQuestion: false,
     prompt: `Bạn là một nhà chiêm tinh học chuyên nghiệp. Hãy xem bói về sự nghiệp cho người dùng dựa trên thông tin sau:
     - Tên: {name}
@@ -57,7 +57,7 @@ const FORTUNE_CATEGORIES: FortuneCategory[] = [
     id: 'health',
     name: 'Sức khỏe',
     description: 'Xem bói về sức khỏe và tinh thần',
-    icon: <Zap className="h-6 w-6 text-green-500" />,
+    icon: <BoltIcon className="h-6 w-6 text-green-500" />,
     allowCustomQuestion: false,
     prompt: `Bạn là một nhà chiêm tinh học chuyên nghiệp. Hãy xem bói về sức khỏe cho người dùng dựa trên thông tin sau:
     - Tên: {name}
@@ -76,7 +76,7 @@ const FORTUNE_CATEGORIES: FortuneCategory[] = [
     id: 'general',
     name: 'Tổng quát',
     description: 'Xem bói tổng quát về cuộc sống và tương lai',
-    icon: <Sparkles className="h-6 w-6 text-purple-500" />,
+    icon: <SparklesIcon className="h-6 w-6 text-purple-500" />,
     allowCustomQuestion: false,
     prompt: `Bạn là một nhà chiêm tinh học chuyên nghiệp. Hãy xem bói tổng quát cho người dùng dựa trên thông tin sau:
     - Tên: {name}
@@ -95,7 +95,7 @@ const FORTUNE_CATEGORIES: FortuneCategory[] = [
     id: 'custom',
     name: 'Câu hỏi riêng',
     description: 'Đặt câu hỏi riêng để xem bói',
-    icon: <HelpCircle className="h-6 w-6 text-blue-500" />,
+    icon: <QuestionMarkCircleIcon className="h-6 w-6 text-blue-500" />,
     allowCustomQuestion: true,
     prompt: `Bạn là một nhà chiêm tinh học chuyên nghiệp. Hãy xem bói cho người dùng dựa trên thông tin sau:
     - Tên: {name}
@@ -218,7 +218,7 @@ export function FortuneTelling() {
     <div className={`max-w-4xl mx-auto p-4 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Sparkles className="h-6 w-6 text-purple-500" />
+          <SparklesIcon className="h-6 w-6 text-purple-500" />
           Xem Bói Tích Hợp AI
         </h1>
         <button
@@ -226,7 +226,7 @@ export function FortuneTelling() {
           className={`p-2 rounded-full ${darkMode ? 'bg-gray-800 text-yellow-400' : 'bg-gray-100 text-gray-700'}`}
           aria-label="Chuyển đổi chế độ tối/sáng"
         >
-          {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          {darkMode ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
         </button>
       </div>
 
@@ -416,7 +416,7 @@ export function FortuneTelling() {
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    <ArrowPathIcon className="h-5 w-5 animate-spin mr-2" />
                     Đang xem bói...
                   </span>
                 ) : (
@@ -432,7 +432,7 @@ export function FortuneTelling() {
                     : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
                 }`}
               >
-                <RefreshCw className="h-5 w-5" />
+                <ArrowPathIcon className="h-5 w-5" />
               </button>
             </div>
           </form>
@@ -442,7 +442,7 @@ export function FortuneTelling() {
           <div className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
             <div className="p-6">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-purple-500" />
+                <SparklesIcon className="h-5 w-5 text-purple-500" />
                 Kết quả xem bói
               </h2>
               <div className={`prose max-w-none ${darkMode ? 'prose-invert' : ''}`}>

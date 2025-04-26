@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Calendar, Clock, Cake, Heart, Star } from 'lucide-react'
+import { CalendarIcon, ClockIcon, CakeIcon, HeartIcon, StarIcon } from '@heroicons/react/24/outline'
 
 interface AgeResult {
     years: number
@@ -166,7 +166,7 @@ export default function AgeCalculator() {
         <div className="max-w-4xl mx-auto p-6">
             <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center gap-2 mb-6">
-                    <Cake className="w-6 h-6" />
+                    <CakeIcon className="w-6 h-6" />
                     <h2 className="text-2xl font-bold">Tính tuổi</h2>
                 </div>
 
@@ -189,7 +189,7 @@ export default function AgeCalculator() {
                             <div className="space-y-4">
                                 <div className="p-4 bg-gray-50 rounded-md">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Calendar className="w-5 h-5" />
+                                        <CalendarIcon className="w-5 h-5" />
                                         <span className="font-medium">Tuổi chính xác</span>
                                     </div>
                                     <div className="text-2xl font-bold">
@@ -199,7 +199,7 @@ export default function AgeCalculator() {
 
                                 <div className="p-4 bg-gray-50 rounded-md">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Clock className="w-5 h-5" />
+                                        <ClockIcon className="w-5 h-5" />
                                         <span className="font-medium">Thời gian sống</span>
                                     </div>
                                     <div className="space-y-1">
@@ -216,7 +216,7 @@ export default function AgeCalculator() {
                             <div className="space-y-4">
                                 <div className="p-4 bg-gray-50 rounded-md">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Heart className="w-5 h-5" />
+                                        <HeartIcon className="w-5 h-5" />
                                         <span className="font-medium">Sinh nhật tiếp theo</span>
                                     </div>
                                     <div className="space-y-1">
@@ -230,7 +230,7 @@ export default function AgeCalculator() {
 
                                 <div className="p-4 bg-gray-50 rounded-md">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Star className="w-5 h-5" />
+                                        <StarIcon className="w-5 h-5" />
                                         <span className="font-medium">Thông tin thêm</span>
                                     </div>
                                     <div className="space-y-1">

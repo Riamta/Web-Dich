@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { MdClose, MdCheckCircle, MdError, MdInfo } from 'react-icons/md';
+import { XMarkIcon, CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 
 interface ToastProps {
   message: string;
@@ -89,6 +89,12 @@ const useToast = () => {
 };
 
 const Toast = ({ message, type = 'info', position = 'bottom-right', id }: ToastProps & { id: number }) => {
+  const icons = {
+    success: <CheckCircleIcon className="w-5 h-5 text-green-500" />,
+    error: <ExclamationCircleIcon className="w-5 h-5 text-red-500" />,
+    info: <InformationCircleIcon className="w-5 h-5 text-blue-500" />
+  };
+
   const bgColor = {
     info: 'bg-blue-500',
     success: 'bg-green-500',
@@ -97,9 +103,9 @@ const Toast = ({ message, type = 'info', position = 'bottom-right', id }: ToastP
   }[type];
 
   const Icon = {
-    info: MdInfo,
-    success: MdCheckCircle,
-    error: MdError,
+    info: InformationCircleIcon,
+    success: CheckCircleIcon,
+    error: ExclamationCircleIcon,
     loading: () => (
       <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -132,7 +138,7 @@ const Toast = ({ message, type = 'info', position = 'bottom-right', id }: ToastP
             onClick={() => removeToast(id)}
             className="text-white/80 hover:text-white transition-colors"
           >
-            <MdClose className="h-5 w-5" />
+            {XMarkIcon({ className: "h-5 w-5" })}
           </button>
         )}
       </div>

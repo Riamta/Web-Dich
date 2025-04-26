@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { Cloud, Thermometer, Wind, MapPin, Search, Droplets, CloudRain, Sun, Sunrise, Sunset, Loader2, ChevronLeft, ChevronRight, Clock } from 'lucide-react'
+import { CloudIcon, BeakerIcon, ArrowDownIcon, MapPinIcon, MagnifyingGlassIcon, CloudIcon as CloudIconSolid, CloudArrowDownIcon, SunIcon, ArrowsRightLeftIcon, ArrowLeftIcon, ArrowRightIcon, ClockIcon } from '@heroicons/react/24/outline'
 
 interface WeatherData {
     current: {
@@ -492,21 +492,7 @@ export default function Weather() {
                         className="sm:hidden p-2 rounded-full hover:bg-gray-100 active:bg-gray-200"
                         aria-label="Làm mới dữ liệu thời tiết"
                     >
-                        <svg 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            width="20" 
-                            height="20" 
-                            viewBox="0 0 24 24" 
-                            fill="none" 
-                            stroke="currentColor" 
-                            strokeWidth="2" 
-                            className={`${refreshing ? 'animate-spin' : ''}`}
-                        >
-                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-                            <path d="M21 3v5h-5"></path>
-                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-                            <path d="M8 16H3v5"></path>
-                        </svg>
+                        <ArrowsRightLeftIcon className={`${refreshing ? 'animate-spin' : ''} w-5 h-5`} />
                     </button>
                 </div>
             </div>
@@ -515,7 +501,7 @@ export default function Weather() {
             <div className="mb-4 px-2 w-full">
                 <div className="relative w-full mx-auto">
                     <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
-                        <Search className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                        <MagnifyingGlassIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                     </div>
                     <input
                         type="text"
@@ -533,9 +519,9 @@ export default function Weather() {
                             title="Lấy vị trí hiện tại"
                         >
                             {gettingLocation ? (
-                                <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                                <ArrowsRightLeftIcon className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
                             ) : (
-                                <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
+                                <MapPinIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                             )}
                         </button>
                         <button
@@ -558,7 +544,7 @@ export default function Weather() {
             {(loading || gettingLocation) && !weatherData && (
                 <div className="flex flex-col items-center justify-center py-10 space-y-4">
                     <div className="relative">
-                        <Loader2 className="h-10 w-10 text-gray-400 animate-spin" />
+                        <ArrowsRightLeftIcon className="h-10 w-10 text-gray-400 animate-spin" />
                         <div className="absolute inset-0 flex items-center justify-center">
                             <div className="h-6 w-6 bg-white rounded-full"></div>
                         </div>
@@ -573,16 +559,16 @@ export default function Weather() {
                     <div className="mb-4 bg-white rounded-lg shadow p-3 sm:p-6 w-full box-border">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2 sm:gap-0">
                             <div className="flex items-center">
-                                <MapPin className="h-5 w-5 sm:h-6 sm:w-6 text-gray-500 mr-2 flex-shrink-0" />
+                                <MapPinIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-500 mr-2 flex-shrink-0" />
                                 <h2 className="text-lg sm:text-xl font-semibold truncate max-w-[calc(100vw-120px)] sm:max-w-none">{weatherData.location}</h2>
                             </div>
                             <div className="flex items-center space-x-4 text-sm">
                                 <div className="flex items-center">
-                                    <Sunrise className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 mr-1" />
+                                    <SunIcon className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 mr-1" />
                                     <span>{formatTime(weatherData.daily.sunrise[0])}</span>
                                 </div>
                                 <div className="flex items-center">
-                                    <Sunset className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 mr-1" />
+                                    <SunIcon className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 mr-1" />
                                     <span>{formatTime(weatherData.daily.sunset[0])}</span>
                                 </div>
                             </div>
@@ -610,7 +596,7 @@ export default function Weather() {
                             <div className="grid grid-cols-2 gap-2 w-full">
                                 <div className="p-3 bg-gray-50 rounded-lg">
                                     <div className="flex items-center">
-                                        <Wind className="h-4 w-4 text-blue-500 mr-2 flex-shrink-0" />
+                                        <ArrowDownIcon className="h-4 w-4 text-blue-500 mr-2 flex-shrink-0" />
                                         <div>
                                             <p className="text-xs text-gray-500">Gió</p>
                                             <p className="text-sm font-semibold">
@@ -622,7 +608,7 @@ export default function Weather() {
 
                                 <div className="p-3 bg-gray-50 rounded-lg">
                                     <div className="flex items-center">
-                                        <Droplets className="h-4 w-4 text-blue-400 mr-2 flex-shrink-0" />
+                                        <CloudIconSolid className="h-4 w-4 text-blue-400 mr-2 flex-shrink-0" />
                                         <div>
                                             <p className="text-xs text-gray-500">Độ ẩm</p>
                                             <p className="text-sm font-semibold">
@@ -655,7 +641,7 @@ export default function Weather() {
 
                             <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
                                 <div className="flex items-center">
-                                    <Wind className="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mr-2" />
+                                    <ArrowDownIcon className="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mr-2" />
                                     <div>
                                         <p className="text-xs sm:text-sm text-gray-500">Gió</p>
                                         <p className="text-sm sm:text-base font-semibold">
@@ -670,7 +656,7 @@ export default function Weather() {
 
                             <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
                                 <div className="flex items-center">
-                                    <Droplets className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400 mr-2" />
+                                    <CloudIconSolid className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400 mr-2" />
                                     <div>
                                         <p className="text-xs sm:text-sm text-gray-500">Độ ẩm</p>
                                         <p className="text-sm sm:text-base font-semibold">
@@ -700,7 +686,7 @@ export default function Weather() {
                                         className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
                                         title="Cuộn đến giờ hiện tại"
                                     >
-                                        <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                                        <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                                         Hiện tại
                                     </button>
                                 )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChefHat, Clock, Users, Utensils, Loader2 } from 'lucide-react'
+import { BeakerIcon, ClockIcon, UsersIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import { aiService } from '@/lib/ai-service'
 import ReactMarkdown from 'react-markdown'
 
@@ -187,7 +187,7 @@ Yêu cầu:
         <div className="max-w-4xl mx-auto p-6">
             <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center gap-2 mb-6">
-                    <ChefHat className="w-6 h-6" />
+                    <BeakerIcon className="w-6 h-6" />
                     <h2 className="text-2xl font-bold">Tạo Công Thức Nấu Ăn</h2>
                 </div>
 
@@ -205,7 +205,7 @@ Yêu cầu:
                                 placeholder="Nhập tên món ăn bạn muốn nấu"
                                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
                             />
-                            <Utensils className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <BeakerIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                         </div>
                         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
                     </div>
@@ -217,9 +217,9 @@ Yêu cầu:
                             className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
                             {isLoading ? (
-                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <ArrowPathIcon className="w-5 h-5 animate-spin" />
                             ) : (
-                                <ChefHat className="w-5 h-5" />
+                                <BeakerIcon className="w-5 h-5" />
                             )}
                             {isLoading ? 'Đang tạo công thức...' : 'Tạo công thức'}
                         </button>
@@ -233,15 +233,15 @@ Yêu cầu:
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                     <div className="flex items-center gap-2">
-                                        <Clock className="w-5 h-5" />
+                                        <ClockIcon className="w-5 h-5" />
                                         <span>Thời gian: {recipe.cookingTime}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Users className="w-5 h-5" />
+                                        <UsersIcon className="w-5 h-5" />
                                         <span>Khẩu phần: {recipe.servings}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Utensils className="w-5 h-5" />
+                                        <BeakerIcon className="w-5 h-5" />
                                         <span>Độ khó: {recipe.difficulty}</span>
                                     </div>
                                 </div>

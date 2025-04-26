@@ -2,37 +2,35 @@
 
 import Link from 'next/link'
 import {
-    FileText,
-    Languages,
-    Book,
-    MessageSquare,
-    Brain,
-    FileCode,
-    User,
-    Heart,
-    Subtitles,
-    ScrollText,
-    MessageCircle,
-    Lightbulb,
-    Sparkles,
-    Wrench,
-    GraduationCap,
-    DollarSign,
-    QrCode,
-    Mail,
-    CreditCard,
-    Calculator,
-    Clock,
-    Ruler,
-    Star,
-    Utensils,
-    Eye,
-    Search,
-    Cloud,
-    Thermometer,
-    Wind,
-    Flag
-} from 'lucide-react'
+    DocumentTextIcon,
+    LanguageIcon,
+    BookOpenIcon,
+    ChatBubbleLeftRightIcon,
+    BoltIcon,
+    CodeBracketIcon,
+    UserIcon,
+    HeartIcon,
+    FilmIcon,
+    DocumentIcon,
+    ChatBubbleLeftIcon,
+    LightBulbIcon,
+    SparklesIcon,
+    WrenchIcon,
+    AcademicCapIcon,
+    CurrencyDollarIcon,
+    QrCodeIcon,
+    EnvelopeIcon,
+    CreditCardIcon,
+    CalculatorIcon,
+    ClockIcon,
+    RectangleStackIcon,
+    StarIcon,
+    BeakerIcon,
+    EyeIcon,
+    MagnifyingGlassIcon,
+    CloudIcon,
+    FlagIcon
+} from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react';
 import { PageView } from '@/models/PageView';
 
@@ -89,7 +87,7 @@ const FeatureCard = ({ title, description, icon, views, path, badge, isHot }: Fe
 
                 <div className="flex justify-end text-sm text-gray-500">
                     <div className="flex items-center gap-1">
-                        <Eye className="h-4 w-4" />
+                        <EyeIcon className="h-4 w-4" />
                         <span>{views}</span>
                     </div>
                 </div>
@@ -102,89 +100,89 @@ const categories: CategoryProps[] = [
     {
         title: "Công cụ AI",
         description: "Các công cụ sử dụng trí tuệ nhân tạo",
-        icon: <Sparkles className="w-6 h-6 text-black" />,
+        icon: <SparklesIcon className="w-6 h-6 text-black" />,
         features: [
             {
                 title: "Dịch thuật AI",
                 description: "Dịch văn bản giữa các ngôn ngữ bằng AI",
-                icon: <Languages className="w-6 h-6 text-black" />,
+                icon: <LanguageIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/translate"
             },
             {
                 title: "Dịch hội thoại",
                 description: "Dịch các cuộc hội thoại và đoạn chat",
-                icon: <MessageCircle className="w-6 h-6 text-black" />,
+                icon: <ChatBubbleLeftIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/conversation-translate"
             },
             {
                 title: "Dịch phụ đề",
                 description: "Dịch file phụ đề SRT sang nhiều ngôn ngữ",
-                icon: <Subtitles className="w-6 h-6 text-black" />,
+                icon: <FilmIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/srt-translate"
             },
             {
                 title: "Từ điển",
                 description: "Tra cứu từ điển đa ngôn ngữ",
-                icon: <Book className="w-6 h-6 text-black" />,
+                icon: <BookOpenIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/dictionary"
             },
             {
                 title: "Học từ vựng",
                 description: "Học và luyện tập từ vựng hiệu quả",
-                icon: <Brain className="w-6 h-6 text-black" />,
+                icon: <BoltIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/vocabulary"
             },
             {
                 title: "Tạo câu hỏi",
                 description: "Tạo các bài tập và câu hỏi trắc nghiệm",
-                icon: <FileText className="w-6 h-6 text-black" />,
+                icon: <DocumentTextIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/quiz"
             },
             {
                 title: "Cải thiện văn bản",
                 description: "Nâng cao chất lượng văn bản của bạn",
-                icon: <FileCode className="w-6 h-6 text-black" />,
+                icon: <CodeBracketIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/enhance-text"
             },
             {
                 title: "Tóm tắt văn bản",
                 description: "Tự động tóm tắt văn bản dài",
-                icon: <ScrollText className="w-6 h-6 text-black" />,
+                icon: <DocumentIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/summarize"
             },
             {
                 title: "Giải bài tập",
                 description: "Giải bài tập bằng AI",
-                icon: <Brain className="w-6 h-6 text-black" />,
+                icon: <BoltIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/aisolver"
             },
             {
                 title: "Hỗ trợ tán gái",
                 description: "Hỗ trợ tán gái bằng AI",
-                icon: <Heart className="w-6 h-6 text-black" />,
+                icon: <HeartIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/flirting"
             },
             {
                 title: "Xem bói",
                 description: "Xem bói bằng AI",
-                icon: <Star className="w-6 h-6 text-black" />,
+                icon: <StarIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/fortune-telling"
             },
             {
                 title: "Tạo công thức nấu ăn",
                 description: "Tạo công thức nấu ăn bằng AI",
-                icon: <Utensils className="w-6 h-6 text-black" />,
+                icon: <BeakerIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/recipe-generator"
             }
@@ -193,19 +191,19 @@ const categories: CategoryProps[] = [
     {
         title: "Tiện ích",
         description: "Các công cụ hỗ trợ tiện ích",
-        icon: <Wrench className="w-6 h-6 text-black" />,
+        icon: <WrenchIcon className="w-6 h-6 text-black" />,
         features: [
             {
                 title: "Thông tin quốc gia",
                 description: "Thông tin chi tiết về quốc gia",
-                icon: <Flag className="w-6 h-6 text-black" />,
+                icon: <FlagIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/countries"
             },
             {
                 title: "Dự báo thời tiết",
                 description: "Xem dự báo thời tiết chi tiết với bản đồ tương tác",
-                icon: <Cloud className="w-6 h-6 text-black" />,
+                icon: <CloudIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/weather",
                 badge: "New"
@@ -213,7 +211,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Chuyển đổi tiền tệ",
                 description: "Chuyển đổi giữa các loại tiền tệ khác nhau",
-                icon: <DollarSign className="w-6 h-6 text-black" />,
+                icon: <CurrencyDollarIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/currency",
                 badge: "New"
@@ -221,70 +219,70 @@ const categories: CategoryProps[] = [
             {
                 title: "Tính lãi suất",
                 description: "Tính lãi suất tiết kiệm",
-                icon: <Calculator className="w-6 h-6 text-black" />,
+                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/utilities/interest-calculator"
             },
             {
                 title: "Tính khoản vay",
                 description: "Tính khoản vay và lãi suất",
-                icon: <Calculator className="w-6 h-6 text-black" />,
+                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/utilities/loan-calculator"
             },
             {
                 title: "Quản lý chi tiêu",
                 description: "Quản lý chi tiêu của bạn",
-                icon: <CreditCard className="w-6 h-6 text-black" />,
+                icon: <CreditCardIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/money-love"
             },
             {
                 title: "Tạo tên người dùng",
                 description: "Tạo tên người dùng sáng tạo",
-                icon: <User className="w-6 h-6 text-black" />,
+                icon: <UserIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/username-generator"
             },
             {
                 title: "Mã QR",
                 description: "Tạo và quét mã QR",
-                icon: <QrCode className="w-6 h-6 text-black" />,
+                icon: <QrCodeIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/qrcode"
             },
             {
                 title: "Email tạm thời",
                 description: "Tạo email tạm",
-                icon: <Mail className="w-6 h-6 text-black" />,
+                icon: <EnvelopeIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/temp-mail"
             },
             {
                 title: "Chuyển đổi múi giờ",
                 description: "Chuyển đổi múi giờ giữa các thành phố trên thế giới",
-                icon: <Clock className="w-6 h-6 text-black" />,
+                icon: <ClockIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/utilities/time-converter"
             },
             {
                 title: "Chuyển đổi đơn vị",
                 description: "Chuyển đổi đơn vị giữa các đơn vị khác nhau",
-                icon: <Ruler className="w-6 h-6 text-black" />,
+                icon: <RectangleStackIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/utilities/unit-converter"
             },
             {
                 title: "Tính chỉ số BMI",
                 description: "Tính chỉ số BMI của bạn",
-                icon: <Calculator className="w-6 h-6 text-black" />,
+                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/utilities/bmi-calculator"
             },
             {
                 title: "Tính tuổi",
                 description: "Tính tuổi của bạn",
-                icon: <Calculator className="w-6 h-6 text-black" />,
+                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/utilities/age-calculator"
             }
@@ -447,7 +445,7 @@ export default function Features() {
                 {/* Search Bar */}
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search className="h-5 w-5 text-gray-400" />
+                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
                         type="text"
