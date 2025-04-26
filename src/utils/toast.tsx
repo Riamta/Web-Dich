@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MdClose, MdCheckCircle, MdError, MdInfo } from 'react-icons/md';

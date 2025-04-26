@@ -196,6 +196,13 @@ const categories: CategoryProps[] = [
         icon: <Wrench className="w-6 h-6 text-black" />,
         features: [
             {
+                title: "Tải phụ đề",
+                description: "Tải phụ đề từ YouTube",
+                icon: <Subtitles className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/download-youtube-subtitles"
+            },
+            {
                 title: "Thông tin quốc gia",
                 description: "Thông tin chi tiết về quốc gia",
                 icon: <Flag className="w-6 h-6 text-black" />,

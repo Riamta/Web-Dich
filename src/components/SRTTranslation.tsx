@@ -2,12 +2,18 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { DocumentArrowUpIcon, LanguageIcon } from '@heroicons/react/24/outline';
-import { MdBook, MdContentCopy, MdDownload, MdEdit, MdOutlineMenuBook, MdTranslate } from 'react-icons/md';
+import { MdBook, MdContentCopy, MdDownload, MdEdit, MdOutlineMenuBook, MdTranslate, MdVideoLibrary, MdOndemandVideo } from 'react-icons/md';
 import Dictionary from '@/components/Dictionary';
 import { dictionaryService } from '@/lib/dictionary-service';
 import { aiService } from '@/lib/ai-service';
 import { useToast, ToastContainer } from '@/utils/toast';
 import { SUPPORTED_LANGUAGES } from '@/constants/languages';
+import { extractYouTubeVideoId } from '@/lib/youtube-util';
+import YouTubePreview from '@/components/YouTubePreview';
+import SubtitledVideoPlayer from '@/components/SubtitledVideoPlayer';
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody} from '@/components/ui/modal';
+import { FaBook, FaCopy, FaDownload } from 'react-icons/fa';
+import YouTubePlayer from '@/components/YouTubePlayer';
 
 interface ComparisonModalProps {
   isOpen: boolean;
@@ -31,6 +37,7 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
   const [entries, setEntries] = useState<Array<SRTEntry>>([]);
   const [translatedEntries, setTranslatedEntries] = useState<Array<SRTEntry>>([]);
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
+  const toast = useToast();
 
   // Parse SRT content into entries when modal is opened
   useEffect(() => {
@@ -101,98 +108,138 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
     onClose();
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-[95vw] max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">So sánh và chỉnh sửa bản dịch</h2>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setIsDictionaryOpen(true)}
-              className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors duration-200"
-            >
-              <MdTranslate className="h-5 w-5" />
-              <span>Từ điển</span>
-            </button>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        
-        <div className="flex-1 overflow-auto">
-          <table className="w-full border-collapse">
-            <thead className="bg-gray-50 sticky top-0 z-10">
-              <tr>
-                <th className="p-3 text-left text-sm font-medium text-gray-700 w-16">No.</th>
-                <th className="p-3 text-left text-sm font-medium text-gray-700 w-36">From</th>
-                <th className="p-3 text-left text-sm font-medium text-gray-700 w-36">To</th>
-                <th className="p-3 text-left text-sm font-medium text-gray-700">Original Text</th>
-                <th className="p-3 text-left text-sm font-medium text-gray-700">Translated Text</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {entries.map((entry, index) => {
-                const translatedEntry = translatedEntries[index] || { text: '' };
-                return (
-                  <tr 
-                    key={index} 
-                    className={`hover:bg-gray-50 ${
-                      entry.status === 'translated' 
-                        ? 'bg-green-50' 
-                        : entry.status === 'error' 
-                          ? 'bg-red-50' 
-                          : ''
-                    }`}
-                  >
-                    <td className="p-3 text-sm text-gray-500 font-mono">
-                      <div className="flex items-center gap-2">
-                        {entry.id}
-                        {entry.status === 'translated' && (
-                          <span className="w-2 h-2 rounded-full bg-green-500" title="Đã dịch"></span>
-                        )}
-                        {entry.status === 'error' && (
-                          <span className="w-2 h-2 rounded-full bg-red-500" title="Lỗi khi dịch"></span>
-                        )}
-                        {entry.status === 'pending' && (
-                          <span className="w-2 h-2 rounded-full bg-gray-300" title="Chưa dịch"></span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-3 text-sm text-gray-500 font-mono">{entry.from}</td>
-                    <td className="p-3 text-sm text-gray-500 font-mono">{entry.to}</td>
-                    <td className="p-3 text-sm text-gray-900 font-mono whitespace-pre-wrap">{entry.text}</td>
-                    <td className="p-3 text-sm text-gray-900 font-mono whitespace-pre-wrap">{translatedEntry.text}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+  const handleDictionaryClick = () => {
+    setIsDictionaryOpen(true);
+  };
 
-        <div className="flex justify-end gap-3 mt-4 pt-4 border-t">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Hủy
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            Lưu thay đổi
-          </button>
-        </div>
-      </div>
+  const handleCopy = () => {
+    try {
+      navigator.clipboard.writeText(editedText);
+      toast.success("Content copied to clipboard");
+    } catch (err) {
+      toast.error("Failed to copy content");
+    }
+  };
+
+  const handleDownload = () => {
+    const blob = new Blob([editedText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'subtitles.srt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast.success("Subtitles downloaded successfully");
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size="6xl">
+      <ModalOverlay />
+      <ModalContent height="90vh">
+        <ModalHeader>Compare and Edit Subtitles</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <div className="flex flex-col h-full">
+            <div className="flex gap-4 mb-4">
+              <button
+                onClick={handleDictionaryClick}
+                className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600"
+              >
+                <FaBook />
+                Dictionary
+              </button>
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                <FaCopy />
+                Copy
+              </button>
+              <button
+                onClick={handleDownload}
+                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+              >
+                <FaDownload />
+                Download
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-auto">
+              <table className="w-full border-collapse">
+                <thead className="bg-gray-50 sticky top-0 z-10">
+                  <tr>
+                    <th className="p-3 text-left text-sm font-medium text-gray-700 w-16">No.</th>
+                    <th className="p-3 text-left text-sm font-medium text-gray-700 w-36">From</th>
+                    <th className="p-3 text-left text-sm font-medium text-gray-700 w-36">To</th>
+                    <th className="p-3 text-left text-sm font-medium text-gray-700">Original Text</th>
+                    <th className="p-3 text-left text-sm font-medium text-gray-700">Translated Text</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {entries.map((entry, index) => {
+                    const translatedEntry = translatedEntries[index] || { text: '' };
+                    return (
+                      <tr 
+                        key={index} 
+                        className={`hover:bg-gray-50 ${
+                          entry.status === 'translated' 
+                            ? 'bg-green-50' 
+                            : entry.status === 'error' 
+                              ? 'bg-red-50' 
+                              : ''
+                        }`}
+                      >
+                        <td className="p-3 text-sm text-gray-500 font-mono">
+                          <div className="flex items-center gap-2">
+                            {entry.id}
+                            {entry.status === 'translated' && (
+                              <span className="w-2 h-2 rounded-full bg-green-500" title="Đã dịch"></span>
+                            )}
+                            {entry.status === 'error' && (
+                              <span className="w-2 h-2 rounded-full bg-red-500" title="Lỗi khi dịch"></span>
+                            )}
+                            {entry.status === 'pending' && (
+                              <span className="w-2 h-2 rounded-full bg-gray-300" title="Chưa dịch"></span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3 text-sm text-gray-500 font-mono">{entry.from}</td>
+                        <td className="p-3 text-sm text-gray-500 font-mono">{entry.to}</td>
+                        <td className="p-3 text-sm text-gray-900 font-mono whitespace-pre-wrap">{entry.text}</td>
+                        <td className="p-3 text-sm text-gray-900 font-mono whitespace-pre-wrap">{translatedEntry.text}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-4 pt-4 border-t">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Lưu thay đổi
+              </button>
+            </div>
+          </div>
+        </ModalBody>
+      </ModalContent>
 
       <Dictionary
         isOpen={isDictionaryOpen}
         onClose={() => setIsDictionaryOpen(false)}
       />
-    </div>
+    </Modal>
   );
 };
 
@@ -204,6 +251,7 @@ export default function SRTTranslation() {
   const { loading, success, error: showError, removeToast } = useToast();
   const [progressToastId, setProgressToastId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -222,6 +270,74 @@ export default function SRTTranslation() {
   const [batchSize, setBatchSize] = useState(50);
   const [isImprovingTranslation, setIsImprovingTranslation] = useState(false);
   const [isRetryingFailedTranslations, setIsRetryingFailedTranslations] = useState(false);
+
+  // YouTube subtitle download states
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [isFetchingSubtitles, setIsFetchingSubtitles] = useState(false);
+  const [fetchedLanguages, setFetchedLanguages] = useState<Array<{code: string, name: string}>>([]);
+  const [subtitleLanguage, setSubtitleLanguage] = useState('en');
+  const [videoId, setVideoId] = useState<string | null>(null);
+  
+  // Video player state
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
+  const [currentSubtitle, setCurrentSubtitle] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const timeIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Update videoId when youtubeUrl changes
+  useEffect(() => {
+    const id = extractVideoId(youtubeUrl);
+    setVideoId(id);
+  }, [youtubeUrl]);
+
+  useEffect(() => {
+    if (showVideoPlayer && videoRef.current) {
+      videoRef.current.addEventListener('timeupdate', handleTimeUpdate);
+      videoRef.current.addEventListener('play', () => setIsPlaying(true));
+      videoRef.current.addEventListener('pause', () => setIsPlaying(false));
+    }
+
+    return () => {
+      if (timeIntervalRef.current) {
+        clearInterval(timeIntervalRef.current);
+      }
+      if (videoRef.current) {
+        videoRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+      }
+    };
+  }, [showVideoPlayer]);
+
+  const handleTimeUpdate = () => {
+    if (!videoRef.current) return;
+    const currentTime = videoRef.current.currentTime;
+    updateCurrentSubtitle(currentTime);
+  };
+
+  const parseTimecode = (timecode: string): number => {
+    const [hours, minutes, seconds] = timecode.split(':');
+    const [secs, ms] = seconds.split(',');
+    return (
+      parseInt(hours) * 3600 +
+      parseInt(minutes) * 60 +
+      parseInt(secs) +
+      parseInt(ms) / 1000
+    );
+  };
+
+  const updateCurrentSubtitle = (currentTime: number) => {
+    const activeSubtitle = entries.find(entry => {
+      const fromTime = parseTimecode(entry.from);
+      const toTime = parseTimecode(entry.to);
+      return currentTime >= fromTime && currentTime <= toTime;
+    });
+
+    if (activeSubtitle) {
+      setCurrentSubtitle(activeSubtitle.translation || activeSubtitle.text);
+    } else {
+      setCurrentSubtitle('');
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -433,7 +549,27 @@ ${retryText}`;
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadOriginal = () => {
+    if (!entries.length) return;
+
+    const content = entries.map(entry => 
+      `${entry.id}\n${entry.from} --> ${entry.to}\n${entry.text}`
+    ).join('\n\n') + '\n';
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fileName.replace('.srt', '')}_original.srt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast.success("Đã tải xuống file phụ đề gốc");
+  };
+
+  const handleDownloadTranslated = () => {
     if (!entries.length) return;
 
     const content = entries.map(entry => 
@@ -444,15 +580,31 @@ ${retryText}`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const newFileName = fileName.replace('.srt', `_${targetLanguage}.srt`);
-    a.download = newFileName;
+    a.download = `${fileName.replace('.srt', '')}_translated.srt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    
+    toast.success("Đã tải xuống file phụ đề đã dịch");
   };
 
-  const handleCopy = async () => {
+  const handleCopyOriginal = async () => {
+    if (!entries.length) return;
+
+    const content = entries.map(entry => 
+      `${entry.id}\n${entry.from} --> ${entry.to}\n${entry.text}`
+    ).join('\n\n') + '\n';
+
+    try {
+      await navigator.clipboard.writeText(content);
+      toast.success("Đã sao chép phụ đề gốc");
+    } catch (err) {
+      toast.error("Không thể sao chép phụ đề gốc");
+    }
+  };
+
+  const handleCopyTranslated = async () => {
     if (!entries.length) return;
 
     const content = entries.map(entry => 
@@ -461,9 +613,9 @@ ${retryText}`;
 
     try {
       await navigator.clipboard.writeText(content);
-      success('Đã sao chép bản dịch vào clipboard!');
+      toast.success("Đã sao chép phụ đề đã dịch");
     } catch (err) {
-      setError('Không thể sao chép bản dịch. Vui lòng thử lại.');
+      toast.error("Không thể sao chép phụ đề đã dịch");
     }
   };
 
@@ -737,247 +889,500 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
   // Calculate translation statistics
   const stats = getTranslationStats();
 
+  // Extract YouTube Video ID from URL
+  const extractVideoId = (url: string): string | null => {
+    return extractYouTubeVideoId(url);
+  };
+
+  // Fetch available subtitles for a YouTube video
+  const fetchAvailableSubtitles = async (videoId: string) => {
+    try {
+      setIsFetchingSubtitles(true);
+      const toastId = loading('Đang kiểm tra phụ đề có sẵn...');
+      
+      // This would be replaced with your actual API call to get available subtitles
+      const response = await fetch(`/api/youtube/subtitles/languages?videoId=${videoId}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch available subtitles');
+      }
+      
+      const data = await response.json();
+      setFetchedLanguages(data.languages || []);
+      
+      if (data.languages && data.languages.length > 0) {
+        // Default to English if available, otherwise use the first available language
+        const hasEnglish = data.languages.some((lang: {code: string}) => lang.code === 'en');
+        setSubtitleLanguage(hasEnglish ? 'en' : data.languages[0].code);
+      }
+
+      removeToast(toastId);
+      success('Đã tìm thấy phụ đề');
+    } catch (error: any) {
+      console.error('Error fetching available subtitles:', error);
+      showError('Không thể tìm thấy phụ đề. Vui lòng kiểm tra URL và thử lại.');
+    } finally {
+      setIsFetchingSubtitles(false);
+    }
+  };
+
+  // Download subtitles from YouTube
+  const handleYoutubeSubtitleDownload = async () => {
+    const videoId = extractVideoId(youtubeUrl);
+    
+    if (!videoId) {
+      showError('URL YouTube không hợp lệ. Vui lòng kiểm tra và thử lại.');
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      const toastId = loading('Đang tải phụ đề từ YouTube...');
+
+      // Find the index of currently selected language
+      const selectedIndex = fetchedLanguages.findIndex(lang => lang.code === subtitleLanguage);
+      // Get the previous language code, if it's first language, use the last one
+      const targetIndex = selectedIndex === 0 ? fetchedLanguages.length - 1 : selectedIndex - 1;
+      const targetLanguage = fetchedLanguages[targetIndex].code;
+      
+      const response = await fetch(`/api/youtube/subtitles?videoId=${videoId}&lang=${targetLanguage}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to download subtitles');
+      }
+      
+      const data = await response.json();
+      
+      if (!data.content) {
+        throw new Error('No subtitle content received');
+      }
+      
+      // Parse the SRT content
+      setSrtContent(data.content);
+      setFileName(`youtube_${videoId}_${targetLanguage}.srt`);
+      
+      // Parse the subtitles
+      const blocks = data.content.trim().split(/\n\s*\n/);
+      const parsedEntries: Array<SRTEntry> = [];
+      
+      blocks.forEach((block: string, index: number) => {
+        const lines = block.trim().split('\n');
+        if (lines.length >= 3) {
+          const id = lines[0].trim();
+          const timecode = lines[1].trim();
+          const [from, to] = timecode.split(' --> ').map(t => t.trim());
+          const text = lines.slice(2).join('\n').trim();
+          
+          parsedEntries.push({
+            id,
+            from,
+            to,
+            text,
+            translation: text,
+            status: 'pending'
+          });
+        }
+      });
+      
+      setEntries(parsedEntries);
+      setError(null);
+      
+      removeToast(toastId);
+      success('Đã tải phụ đề thành công');
+    } catch (error: any) {
+      console.error('Error downloading subtitles:', error);
+      showError('Không thể tải phụ đề. Vui lòng thử lại sau.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubtitleDownload = (content: string) => {
+    setSrtContent(content);
+    setFileName(`youtube_${videoId}_${subtitleLanguage}.srt`);
+    
+    // Parse the subtitles
+    const blocks = content.trim().split(/\n\s*\n/);
+    const parsedEntries: Array<SRTEntry> = [];
+    
+    blocks.forEach((block: string, index: number) => {
+      const lines = block.trim().split('\n');
+      if (lines.length >= 3) {
+        const id = lines[0].trim();
+        const timecode = lines[1].trim();
+        const [from, to] = timecode.split(' --> ').map(t => t.trim());
+        const text = lines.slice(2).join('\n').trim();
+        
+        parsedEntries.push({
+          id,
+          from,
+          to,
+          text,
+          translation: text, // Copy original text to translation when importing
+          status: 'pending'
+        });
+      }
+    });
+    
+    setEntries(parsedEntries);
+    setError(null);
+  };
+
   return (
     <div className="space-y-4">
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <input
-              type="file"
-              onChange={handleFileUpload}
-              accept=".srt"
-              className="w-64 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
-            />
-            <select
-              value={targetLanguage}
-              onChange={(e) => setTargetLanguage(e.target.value)}
-              className="w-48 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-            >
-              {SUPPORTED_LANGUAGES.map((lang) => (
-                <option key={lang.code} value={lang.code}>
-                  {lang.name}
-                </option>
-              ))}
-            </select>
-            <select
-              value={batchSize}
-              onChange={(e) => setBatchSize(parseInt(e.target.value))}
-              className="p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-            >
-              {[20, 50, 100, 200].map((size) => (
-                <option key={size} value={size}>
-                  {size} câu/lần
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={handleTranslate}
-              disabled={isLoading || !entries.length || isImprovingTranslation}
-              className={`py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center gap-2 ${
-                isLoading || !entries.length || isImprovingTranslation
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gray-800 hover:bg-gray-900 shadow-sm hover:shadow-md'
-              }`}
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Đang xử lý...
-                </span>
-              ) : (
-                'Dịch phụ đề'
-              )}
-            </button>
-            {entries.length > 0 && (
-              <>
-                <button
-                  onClick={handleDownload}
-                  className="py-2 px-4 rounded-lg text-primary border border-primary hover:bg-primary/10 transition-all duration-200 flex items-center gap-2"
-                >
-                  <MdDownload className="h-5 w-5" />
-                  Tải xuống
-                </button>
-                <button
-                  onClick={handleCopy}
-                  className="py-2 px-4 rounded-lg text-primary border border-primary hover:bg-primary/10 transition-all duration-200 flex items-center gap-2"
-                >
-                  <MdContentCopy className="h-5 w-5" />
-                  Sao chép
-                </button>
-              </>
-            )}
-          </div>
-          <button
-            onClick={() => setIsDictionaryOpen(true)}
-            className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors duration-200"
-          >
-            <MdBook className="h-5 w-5" />
-            <span>Từ điển</span>
-          </button>
-        </div>
-
-        {/* Translation actions and stats */}
-        {entries.length > 0 && (
+        <div className="flex flex-col gap-4">
+          {/* File Upload Section */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button
-                onClick={handleImproveTranslations}
-                disabled={isLoading || isImprovingTranslation || stats.translated === 0}
-                className={`py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center gap-2 ${
-                  isLoading || isImprovingTranslation || stats.translated === 0
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-blue-500 hover:bg-blue-600'
-                }`}
+              <input
+                type="file"
+                onChange={handleFileUpload}
+                accept=".srt"
+                className="w-64 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+              />
+              <select
+                value={targetLanguage}
+                onChange={(e) => setTargetLanguage(e.target.value)}
+                className="w-48 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
               >
-                {isImprovingTranslation ? (
-                  <span className="flex items-center gap-2">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        fill="none"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    Đang cải thiện...
-                  </span>
-                ) : (
-                  <>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
-                    </svg>
-                    Cải thiện bản dịch
-                  </>
-                )}
-              </button>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                <span className="text-sm text-gray-600">Đã dịch: {stats.translated}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-gray-300"></span>
-                <span className="text-sm text-gray-600">Chưa dịch: {stats.pending}</span>
-              </div>
-            </div>
-          </div>
-        )}
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <option key={lang.code} value={lang.code}>
+                    {lang.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={batchSize}
+                onChange={(e) => setBatchSize(parseInt(e.target.value))}
+                className="p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+              >
+                {[20, 50, 100, 200].map((size) => (
+                  <option key={size} value={size}>
+                    {size} câu/lần
+                  </option>
+                ))}
+              </select>
 
-        {/* Custom context input */}
-        <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-700">Ngữ cảnh tùy chỉnh</h3>
-            <div className="flex items-center gap-2">
-              <label className="flex items-center gap-2 text-sm text-gray-600">
-                <input
-                  type="checkbox"
-                  checked={isUsingContext}
-                  onChange={(e) => setIsUsingContext(e.target.checked)}
-                  className="rounded text-primary focus:ring-primary"
-                />
-                Sử dụng ngữ cảnh
-              </label>
             </div>
+            <button
+              onClick={() => setIsDictionaryOpen(true)}
+              className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors duration-200"
+            >
+              <MdBook className="h-5 w-5" />
+              <span>Từ điển</span>
+            </button>
           </div>
-          <div className="flex gap-2">
-            <textarea
-              value={customContext}
-              onChange={(e) => setCustomContext(e.target.value)}
-              placeholder="Nhập thông tin về nội dung phụ đề (ví dụ: tên phim, thể loại, bối cảnh, nhân vật chính...) hoặc để trống để tự động tạo ngữ cảnh"
-              className="flex-1 p-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary min-h-[80px] resize-none"
-            />
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={handleGenerateContext}
-                disabled={isGeneratingContext || isAutoGeneratingContext || (!customContext.trim() && entries.length === 0)}
-                className={`py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center gap-2 ${
-                  isGeneratingContext || isAutoGeneratingContext || (!customContext.trim() && entries.length === 0)
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-gray-800 hover:bg-gray-900 shadow-sm hover:shadow-md'
-                }`}
-                title={customContext.trim() ? "Tạo ngữ cảnh từ thông tin người dùng" : "Tự động tạo ngữ cảnh từ nội dung phụ đề"}
-              >
-                {isGeneratingContext || isAutoGeneratingContext ? (
-                  <span className="flex items-center gap-2">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        fill="none"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    Đang tạo...
-                  </span>
-                ) : (
-                  <>
-                    <MdOutlineMenuBook className="h-5 w-5" />
-                    {customContext.trim() ? "Tạo ngữ cảnh" : "Tự động tạo ngữ cảnh"}
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-          {generatedContext && (
-            <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg text-sm text-gray-700">
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-medium text-primary">Ngữ cảnh đã tạo:</span>
+
+          {/* YouTube Subtitle Section */}
+          <div className="flex flex-col gap-4 border-t pt-4">
+            <div className="flex-1 flex items-center gap-4">
+              <div className="flex items-center">
+                <MdVideoLibrary className="h-5 w-5 text-red-500 mr-2" />
+                <span className="text-sm font-medium">Tải phụ đề từ YouTube:</span>
+              </div>
+              <input
+                type="text"
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+                placeholder="Nhập URL video YouTube"
+                className="flex-1 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+              />
+              {fetchedLanguages.length > 0 && (
+                <select
+                  value={subtitleLanguage}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    // Keep the UI showing the selected language
+                    setSubtitleLanguage(e.target.value);
+                  }}
+                  className="w-48 p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                >
+                  {fetchedLanguages.map((lang) => (
+                    <option key={lang.code} value={lang.code}>
+                      {lang.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {fetchedLanguages.length === 0 ? (
                 <button
                   onClick={() => {
-                    setGeneratedContext('');
-                    setIsUsingContext(false);
+                    const videoId = extractVideoId(youtubeUrl);
+                    if (videoId) fetchAvailableSubtitles(videoId);
                   }}
-                  className="text-gray-400 hover:text-gray-600"
-                  title="Xóa ngữ cảnh"
+                  disabled={isFetchingSubtitles || !youtubeUrl || !extractVideoId(youtubeUrl)}
+                  className={`py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center gap-2 ${
+                    isFetchingSubtitles || !youtubeUrl || !extractVideoId(youtubeUrl)
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-red-500 hover:bg-red-600 shadow-sm hover:shadow-md'
+                  }`}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  {isFetchingSubtitles ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Đang kiểm tra...
+                    </span>
+                  ) : (
+                    'Kiểm tra phụ đề'
+                  )}
                 </button>
+              ) : (
+                <button
+                  onClick={handleYoutubeSubtitleDownload}
+                  disabled={isLoading || isFetchingSubtitles}
+                  className={`py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center gap-2 ${
+                    isLoading || isFetchingSubtitles
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-red-500 hover:bg-red-600 shadow-sm hover:shadow-md'
+                  }`}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Đang tải...
+                    </span>
+                  ) : (
+                    'Tải phụ đề'
+                  )}
+                </button>
+              )}
+            </div>
+            
+            {/* YouTube video preview */}
+            {videoId && (
+              <div className="mt-2">
+                <YouTubePreview videoId={videoId} className="max-w-md" />
               </div>
-              <p className="whitespace-pre-wrap">{generatedContext}</p>
+            )}
+          </div>
+
+          {/* Translation actions and stats */}
+          {entries.length > 0 && (
+            <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={handleImproveTranslations}
+                  disabled={isLoading || isImprovingTranslation || stats.translated === 0}
+                  className={`py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center gap-2 ${
+                    isLoading || isImprovingTranslation || stats.translated === 0
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-blue-500 hover:bg-blue-600'
+                  }`}
+                >
+                  {isImprovingTranslation ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Đang cải thiện...
+                    </span>
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                      </svg>
+                      Cải thiện bản dịch
+                    </>
+                  )}
+                </button>
+                
+                {videoId && (
+                  <button
+                    onClick={() => setShowVideoPlayer(!showVideoPlayer)}
+                    className="py-2 px-4 rounded-lg text-white bg-red-500 hover:bg-red-600 transition-all duration-200 flex items-center gap-2"
+                  >
+                    <MdOndemandVideo className="h-5 w-5" />
+                    {showVideoPlayer ? 'Ẩn trình phát' : 'Xem video với phụ đề'}
+                  </button>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                  <span className="text-sm text-gray-600">Đã dịch: {stats.translated}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-gray-300"></span>
+                  <span className="text-sm text-gray-600">Chưa dịch: {stats.pending}</span>
+                </div>
+              </div>
             </div>
           )}
+          {/* Custom context input */}
+          <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-gray-700">Ngữ cảnh tùy chỉnh</h3>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm text-gray-600">
+                  <input
+                    type="checkbox"
+                    checked={isUsingContext}
+                    onChange={(e) => setIsUsingContext(e.target.checked)}
+                    className="rounded text-primary focus:ring-primary"
+                  />
+                  Sử dụng ngữ cảnh
+                </label>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <textarea
+                value={customContext}
+                onChange={(e) => setCustomContext(e.target.value)}
+                placeholder="Nhập ngữ cảnh, có thể là xưng hô, bối cảnh nhân vật..."
+                className="flex-1 p-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary min-h-[80px] resize-none"
+              />
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleGenerateContext}
+                  disabled={isGeneratingContext || isAutoGeneratingContext || (!customContext.trim() && entries.length === 0)}
+                  className={`py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center gap-2 ${
+                    isGeneratingContext || isAutoGeneratingContext || (!customContext.trim() && entries.length === 0)
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gray-800 hover:bg-gray-900 shadow-sm hover:shadow-md'
+                  }`}
+                  title={customContext.trim() ? "Tạo ngữ cảnh từ thông tin người dùng" : "Tự động tạo ngữ cảnh từ nội dung phụ đề"}
+                >
+                  {isGeneratingContext || isAutoGeneratingContext ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Đang tạo...
+                    </span>
+                  ) : (
+                    <>
+                      <MdOutlineMenuBook className="h-5 w-5" />
+                      {customContext.trim() ? "Tạo ngữ cảnh" : "Tạo ngữ cảnh bằng AI"}
+                    </>
+                  )}
+                </button>
+                <button
+                onClick={handleTranslate}
+                disabled={isLoading || !entries.length || isImprovingTranslation}
+                className={`py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center gap-2 ${
+                  isLoading || !entries.length || isImprovingTranslation
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-red-500 hover:bg-red-600 shadow-sm hover:shadow-md'
+                }`}
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Đang xử lý...
+                  </span>
+                ) : (
+                  <>
+                    <MdTranslate className="h-5 w-5" />
+                    Bắt đầu dịch
+                  </>
+                )}
+              </button>
+              </div>
+            </div>
+            {generatedContext && (
+              <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg text-sm text-gray-700">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-medium text-primary">Ngữ cảnh đã tạo:</span>
+                  <button
+                    onClick={() => {
+                      setGeneratedContext('');
+                      setIsUsingContext(false);
+                    }}
+                    className="text-gray-400 hover:text-gray-600"
+                    title="Xóa ngữ cảnh"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <p className="whitespace-pre-wrap">{generatedContext}</p>
+              </div>
+            )}
+          </div>
         </div>
 
-        {error && (
-          <div className={`p-4 rounded-lg ${error.startsWith('Đang xử lý') ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'}`}>
+        {error && error.startsWith('Đang xử lý') ? (
+          <div className="p-4 rounded-lg bg-blue-50 text-blue-600">
             {error}
           </div>
-        )}
+        ) : error ? (
+          <div className="p-4 rounded-lg bg-red-50 text-red-600">
+            {error}
+          </div>
+        ) : null}
 
         {entries.length > 0 && (
           <div className="flex items-center justify-between mb-4">
@@ -997,6 +1402,45 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
             </div>
             <div className="text-sm text-gray-500">
               Hiển thị {(currentPage - 1) * rowsPerPage + 1} - {Math.min(currentPage * rowsPerPage, entries.length)} trên tổng số {entries.length} dòng
+            </div>
+          </div>
+        )}
+
+        {/* New toolbar with download and copy buttons */}
+        {entries.length > 0 && (
+          <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleDownloadOriginal}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <MdDownload className="h-4 w-4" />
+                Tải phụ đề gốc
+              </button>
+              <button
+                onClick={handleDownloadTranslated}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <MdDownload className="h-4 w-4" />
+                Tải phụ đề đã dịch
+              </button>
+            </div>
+            <div className="h-4 w-px bg-gray-300"></div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopyOriginal}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <MdContentCopy className="h-4 w-4" />
+                Sao chép phụ đề gốc
+              </button>
+              <button
+                onClick={handleCopyTranslated}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <MdContentCopy className="h-4 w-4" />
+                Sao chép phụ đề đã dịch
+              </button>
             </div>
           </div>
         )}
@@ -1149,6 +1593,26 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
               &raquo;
             </button>
           </div>
+        )}
+
+        {/* Video Player with Subtitles */}
+        {showVideoPlayer && videoId && entries.length > 0 && (
+          <Modal isOpen={showVideoPlayer} onClose={() => setShowVideoPlayer(false)} size="6xl">
+            <ModalHeader>
+              <h3 className="text-lg font-medium">Xem video với phụ đề đã dịch</h3>
+              <ModalCloseButton />
+            </ModalHeader>
+            <ModalBody>
+              <div className="space-y-4">
+                <YouTubePlayer
+                  videoId={videoId}
+                  currentSubtitle={currentSubtitle}
+                  onTimeUpdate={updateCurrentSubtitle}
+                  onPlayStateChange={setIsPlaying}
+                />
+              </div>
+            </ModalBody>
+          </Modal>
         )}
       </div>
 

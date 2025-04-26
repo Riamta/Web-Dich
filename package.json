@@ -25,10 +25,13 @@
     "@types/react-katex": "^3.0.4",
     "@vercel/analytics": "^1.5.0",
     "autoprefixer": "^10.4.17",
+    "axios": "^1.9.0",
     "chart.js": "^4.4.9",
+    "cheerio": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "fast-xml-parser": "^5.2.1",
     "firebase": "^11.4.0",
     "framer-motion": "^12.5.0",
     "html5-qrcode": "^2.3.8",
@@ -38,7 +41,7 @@
     "kuroshiro-analyzer-kuromoji": "^1.1.0",
     "lucide-react": "^0.482.0",
     "mongodb": "^6.16.0",
-    "next": "14.1.0",
+    "next": "^15.4.0-canary.10",
     "next-themes": "^0.4.6",
     "openai": "^4.86.2",
     "postcss": "^8.4.35",
@@ -58,7 +61,8 @@
     "tailwind-merge": "^3.0.2",
     "tailwindcss": "^3.4.1",
     "tesseract.js": "^4.1.4",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "ytdl-core": "^4.11.5"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",
