@@ -44,52 +44,48 @@ export default function RandomToolsPage() {
       title: "Số ngẫu nhiên",
       description: "Tạo số ngẫu nhiên trong một khoảng bạn chọn",
       icon: <CalculatorIcon className="w-5 h-5" />,
-      path: "/random-tools/number"
+      path: "/random/number"
     },
     {
       title: "Văn bản ngẫu nhiên",
       description: "Chọn ngẫu nhiên một mục từ danh sách của bạn",
       icon: <ListBulletIcon className="w-5 h-5" />,
-      path: "/random-tools/text"
+      path: "/random/text"
     },
     {
       title: "Màu sắc ngẫu nhiên",
       description: "Tạo mã màu HEX ngẫu nhiên cho thiết kế của bạn",
       icon: <SwatchIcon className="w-5 h-5" />,
-      path: "/random-tools/color"
+      path: "/random/color"
     },
     {
       title: "Mật khẩu ngẫu nhiên",
       description: "Tạo mật khẩu mạnh với các tùy chọn tùy chỉnh",
       icon: <KeyIcon className="w-5 h-5" />,
-      path: "/random-tools/password"
+      path: "/random/password"
     },
     {
       title: "Username ngẫu nhiên",
       description: "Tạo username độc đáo với sự trợ giúp của AI",
       icon: <UserIcon className="w-5 h-5" />,
-      path: "/random-tools/username"
+      path: "/random/username"
     },
     {
       title: "Xúc xắc ngẫu nhiên",
       description: "Mô phỏng gieo nhiều xúc xắc với số mặt khác nhau",
       icon: <CubeIcon className="w-5 h-5" />,
-      path: "/random-tools/dice"
+      path: "/random/dice"
     },
     {
       title: "Tung đồng xu",
       description: "Mô phỏng tung đồng xu để giúp ra quyết định",
       icon: <CurrencyDollarIcon className="w-5 h-5" />,
-      path: "/random-tools/coin"
+      path: "/random/coin"
     }
   ]
 
   return (
     <div className="space-y-6">
-      <p className="text-gray-600 text-center mb-8">
-        Chọn một trong những công cụ ngẫu nhiên bên dưới để bắt đầu
-      </p>
-      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {features.map((feature, index) => (
           <FeatureCard key={index} {...feature} />

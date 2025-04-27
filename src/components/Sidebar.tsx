@@ -3,40 +3,40 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { XMarkIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
-import { 
-  FaDice, 
-  FaKeyboard, 
-  FaHeart, 
-  FaHome, 
-  FaBook, 
-  FaStar, 
-  FaFlagUsa, 
-  FaCloud, 
-  FaQrcode, 
-  FaClock, 
-  FaRegClipboard, 
-  FaCalculator, 
+import {
+  FaDice,
+  FaKeyboard,
+  FaHeart,
+  FaHome,
+  FaBook,
+  FaStar,
+  FaFlagUsa,
+  FaCloud,
+  FaQrcode,
+  FaClock,
+  FaRegClipboard,
+  FaCalculator,
   FaChevronDown,
   FaMagic
 } from "react-icons/fa";
-import { 
-  FaMoneyBillTransfer, 
-  FaUser, 
-  FaChartSimple 
+import {
+  FaMoneyBillTransfer,
+  FaUser,
+  FaChartSimple
 } from "react-icons/fa6";
-import { 
-  MdOutlinePassword, 
-  MdTranslate, 
+import {
+  MdOutlinePassword,
+  MdTranslate,
   MdOutlineChatBubbleOutline,
-  MdOutlineMovie, 
-  MdOutlineQuestionMark, 
-  MdOutlineSchool, 
-  MdOutlineDocumentScanner, 
-  MdOutlineModeEdit, 
-  MdOutlinePhoto, 
-  MdGrid3X3, 
-  MdOutlineCurrencyExchange, 
-  MdEmail, 
+  MdOutlineMovie,
+  MdOutlineQuestionMark,
+  MdOutlineSchool,
+  MdOutlineDocumentScanner,
+  MdOutlineModeEdit,
+  MdOutlinePhoto,
+  MdGrid3X3,
+  MdOutlineCurrencyExchange,
+  MdEmail,
   MdOutlineCreditCard,
   MdStackedLineChart,
   MdScience,
@@ -65,13 +65,6 @@ const menuGroups: MenuGroup[] = [
     name: 'Công cụ AI',
     icon: <FaMagic className="w-5 h-5" />,
     items: [
-      {
-        name: 'Chat với AI',
-        path: 'https://chat.amri2k.com/',
-        icon: <MdOutlineChatBubbleOutline className="w-5 h-5" />,
-        isExternal: true,
-        target: '_blank'
-      },
       {
         name: 'Dịch văn bản',
         path: '/translate',
@@ -131,7 +124,13 @@ const menuGroups: MenuGroup[] = [
         name: 'Xem bói',
         path: '/fortune-telling',
         icon: <FaStar className="w-5 h-5" />
-      }
+      }, {
+        name: 'Chat với AI',
+        path: 'https://chat.amri2k.com/',
+        icon: <MdOutlineChatBubbleOutline className="w-5 h-5" />,
+        isExternal: true,
+        target: '_blank'
+      },
     ]
   },
   {
@@ -201,7 +200,7 @@ const menuGroups: MenuGroup[] = [
       {
         name: 'Password tools',
         path: '/password-tools',
-        icon: <MdOutlinePassword  className="w-5 h-5" />
+        icon: <MdOutlinePassword className="w-5 h-5" />
       }
     ]
   },
@@ -309,23 +308,22 @@ function MobileSidebar() {
 
         {/* Menu - with own scrollable area */}
         <div className="flex-1 py-4 px-3 overflow-y-auto h-[calc(100vh-4rem)] scrollbar-thin">
-          <Link 
+          <Link
             href="/"
-            className={`flex items-center gap-3 px-4 py-2.5 mb-3 rounded-lg ${
-              pathname === '/' 
-                ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white' 
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-            } transition-colors`}
+            className={`flex items-center gap-3 px-4 py-2.5 mb-3 rounded-lg ${pathname === '/'
+              ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+              } transition-colors`}
             onClick={() => setIsOpen(false)}
           >
             <FaHome className="w-5 h-5" />
             <span className="font-medium text-sm">Trang chủ</span>
           </Link>
-          
+
           <div className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-3">
             Menu
           </div>
-          
+
           {menuGroups.map((group, groupIndex) => (
             <div key={group.name} className={`${groupIndex > 0 ? 'mt-3' : 'mt-1'}`}>
               <button
@@ -338,12 +336,12 @@ function MobileSidebar() {
                 <span className="flex-1 text-left font-medium text-sm">
                   {group.name}
                 </span>
-                <FaChevronDown 
+                <FaChevronDown
                   className={`w-4 h-4 text-gray-400 transition-transform duration-200
-                    ${expandedGroups[group.name] ? 'rotate-180' : ''}`} 
+                    ${expandedGroups[group.name] ? 'rotate-180' : ''}`}
                 />
               </button>
-              
+
               {expandedGroups[group.name] && (
                 <div className="mt-1 ml-4 pl-4 border-l border-gray-100 dark:border-gray-700 space-y-1">
                   {group.items.map(item => {
@@ -352,11 +350,10 @@ function MobileSidebar() {
                       <Link
                         key={item.path}
                         href={item.path}
-                        className={`flex items-center gap-3 px-4 py-2 rounded-lg ${
-                          isActive 
-                            ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white' 
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                        } transition-colors text-sm`}
+                        className={`flex items-center gap-3 px-4 py-2 rounded-lg ${isActive
+                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                          } transition-colors text-sm`}
                         target={item.target}
                         onClick={() => setIsOpen(false)}
                       >
@@ -406,10 +403,9 @@ function DesktopSidebar() {
   };
 
   return (
-    <aside 
-      className={`hidden md:block fixed top-0 left-0 h-screen border-r border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 transition-all duration-300 z-30 ${
-        isCollapsed ? 'w-[70px]' : 'w-[260px]'
-      }`}
+    <aside
+      className={`hidden md:block fixed top-0 left-0 h-screen border-r border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 transition-all duration-300 z-30 ${isCollapsed ? 'w-[70px]' : 'w-[260px]'
+        }`}
     >
       {/* Header */}
       <div className="h-16 flex items-center px-6 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
@@ -435,25 +431,24 @@ function DesktopSidebar() {
       {/* Menu - with own scrollable area */}
       <div className="overflow-y-auto h-[calc(100vh-4rem)] scrollbar-thin">
         <div className={`px-3 py-4 ${isCollapsed ? 'text-center' : ''}`}>
-          <Link 
+          <Link
             href="/"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg ${
-              pathname === '/' 
-                ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white' 
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-            } transition-colors`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg ${pathname === '/'
+              ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+              } transition-colors`}
           >
             <FaHome className="w-5 h-5 flex-shrink-0" />
             {!isCollapsed && <span className="font-medium text-sm">Trang chủ</span>}
           </Link>
         </div>
-        
+
         {!isCollapsed && (
           <div className="px-5 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
             Menu
           </div>
         )}
-        
+
         {menuGroups.map((group, groupIndex) => (
           <div key={group.name} className={`${groupIndex > 0 ? 'mt-4' : 'mt-1'} px-3`}>
             {!isCollapsed ? (
@@ -467,9 +462,9 @@ function DesktopSidebar() {
                 <span className="flex-1 text-left font-medium text-sm">
                   {group.name}
                 </span>
-                <FaChevronDown 
+                <FaChevronDown
                   className={`w-4 h-4 text-gray-400 transition-transform duration-200
-                    ${expandedGroups[group.name] ? 'rotate-180' : ''}`} 
+                    ${expandedGroups[group.name] ? 'rotate-180' : ''}`}
                 />
               </button>
             ) : (
@@ -479,7 +474,7 @@ function DesktopSidebar() {
                 </div>
               </div>
             )}
-            
+
             {(expandedGroups[group.name] || isCollapsed) && (
               <div className={`mt-1 space-y-1 ${!isCollapsed ? 'pl-8' : ''}`}>
                 {group.items.map(item => {
@@ -488,11 +483,10 @@ function DesktopSidebar() {
                     <Link
                       key={item.path}
                       href={item.path}
-                      className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-lg ${
-                        isActive 
-                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                      } transition-colors text-sm`}
+                      className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-lg ${isActive
+                        ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                        } transition-colors text-sm`}
                       target={item.target}
                       title={isCollapsed ? item.name : undefined}
                     >

@@ -42,6 +42,49 @@ export default function RandomToolsLayout({
     trackPageView()
   }, [pathname])
 
+  const navItems = [
+    {
+      name: 'Tổng quan',
+      path: '/random',
+      icon: <ArrowsRightLeftIcon className="w-5 h-5" />
+    },
+    {
+      name: 'Số',
+      path: '/random/number',
+      icon: <CalculatorIcon className="w-5 h-5" />
+    },
+    {
+      name: 'Văn bản',
+      path: '/random/text',
+      icon: <ListBulletIcon className="w-5 h-5" />
+    },
+    {
+      name: 'Màu sắc',
+      path: '/random/color',
+      icon: <SwatchIcon className="w-5 h-5" />
+    },
+    {
+      name: 'Mật khẩu',
+      path: '/random/password',
+      icon: <KeyIcon className="w-5 h-5" />
+    },
+    {
+      name: 'Username',
+      path: '/random/username',
+      icon: <UserIcon className="w-5 h-5" />
+    },
+    {
+      name: 'Xúc xắc',
+      path: '/random/dice',
+      icon: <CubeIcon className="w-5 h-5" />
+    },
+    {
+      name: 'Đồng xu',
+      path: '/random/coin',
+      icon: <CurrencyDollarIcon className="w-5 h-5" />
+    }
+  ]
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Header */}
@@ -55,148 +98,45 @@ export default function RandomToolsLayout({
         </p>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="max-w-3xl mx-auto mb-8">
-        <div className="flex flex-wrap border-b border-gray-100">
-          <Link
-            href="/random-tools"
-            className={`flex-1 py-3 font-medium text-sm text-center ${
-              pathname === '/random-tools'
-                ? 'text-gray-900 border-b-2 border-gray-900'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <ArrowsRightLeftIcon className="w-4 h-4" />
-              <span>Tổng quan</span>
+      {/* Main layout with sidebar and content */}
+      <div className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto">
+        {/* Sidebar Navigation */}
+        <div className="w-full md:w-64 flex-shrink-0">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="flex flex-col">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className={`flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors ${
+                    pathname === item.path
+                      ? 'bg-gray-50 border-l-4 border-gray-900 pl-3'
+                      : 'border-l-4 border-transparent'
+                  }`}
+                >
+                  <div className={`${pathname === item.path ? 'text-gray-900' : 'text-gray-500'}`}>
+                    {item.icon}
+                  </div>
+                  <span className={`font-medium text-sm ${
+                    pathname === item.path ? 'text-gray-900' : 'text-gray-600'
+                  }`}>
+                    {item.name}
+                  </span>
+                </Link>
+              ))}
             </div>
-          </Link>
-          <Link
-            href="/random-tools/number"
-            className={`flex-1 py-3 font-medium text-sm text-center ${
-              pathname === '/random-tools/number'
-                ? 'text-gray-900 border-b-2 border-gray-900'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <CalculatorIcon className="w-4 h-4" />
-              <span>Số</span>
-            </div>
-          </Link>
-          <Link
-            href="/random-tools/text"
-            className={`flex-1 py-3 font-medium text-sm text-center ${
-              pathname === '/random-tools/text'
-                ? 'text-gray-900 border-b-2 border-gray-900'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <ListBulletIcon className="w-4 h-4" />
-              <span>Văn bản</span>
-            </div>
-          </Link>
-          <Link
-            href="/random-tools/color"
-            className={`flex-1 py-3 font-medium text-sm text-center ${
-              pathname === '/random-tools/color'
-                ? 'text-gray-900 border-b-2 border-gray-900'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <SwatchIcon className="w-4 h-4" />
-              <span>Màu sắc</span>
-            </div>
-          </Link>
-          <Link
-            href="/random-tools/password"
-            className={`flex-1 py-3 font-medium text-sm text-center ${
-              pathname === '/random-tools/password'
-                ? 'text-gray-900 border-b-2 border-gray-900'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <KeyIcon className="w-4 h-4" />
-              <span>Mật khẩu</span>
-            </div>
-          </Link>
-          <Link
-            href="/random-tools/username"
-            className={`flex-1 py-3 font-medium text-sm text-center ${
-              pathname === '/random-tools/username'
-                ? 'text-gray-900 border-b-2 border-gray-900'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <UserIcon className="w-4 h-4" />
-              <span>Username</span>
-            </div>
-          </Link>
-          <Link
-            href="/random-tools/dice"
-            className={`flex-1 py-3 font-medium text-sm text-center ${
-              pathname === '/random-tools/dice'
-                ? 'text-gray-900 border-b-2 border-gray-900'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <CubeIcon className="w-4 h-4" />
-              <span>Xúc xắc</span>
-            </div>
-          </Link>
-          <Link
-            href="/random-tools/coin"
-            className={`flex-1 py-3 font-medium text-sm text-center ${
-              pathname === '/random-tools/coin'
-                ? 'text-gray-900 border-b-2 border-gray-900'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <CurrencyDollarIcon className="w-4 h-4" />
-              <span>Đồng xu</span>
-            </div>
-          </Link>
+          </div>
         </div>
-      </div>
 
-      {/* Main content */}
-      <div className="max-w-3xl mx-auto">
-        {children}
-      </div>
-      
-      {/* Additional information */}
-      <div className="mt-16 border-t border-gray-100 pt-8">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-xl font-medium text-gray-900 mb-4">Về công cụ ngẫu nhiên</h2>
-          <div className="space-y-4 text-gray-600 text-sm">
-            <p>
-              Công cụ ngẫu nhiên giúp bạn tạo ra các giá trị ngẫu nhiên một cách nhanh chóng và dễ dàng. 
-              Bạn có thể sử dụng nó để:
-            </p>
-            <ul className="list-disc pl-5 space-y-2">
-              <li>Tạo các số ngẫu nhiên trong một khoảng bạn chọn</li>
-              <li>Chọn ngẫu nhiên một mục từ danh sách của bạn</li>
-              <li>Tạo màu sắc ngẫu nhiên cho thiết kế</li>
-              <li>Tạo mật khẩu mạnh ngẫu nhiên</li>
-              <li>Tạo tên người dùng độc đáo với AI</li>
-              <li>Mô phỏng tung xúc xắc hoặc đồng xu</li>
-              <li>Tổ chức bốc thăm trúng thưởng</li>
-              <li>Quyết định lựa chọn khi bạn không thể tự quyết định</li>
-              <li>Và nhiều ứng dụng khác trong cuộc sống hàng ngày</li>
-            </ul>
-            <p>
-              Tất cả các quá trình tạo ngẫu nhiên đều được thực hiện trên trình duyệt của bạn, 
-              đảm bảo sự riêng tư và bảo mật thông tin.
-            </p>
+        {/* Main content */}
+        <div className="flex-1">
+          <div className="rounded-xl p-6">
+            {children}
           </div>
         </div>
       </div>
+      
+
     </div>
   )
 } 
