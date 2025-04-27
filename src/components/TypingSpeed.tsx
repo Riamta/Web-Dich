@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { ClockIcon, ChartBarIcon, ArrowPathIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Tab } from '@headlessui/react'
 import { aiService } from '@/lib/ai-service'
@@ -24,14 +24,24 @@ const languages = [
 
 // Tạo prompt tuỳ chỉnh cho từng ngôn ngữ
 const getLanguagePrompt = (language: string, duration: number) => {
-  const wordCount = Math.round(duration * 2) // Ước tính số từ dựa vào thời gian
-  
+    let wordCount = 0;
+    switch (duration) {
+        case 30:
+            wordCount = 50
+            break;
+        case 60:
+            wordCount = 100
+            break;
+        case 120:
+            wordCount = 200
+            break;
+    }
   switch (language) {
     case 'en':
-      return `Create a paragraph for a typing speed test in English with a random topic. The text should be approximately ${wordCount} words long, suitable for a ${duration}-second test. Only return the paragraph text, nothing else.`
+      return `Create a paragraph for a typing speed test in English with a random topic. The text should be ${wordCount} words long, suitable for a ${duration}-second test. Only return the paragraph text, nothing else.`
     case 'vi':
     default:
-      return `Tạo một văn bản ngắn gọn chỉ phần chữ và dễ hiểu bằng tiếng Việt với chủ đề ngẫu nhiên, phục vụ cho việc kiểm tra tốc độ gõ phím. Văn bản nên có khoảng ${wordCount} từ, phù hợp cho bài kiểm tra kéo dài ${duration} giây. Chỉ trả về văn bản, không có gì khác.`
+      return `Tạo một văn bản ngắn gọn chỉ phần chữ và dễ hiểu bằng tiếng Việt với chủ đề ngẫu nhiên, phục vụ cho việc kiểm tra tốc độ gõ phím. Văn bản dài ${wordCount} từ, phù hợp cho bài kiểm tra kéo dài ${duration} giây. Chỉ trả về văn bản, không có gì khác. Văn bản không được tồn tại các dấu đặc biệt nhưu -, ", )`
   }
 }
 
@@ -44,6 +54,7 @@ export default function TypingSpeed() {
 
   // State cho phần kiểm tra
   const [isTestActive, setIsTestActive] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [timeLeft, setTimeLeft] = useState(60) // Mặc định 60 giây
   const [testDuration, setTestDuration] = useState(60) // Thời gian kiểm tra
   const [currentText, setCurrentText] = useState('')
@@ -113,28 +124,35 @@ export default function TypingSpeed() {
 
   // Bắt đầu kiểm tra gõ phím
   const startTest = async () => {
-    const text = await getRandomText()
-    setCurrentText(text)
-    
-    // Tách văn bản thành danh sách các từ
-    const wordsList = prepareWords(text)
-    setWords(wordsList)
-    
-    // Khởi tạo trạng thái cho từng từ
-    setWordStates(Array(wordsList.length).fill('waiting'))
-    
-    setTypedText('')
-    setErrors(0)
-    setCurrentWordIndex(0)
-    setCompletedWords(0)
-    setTimeLeft(testDuration)
-    setIsTestActive(true)
-    setStartTime(Date.now())
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus()
-      }
-    }, 100)
+    setIsLoading(true)
+    try {
+      const text = await getRandomText()
+      setCurrentText(text)
+      
+      // Tách văn bản thành danh sách các từ
+      const wordsList = prepareWords(text)
+      setWords(wordsList)
+      
+      // Khởi tạo trạng thái cho từng từ
+      setWordStates(Array(wordsList.length).fill('waiting'))
+      
+      setTypedText('')
+      setErrors(0)
+      setCurrentWordIndex(0)
+      setCompletedWords(0)
+      setTimeLeft(testDuration)
+      setIsTestActive(true)
+      setStartTime(Date.now())
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus()
+        }
+      }, 100)
+    } catch (error) {
+      console.error('Error generating text:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // Kết thúc kiểm tra
@@ -305,35 +323,37 @@ export default function TypingSpeed() {
   // Hiển thị văn bản với các trạng thái khác nhau
   const renderText = () => {
     return (
-      <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 font-mono text-lg leading-relaxed">
-        <div>
+      <div className="p-6 border border-gray-200 rounded-lg bg-gray-50 font-mono text-2xl leading-relaxed">
+        <div className="flex flex-wrap">
           {words.map((word, index) => {
             let className = '';
             let status = wordStates[index];
             
             switch (status) {
               case 'correct':
-                className = 'text-green-600';
+                className = 'text-green-600 font-medium';
                 break;
               case 'incorrect':
-                className = 'text-red-600 bg-red-100';
+                className = 'text-red-600 bg-red-100 font-medium';
                 break;
               case 'waiting':
-                className = 'text-gray-900';
+                className = 'text-gray-900 font-medium';
                 break;
             }
             
             // Highlight từ hiện tại
             if (index === currentWordIndex) {
-              className += ' bg-gray-200 underline';
+              className += ' bg-gray-200';
             }
             
             return (
-              <span key={index} className={`${className} px-0.5 rounded`}>
-                {word}
+              <React.Fragment key={index}>
+                <span className={className}>
+                  {word}
+                </span>
                 {/* Thêm khoảng trắng sau mỗi từ, trừ từ cuối cùng */}
-                {index < words.length - 1 ? ' ' : ''}
-              </span>
+                {index < words.length - 1 && <span className="mx-1"> </span>}
+              </React.Fragment>
             );
           })}
         </div>
@@ -447,7 +467,7 @@ export default function TypingSpeed() {
                         value={typedText}
                         onChange={handleTyping}
                         onKeyDown={handleKeyDown}
-                        className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-center font-mono text-xl"
+                        className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-center font-mono text-2xl"
                         placeholder={words[currentWordIndex] || ''}
                         autoComplete="off"
                         autoCapitalize="off"
@@ -514,13 +534,23 @@ export default function TypingSpeed() {
                       <br />
                       Gõ mỗi từ và nhấn <strong>phím cách (Space)</strong> để kiểm tra và tiếp tục từ tiếp theo.
                     </p>
-                    <button
-                      onClick={startTest}
-                      className="px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800 transition-colors flex items-center gap-2 mx-auto"
-                    >
-                      <PlayIcon className="w-5 h-5" />
-                      <span>Bắt đầu</span>
-                    </button>
+                    {isLoading ? (
+                      <div className="flex flex-col items-center justify-center space-y-4 p-6">
+                        <div className="relative">
+                          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-gray-800"></div>
+                        </div>
+                        <p className="text-gray-700 font-medium text-lg">AI đang tạo đoạn văn...</p>
+                        <p className="text-gray-500 text-sm">Đang chuẩn bị bài kiểm tra của bạn</p>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={startTest}
+                        className="px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800 transition-colors flex items-center gap-2 mx-auto"
+                      >
+                        <PlayIcon className="w-5 h-5" />
+                        <span>Bắt đầu</span>
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -537,6 +567,10 @@ export default function TypingSpeed() {
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <div className="text-sm text-gray-500 mb-1">Độ chính xác</div>
                       <div className="text-2xl font-bold">{results[0].accuracy}%</div>
+                    </div>
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <div className="text-sm text-gray-500 mb-1">Số từ đã gõ</div>
+                      <div className="text-2xl font-bold">{results[0].words} / {words.length}</div>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <div className="text-sm text-gray-500 mb-1">Thời gian</div>

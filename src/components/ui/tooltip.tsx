@@ -1,33 +1,58 @@
-import * as React from 'react'
-import { Popover } from '@headlessui/react'
+"use client"
 
-interface TooltipProps {
-  content: string;
-  children: React.ReactNode;
+import * as React from "react"
+import * as TooltipPrimitive from "@radix-ui/react-tooltip"
+
+import { cn } from "@/lib/utils"
+
+const TooltipProvider = TooltipPrimitive.Provider
+const TooltipRoot = TooltipPrimitive.Root
+const TooltipTrigger = TooltipPrimitive.Trigger
+const TooltipContent = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
+>(({ className, sideOffset = 4, ...props }, ref) => (
+  <TooltipPrimitive.Content
+    ref={ref}
+    sideOffset={sideOffset}
+    className={cn(
+      "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      className,
+    )}
+    {...props}
+  />
+))
+TooltipContent.displayName = TooltipPrimitive.Content.displayName
+
+export { TooltipProvider }
+
+export interface TooltipProps {
+  content: React.ReactNode
+  children: React.ReactNode
+  side?: "top" | "right" | "bottom" | "left"
+  align?: "start" | "center" | "end"
+  sideOffset?: number
+  alignOffset?: number
+  delayDuration?: number
 }
 
-export function Tooltip({ content, children }: TooltipProps) {
+export function Tooltip({
+  content,
+  children,
+  side = "top",
+  align = "center",
+  sideOffset = 4,
+  alignOffset = 0,
+  delayDuration = 200,
+}: TooltipProps) {
   return (
-    <Popover className="relative">
-      {({ open }) => (
-        <>
-          <Popover.Button as={React.Fragment}>
-            {children}
-          </Popover.Button>
-
-          <Popover.Panel
-            static
-            className={`absolute z-50 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-sm 
-              -translate-x-1/2 -translate-y-full -top-2 left-1/2 whitespace-nowrap
-              ${open ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}
-          >
-            {content}
-            <div className="absolute left-1/2 -translate-x-1/2 top-full">
-              <div className="border-4 border-transparent border-t-gray-900" />
-            </div>
-          </Popover.Panel>
-        </>
-      )}
-    </Popover>
+    <TooltipProvider>
+      <TooltipRoot delayDuration={delayDuration}>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
+        <TooltipContent side={side} align={align} sideOffset={sideOffset} alignOffset={alignOffset}>
+          {content}
+        </TooltipContent>
+      </TooltipRoot>
+    </TooltipProvider>
   )
-} 
+}

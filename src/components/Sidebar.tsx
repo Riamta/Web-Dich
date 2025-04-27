@@ -35,9 +35,9 @@ import {
   ClipboardDocumentCheckIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline';
-import { FaDice, FaKeyboard, } from "react-icons/fa";
+import { FaDice, FaKeyboard, FaUser } from "react-icons/fa";
 import { FaMoneyBillTransfer } from "react-icons/fa6";
-import { MdTranslate } from "react-icons/md";
+import { MdOutlinePassword, MdTranslate } from "react-icons/md";
 
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useState } from 'react';
@@ -141,7 +141,7 @@ const menuGroups: MenuGroup[] = [
       },
       {
         name: 'Công cụ ngẫu nhiên',
-        path: '/random-tools',
+        path: '/random',
         icon: <FaDice className="w-5 h-5" />
       },
       {
@@ -153,11 +153,6 @@ const menuGroups: MenuGroup[] = [
         name: 'Quản lý chi tiêu',
         path: '/money-love',
         icon: <CreditCardIcon className="w-5 h-5" />
-      },
-      {
-        name: 'Tạo tên người dùng',
-        path: '/username-generator',
-        icon: <PencilIcon className="w-5 h-5" />
       },
       {
         name: 'Email tạm thời',
@@ -193,6 +188,16 @@ const menuGroups: MenuGroup[] = [
         name: 'Tính tuổi',
         path: '/utilities/age-calculator',
         icon: <CalculatorIcon className="w-5 h-5" />
+      },
+      {
+        name: 'Username tools',
+        path: '/username-tools',
+        icon: <FaUser className="w-5 h-5" />
+      },
+      {
+        name: 'Password tools',
+        path: '/password-tools',
+        icon: <MdOutlinePassword  className="w-5 h-5" />
       }
     ]
   },

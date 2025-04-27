@@ -1,7 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { CalculatorIcon, ListBulletIcon } from '@heroicons/react/24/outline'
+import { 
+  CalculatorIcon, 
+  ListBulletIcon, 
+  SwatchIcon, 
+  KeyIcon, 
+  CubeIcon, 
+  CurrencyDollarIcon,
+  UserIcon
+} from '@heroicons/react/24/outline'
 
 interface FeatureCardProps {
   title: string
@@ -43,6 +51,36 @@ export default function RandomToolsPage() {
       description: "Chọn ngẫu nhiên một mục từ danh sách của bạn",
       icon: <ListBulletIcon className="w-5 h-5" />,
       path: "/random-tools/text"
+    },
+    {
+      title: "Màu sắc ngẫu nhiên",
+      description: "Tạo mã màu HEX ngẫu nhiên cho thiết kế của bạn",
+      icon: <SwatchIcon className="w-5 h-5" />,
+      path: "/random-tools/color"
+    },
+    {
+      title: "Mật khẩu ngẫu nhiên",
+      description: "Tạo mật khẩu mạnh với các tùy chọn tùy chỉnh",
+      icon: <KeyIcon className="w-5 h-5" />,
+      path: "/random-tools/password"
+    },
+    {
+      title: "Username ngẫu nhiên",
+      description: "Tạo username độc đáo với sự trợ giúp của AI",
+      icon: <UserIcon className="w-5 h-5" />,
+      path: "/random-tools/username"
+    },
+    {
+      title: "Xúc xắc ngẫu nhiên",
+      description: "Mô phỏng gieo nhiều xúc xắc với số mặt khác nhau",
+      icon: <CubeIcon className="w-5 h-5" />,
+      path: "/random-tools/dice"
+    },
+    {
+      title: "Tung đồng xu",
+      description: "Mô phỏng tung đồng xu để giúp ra quyết định",
+      icon: <CurrencyDollarIcon className="w-5 h-5" />,
+      path: "/random-tools/coin"
     }
   ]
 

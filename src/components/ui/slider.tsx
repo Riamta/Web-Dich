@@ -1,34 +1,36 @@
+"use client"
+
 import * as React from "react"
+import * as SliderPrimitive from "@radix-ui/react-slider"
+
 import { cn } from "@/lib/utils"
 
-interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  onValueChange?: (value: number) => void;
-}
+const Slider = React.forwardRef<
+  React.ElementRef<typeof SliderPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <SliderPrimitive.Root
+    ref={ref}
+    className={cn("relative flex w-full touch-none select-none items-center", className)}
+    {...props}
+  >
+    <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary">
+      <SliderPrimitive.Range className="absolute h-full bg-primary" />
+    </SliderPrimitive.Track>
+    {props.defaultValue?.map((_, i) => (
+      <SliderPrimitive.Thumb
+        key={i}
+        className="block h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+      />
+    )) ||
+      props.value?.map((_, i) => (
+        <SliderPrimitive.Thumb
+          key={i}
+          className="block h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+        />
+      ))}
+  </SliderPrimitive.Root>
+))
+Slider.displayName = SliderPrimitive.Root.displayName
 
-export const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
-  ({ className, onValueChange, onChange, ...props }, ref) => (
-    <input
-      type="range"
-      ref={ref}
-      className={cn(
-        "h-2 w-full cursor-pointer appearance-none rounded-full bg-gray-200",
-        "bg-gradient-to-r from-primary to-primary bg-no-repeat",
-        "[&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5",
-        "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full",
-        "[&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary",
-        "[&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:transition-all",
-        "[&::-webkit-slider-thumb]:hover:scale-110",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
-        className
-      )}
-      style={{
-        backgroundSize: `${(Number(props.value || 0) - Number(props.min || 0)) * 100 / (Number(props.max || 100) - Number(props.min || 0))}% 100%`
-      }}
-      onChange={(e) => {
-        onChange?.(e);
-        onValueChange?.(Number(e.target.value));
-      }}
-      {...props}
-    />
-  )
-) 
+export { Slider }

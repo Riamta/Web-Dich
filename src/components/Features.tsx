@@ -37,9 +37,9 @@ import {
 } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react';
 import { PageView } from '@/models/PageView';
-import { FaKeyboard, FaDice  } from 'react-icons/fa';
+import { FaKeyboard, FaDice, FaUser  } from 'react-icons/fa';
 import { FaMoneyBillTransfer } from "react-icons/fa6";
-import { MdTranslate } from "react-icons/md";
+import { MdOutlinePassword, MdTranslate } from "react-icons/md";
 
 
 interface FeatureCardProps {
@@ -222,7 +222,7 @@ const categories: CategoryProps[] = [
                 description: "Tạo số ngẫu nhiên, chuỗi",
                 icon: <FaDice className="w-6 h-6 text-black" />,
                 views: 0,
-                path: "/random-tools",
+                path: "/random",
                 badge: "New",
                 category: "Utility"
             },
@@ -241,14 +241,6 @@ const categories: CategoryProps[] = [
                 views: 0,
                 path: "/weather",
                 badge: "New",
-                category: "Utility"
-            },
-            {
-                title: "Tạo tên người dùng",
-                description: "Tạo tên người dùng sáng tạo",
-                icon: <UserIcon className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/username-generator",
                 category: "Utility"
             },
             {
@@ -292,12 +284,19 @@ const categories: CategoryProps[] = [
                 category: "Utility"
             },
             {
-                title: "Công cụ ngẫu nhiên",
-                description: "Tạo số ngẫu nhiên, chuỗi, ID, màu sắc và nhiều hơn nữa",
-                icon: <ArrowsRightLeftIcon className="w-6 h-6 text-black" />,
+                title: "Username tools",
+                description: "Username tools",
+                icon: <FaUser className="w-6 h-6 text-black" />,
                 views: 0,
-                path: "/random",
-                badge: "New",
+                path: "/username-tools",
+                category: "Utility"
+            },
+            {
+                title: "Password tools",
+                description: "Password tools",
+                icon: <MdOutlinePassword className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/password-tools",
                 category: "Utility"
             }
         ]

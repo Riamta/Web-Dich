@@ -3,7 +3,16 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ArrowsRightLeftIcon, CalculatorIcon, ListBulletIcon } from '@heroicons/react/24/outline'
+import { 
+  ArrowsRightLeftIcon, 
+  CalculatorIcon, 
+  ListBulletIcon,
+  SwatchIcon,
+  KeyIcon,
+  CubeIcon,
+  CurrencyDollarIcon,
+  UserIcon
+} from '@heroicons/react/24/outline'
 
 export default function RandomToolsLayout({
   children,
@@ -42,13 +51,13 @@ export default function RandomToolsLayout({
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Công cụ ngẫu nhiên</h1>
         <p className="text-gray-500 max-w-2xl mx-auto">
-          Tạo số ngẫu nhiên trong một khoảng hoặc chọn ngẫu nhiên từ danh sách của bạn
+          Tạo số ngẫu nhiên, màu sắc, mật khẩu và nhiều thứ ngẫu nhiên khác cho nhu cầu của bạn
         </p>
       </div>
 
       {/* Navigation Tabs */}
       <div className="max-w-3xl mx-auto mb-8">
-        <div className="flex border-b border-gray-100">
+        <div className="flex flex-wrap border-b border-gray-100">
           <Link
             href="/random-tools"
             className={`flex-1 py-3 font-medium text-sm text-center ${
@@ -72,7 +81,7 @@ export default function RandomToolsLayout({
           >
             <div className="flex items-center justify-center gap-2">
               <CalculatorIcon className="w-4 h-4" />
-              <span>Số ngẫu nhiên</span>
+              <span>Số</span>
             </div>
           </Link>
           <Link
@@ -85,7 +94,72 @@ export default function RandomToolsLayout({
           >
             <div className="flex items-center justify-center gap-2">
               <ListBulletIcon className="w-4 h-4" />
-              <span>Văn bản ngẫu nhiên</span>
+              <span>Văn bản</span>
+            </div>
+          </Link>
+          <Link
+            href="/random-tools/color"
+            className={`flex-1 py-3 font-medium text-sm text-center ${
+              pathname === '/random-tools/color'
+                ? 'text-gray-900 border-b-2 border-gray-900'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <SwatchIcon className="w-4 h-4" />
+              <span>Màu sắc</span>
+            </div>
+          </Link>
+          <Link
+            href="/random-tools/password"
+            className={`flex-1 py-3 font-medium text-sm text-center ${
+              pathname === '/random-tools/password'
+                ? 'text-gray-900 border-b-2 border-gray-900'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <KeyIcon className="w-4 h-4" />
+              <span>Mật khẩu</span>
+            </div>
+          </Link>
+          <Link
+            href="/random-tools/username"
+            className={`flex-1 py-3 font-medium text-sm text-center ${
+              pathname === '/random-tools/username'
+                ? 'text-gray-900 border-b-2 border-gray-900'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <UserIcon className="w-4 h-4" />
+              <span>Username</span>
+            </div>
+          </Link>
+          <Link
+            href="/random-tools/dice"
+            className={`flex-1 py-3 font-medium text-sm text-center ${
+              pathname === '/random-tools/dice'
+                ? 'text-gray-900 border-b-2 border-gray-900'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <CubeIcon className="w-4 h-4" />
+              <span>Xúc xắc</span>
+            </div>
+          </Link>
+          <Link
+            href="/random-tools/coin"
+            className={`flex-1 py-3 font-medium text-sm text-center ${
+              pathname === '/random-tools/coin'
+                ? 'text-gray-900 border-b-2 border-gray-900'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <CurrencyDollarIcon className="w-4 h-4" />
+              <span>Đồng xu</span>
             </div>
           </Link>
         </div>
@@ -108,6 +182,10 @@ export default function RandomToolsLayout({
             <ul className="list-disc pl-5 space-y-2">
               <li>Tạo các số ngẫu nhiên trong một khoảng bạn chọn</li>
               <li>Chọn ngẫu nhiên một mục từ danh sách của bạn</li>
+              <li>Tạo màu sắc ngẫu nhiên cho thiết kế</li>
+              <li>Tạo mật khẩu mạnh ngẫu nhiên</li>
+              <li>Tạo tên người dùng độc đáo với AI</li>
+              <li>Mô phỏng tung xúc xắc hoặc đồng xu</li>
               <li>Tổ chức bốc thăm trúng thưởng</li>
               <li>Quyết định lựa chọn khi bạn không thể tự quyết định</li>
               <li>Và nhiều ứng dụng khác trong cuộc sống hàng ngày</li>
