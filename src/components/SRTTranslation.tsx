@@ -891,7 +891,7 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
 
   return (
     <div className="space-y-4">
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+      <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 space-y-4">
         <div className="flex flex-col gap-4">
           {/* File Upload Section */}
           <div className="flex items-center justify-between">

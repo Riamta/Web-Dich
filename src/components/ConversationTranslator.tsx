@@ -186,8 +186,8 @@ export default function ConversationTranslator() {
     }
 
     return (
-        <div className="space-y-4 max-w-5xl mx-auto">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div className="mx-auto px-2 py-8 mt-2 max-w-5xl">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
                 {/* Language Selection */}
                 <div className="p-3 sm:p-4 border-b border-gray-100">
                     <div className="flex flex-col gap-3">

@@ -30,7 +30,8 @@ import {
     MagnifyingGlassIcon,
     CloudIcon,
     FlagIcon,
-    ArrowPathIcon
+    ArrowPathIcon,
+    ArrowsRightLeftIcon
 } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react';
 import { PageView } from '@/models/PageView';
@@ -57,38 +58,40 @@ const FeatureCard = ({ title, description, icon, views, path, badge, isHot }: Fe
     const isPopular = views > 100; // Consider features with more than 100 views as popular
     
     return (
-        <Link href={path} className="block">
-            <div className="p-6 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all bg-white">
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="p-2 rounded-lg bg-gray-100">
-                        {icon}
+        <Link href={path} className="block group">
+            <div className="p-6 rounded-xl border border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm transition-all duration-300 h-full flex flex-col">
+                <div className="flex items-start gap-3 mb-4">
+                    <div className="p-2.5 rounded-lg bg-gray-50 group-hover:bg-gray-100 transition-colors">
+                        <div className="w-5 h-5 text-gray-700 group-hover:text-black transition-colors">
+                            {icon}
+                        </div>
                     </div>
-                    <div>
+                    <div className="flex-1">
                         <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-lg">{title}</h3>
+                            <h3 className="font-medium text-base text-gray-900 group-hover:text-black transition-colors">{title}</h3>
                             {isHot && (
-                                <span className="px-2 py-1 text-xs rounded-full text-white bg-red-500">
+                                <span className="px-2 py-0.5 text-xs rounded-full text-white bg-gradient-to-r from-orange-500 to-red-500">
                                     Hot
                                 </span>
                             )}
                             {(badge === 'Popular' || isPopular) && !isHot && (
-                                <span className="px-2 py-1 text-xs rounded-full text-white bg-black">
+                                <span className="px-2 py-0.5 text-xs rounded-full text-white bg-gray-900">
                                     Popular
                                 </span>
                             )}
                             {badge === 'New' && (
-                                <span className="px-2 py-1 text-xs rounded-full text-white bg-blue-500">
+                                <span className="px-2 py-0.5 text-xs rounded-full text-white bg-gradient-to-r from-blue-500 to-indigo-500">
                                     New
                                 </span>
                             )}
                         </div>
-                        <p className="text-sm text-gray-600">{description}</p>
+                        <p className="text-xs text-gray-500 mt-1">{description}</p>
                     </div>
                 </div>
-
-                <div className="flex justify-end text-sm text-gray-500">
+                
+                <div className="mt-auto flex justify-end text-xs text-gray-400">
                     <div className="flex items-center gap-1">
-                        <EyeIcon className="h-4 w-4" />
+                        <EyeIcon className="h-3 w-3" />
                         <span>{views}</span>
                     </div>
                 </div>
@@ -103,14 +106,6 @@ const categories: CategoryProps[] = [
         description: "Các công cụ sử dụng trí tuệ nhân tạo",
         icon: <SparklesIcon className="w-6 h-6 text-black" />,
         features: [
-            {
-                title: "Chat với AI",
-                description: "Trò chuyện thông minh với AI",
-                icon: <ChatBubbleLeftRightIcon className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/chat-with-ai",
-                badge: "New"
-            },
             {
                 title: "Dịch thuật AI",
                 description: "Dịch văn bản giữa các ngôn ngữ bằng AI",
@@ -194,14 +189,6 @@ const categories: CategoryProps[] = [
                 icon: <BeakerIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/recipe-generator"
-            },
-            {
-                title: "Random Text",
-                description: "Tạo text ngẫu nhiên từ danh sách lựa chọn",
-                icon: <ArrowPathIcon className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/random-text",
-                badge: "New"
             }
         ]
     },
@@ -210,6 +197,14 @@ const categories: CategoryProps[] = [
         description: "Các công cụ hỗ trợ tiện ích",
         icon: <WrenchIcon className="w-6 h-6 text-black" />,
         features: [
+            {
+                title: "Công cụ ngẫu nhiên",
+                description: "Tạo số ngẫu nhiên, chuỗi",
+                icon: <ArrowsRightLeftIcon className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/random-tools",
+                badge: "New"
+            },
             {
                 title: "Thông tin quốc gia",
                 description: "Thông tin chi tiết về quốc gia",
@@ -302,6 +297,14 @@ const categories: CategoryProps[] = [
                 icon: <CalculatorIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/utilities/age-calculator"
+            },
+            {
+                title: "Công cụ ngẫu nhiên",
+                description: "Tạo số ngẫu nhiên, chuỗi, ID, màu sắc và nhiều hơn nữa",
+                icon: <ArrowsRightLeftIcon className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/random",
+                badge: "New"
             }
         ]
     },
@@ -351,8 +354,7 @@ export default function Features() {
         }))
         .filter(category => category.features.length > 0);
 
-    // Cách 1: Sử dụng useSWR (khuyên dùng)
-    // Cần cài đặt: npm install swr
+    // Fetch page views
     const fetchPageViews = async () => {
         try {
             const response = await fetch('/api/page-views');
@@ -370,68 +372,14 @@ export default function Features() {
         }
     };
 
-    // Thay thế cách sử dụng bằng SWR (bỏ comment và cài đặt thư viện)
+    // Updated to use SWR in the future:
     // import useSWR from 'swr'
     // const { data: viewsData, error } = useSWR('/api/page-views', fetchPageViews, {
     //   refreshInterval: 5 * 60 * 1000, // Refresh every 5 minutes
     //   revalidateOnFocus: false,
     //   dedupingInterval: 60 * 1000, // Dedupe requests within 1 minute
     // });
-    // 
-    // useEffect(() => {
-    //   if (viewsData) {
-    //     setPageViews(viewsData);
-    //     updateTopPages(viewsData);
-    //   }
-    // }, [viewsData]);
-
-    // Cách 2: Sử dụng React Query (alternative)
-    // Cần cài đặt: npm install @tanstack/react-query
-    // import { useQuery } from '@tanstack/react-query';
-    // const { data: viewsData } = useQuery({
-    //    queryKey: ['pageViews'],
-    //    queryFn: fetchPageViews,
-    //    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
-    //    refetchOnWindowFocus: false,
-    // });
-    //
-    // useEffect(() => {
-    //   if (viewsData) {
-    //     setPageViews(viewsData);
-    //     updateTopPages(viewsData);
-    //   }
-    // }, [viewsData]);
-
-    // Cách 3: Sử dụng Server-Side Caching với Next.js middleware
-    // Tạo file middleware.ts trong thư mục gốc:
-    // 
-    // import { NextResponse } from 'next/server'
-    // import type { NextRequest } from 'next/server'
-    //
-    // export async function middleware(request: NextRequest) {
-    //   if (request.nextUrl.pathname === '/api/page-views') {
-    //     const cacheKey = 'page_views_cache'
-    //     const cachedData = request.cookies.get(cacheKey)?.value
-    //     
-    //     if (cachedData) {
-    //       try {
-    //         const parsedData = JSON.parse(cachedData)
-    //         const now = Date.now()
-    //         if (now - parsedData.timestamp < 5 * 60 * 1000) {
-    //           return NextResponse.json(parsedData.data)
-    //         }
-    //       } catch (e) {
-    //         // Invalid cache, continue to API
-    //       }
-    //     }
-    //   }
-    //   return NextResponse.next()
-    // }
-
-    // Cách 4: Sử dụng server-side component chứ không cần client-side cache (Next.js App Router)
-    // Tạo một trang server component để load dữ liệu và truyền xuống client component
-
-    // Giữ lại phương pháp cũ trong thời gian chuyển đổi
+    
     useEffect(() => {
         // Helper function to update top pages
         const updateTopPages = (viewsMap: Record<string, number>) => {
@@ -456,29 +404,29 @@ export default function Features() {
     }, []);
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
             {/* Search and Filter Section */}
-            <div className="mb-8 space-y-4">
+            <div className="mb-10 space-y-5 max-w-3xl mx-auto">
                 {/* Search Bar */}
                 <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <MagnifyingGlassIcon className="h-4 w-4 text-gray-400" />
                     </div>
                     <input
                         type="text"
                         placeholder="Tìm kiếm công cụ..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="block w-full rounded-lg border border-gray-200 pl-10 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        className="block w-full rounded-full border border-gray-200 pl-10 pr-12 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 shadow-sm"
                         autoComplete="off"
                         spellCheck="false"
                     />
                     {searchQuery && (
                         <button
                             onClick={() => setSearchQuery('')}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                             </svg>
                         </button>
@@ -486,13 +434,13 @@ export default function Features() {
                 </div>
 
                 {/* Category Filter */}
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap justify-center gap-2">
                     <button
                         onClick={() => setSelectedCategory(null)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`px-4 py-2 rounded-full text-sm font-normal transition-all duration-300 ${
                             selectedCategory === null
-                                ? 'bg-black text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-gray-900 text-white shadow-sm'
+                                : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                         }`}
                     >
                         Tất cả
@@ -501,10 +449,10 @@ export default function Features() {
                         <button
                             key={category.title}
                             onClick={() => setSelectedCategory(category.title)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            className={`px-4 py-2 rounded-full text-sm font-normal transition-all duration-300 ${
                                 selectedCategory === category.title
-                                    ? 'bg-black text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-gray-900 text-white shadow-sm'
+                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                             }`}
                         >
                             {category.title}
@@ -517,17 +465,17 @@ export default function Features() {
             <div className="space-y-16">
                 {filteredCategories.map((category, index) => (
                     <div key={index} className="space-y-6">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2 rounded-lg bg-gray-100">
+                        <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-2">
+                            <div className="p-2 rounded-lg bg-gray-50">
                                 {category.icon}
                             </div>
                             <div>
-                                <h3 className="text-2xl font-bold">{category.title}</h3>
-                                <p className="text-gray-600">{category.description}</p>
+                                <h2 className="text-xl font-medium text-gray-900">{category.title}</h2>
+                                <p className="text-sm text-gray-500">{category.description}</p>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             {category.features.map((feature, featureIndex) => (
                                 <FeatureCard
                                     key={featureIndex}
@@ -542,10 +490,19 @@ export default function Features() {
 
                 {/* No Results Message */}
                 {filteredCategories.length === 0 && (
-                    <div className="text-center py-12">
-                        <p className="text-gray-500 text-lg">
+                    <div className="text-center py-20">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                            <MagnifyingGlassIcon className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <p className="text-gray-500 text-lg font-light">
                             Không tìm thấy kết quả phù hợp với tìm kiếm của bạn.
                         </p>
+                        <button 
+                            onClick={() => setSearchQuery('')}
+                            className="mt-3 text-sm text-gray-900 underline underline-offset-2"
+                        >
+                            Xóa bộ lọc
+                        </button>
                     </div>
                 )}
             </div>

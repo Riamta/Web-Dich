@@ -632,7 +632,7 @@ export default function Translator() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-0">
+    <div className="mx-auto px-2 py-8 max-w-7xl">
       <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
         {/* Tabs */}
         <div className="flex border-b border-gray-200">
