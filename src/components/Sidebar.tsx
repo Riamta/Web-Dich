@@ -50,8 +50,10 @@ const menuGroups: MenuGroup[] = [
     items: [
       {
         name: 'Chat với AI',
-        path: '/chat-with-ai',
-        icon: <ChatBubbleLeftRightIcon className="w-5 h-5" />
+        path: 'https://chat.amri2k.com/',
+        icon: <ChatBubbleLeftRightIcon className="w-5 h-5" />,
+        isExternal: true,
+        target: '_blank'
       },
       {
         name: 'Dịch văn bản',
