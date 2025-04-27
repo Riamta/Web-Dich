@@ -655,38 +655,38 @@ export function ExpenseManager() {
     };
 
     return (
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden max-w-5xl mx-auto mt-6">
+        <div className="bg-white border border-gray-200 rounded-lg sm:rounded-xl shadow-sm overflow-hidden max-w-5xl mx-auto mt-2 sm:mt-6 mb-6">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b border-gray-200 gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-6 border-b border-gray-200 gap-3 sm:gap-4">
                     <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-black flex items-center justify-center">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-black flex items-center justify-center">
                             <ChartBarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-lg sm:text-xl font-semibold">Quản lý tài chính</h1>
+                            <h1 className="text-base sm:text-xl font-semibold">Quản lý tài chính</h1>
                             <p className="text-xs sm:text-sm text-gray-500">Theo dõi thu nhập và chi tiêu của bạn</p>
                         </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                    <div className="flex gap-2 w-full sm:w-auto">
                         <button
                             onClick={() => setShowWalletModal(true)}
-                            className="flex-1 sm:flex-none flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 text-xs sm:text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                         >
-                            <PencilSquareIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <PencilSquareIcon className="h-4 w-4" />
                             <span className="hidden sm:inline">Số dư ví:</span> {wallet ? formatCurrency(wallet.balance) : '0đ'}
                         </button>
                         <button
                             onClick={() => setShowSettings(true)}
-                            className="flex-1 sm:flex-none flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 text-xs sm:text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                         >
-                            <Cog6ToothIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <Cog6ToothIcon className="h-4 w-4" />
                             <span className="hidden sm:inline">Cài đặt</span>
                         </button>
                         <button
                             onClick={() => setShowAddForm(true)}
-                            className="flex-1 sm:flex-none flex items-center gap-2 px-3 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 text-xs sm:text-sm bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
                         >
-                            <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <PlusIcon className="h-4 w-4" />
                             <span className="hidden sm:inline">Thêm giao dịch</span>
                             <span className="sm:hidden">Thêm</span>
                         </button>
@@ -694,8 +694,8 @@ export function ExpenseManager() {
             </div>
 
             <div className="flex border-b border-gray-200">
-                        <button
-                    className={`px-4 py-3 font-medium text-sm transition-colors ${
+                <button
+                    className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 font-medium text-xs sm:text-sm transition-colors ${
                         activeTab === 'overview'
                             ? 'border-b-2 border-gray-900 text-gray-900'
                             : 'text-gray-500 hover:text-gray-900'
@@ -703,9 +703,9 @@ export function ExpenseManager() {
                     onClick={() => setActiveTab('overview')}
                 >
                     Tổng quan
-                        </button>
-                            <button
-                    className={`px-4 py-3 font-medium text-sm transition-colors ${
+                </button>
+                <button
+                    className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 font-medium text-xs sm:text-sm transition-colors ${
                         activeTab === 'history'
                             ? 'border-b-2 border-gray-900 text-gray-900'
                             : 'text-gray-500 hover:text-gray-900'
@@ -713,10 +713,10 @@ export function ExpenseManager() {
                     onClick={() => setActiveTab('history')}
                 >
                     Lịch sử giao dịch
-                            </button>
-                </div>
+                </button>
+            </div>
 
-            <div className="p-6">
+            <div className="p-3 sm:p-6">
                 {/* Add Expense Form */}
                 {showAddForm && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -983,14 +983,14 @@ export function ExpenseManager() {
                 {activeTab === 'overview' ? (
                     <div>
                         {/* Summary Cards Section */}
-                <div className="p-4 sm:p-6 border-b border-gray-200">
-                            <div className="flex flex-wrap gap-3 mb-5">
-                                <div className="w-full sm:w-auto flex items-center gap-2">
+                <div className="py-3 px-2 sm:p-6 border-b border-gray-200">
+                            <div className="grid grid-cols-1 gap-2 mb-4">
+                                <div className="w-full flex items-center gap-2">
                                     <span className="text-xs text-gray-500 whitespace-nowrap">Loại:</span>
                             <select
                                 value={filter.type}
                                         onChange={(e) => setFilter(prev => ({ ...prev, type: e.target.value as 'all' | 'income' | 'expense' }))}
-                                        className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+                                        className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
                             >
                                 <option value="all">Tất cả</option>
                                 <option value="income">Thu nhập</option>
@@ -998,12 +998,12 @@ export function ExpenseManager() {
                             </select>
                                 </div>
 
-                                <div className="w-full sm:w-auto flex items-center gap-2">
+                                <div className="w-full flex items-center gap-2">
                                     <span className="text-xs text-gray-500 whitespace-nowrap">Danh mục:</span>
                             <select
                                 value={filter.category}
                                 onChange={(e) => setFilter(prev => ({ ...prev, category: e.target.value }))}
-                                        className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+                                        className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
                             >
                                         <option value="all">Tất cả</option>
                                 {filter.type === 'all' && (
@@ -1028,122 +1028,124 @@ export function ExpenseManager() {
                                 ))}
                             </select>
                                 </div>
-                                <div className="w-full sm:w-auto flex items-center gap-2">
-                                    <span className="text-xs text-gray-500 whitespace-nowrap">Thời gian:</span>
-                                    <div className="flex gap-1 flex-1">
-                                        <button
-                                            className={`px-2 py-1 rounded-lg text-xs font-medium transition-colors ${filter.period === 'all'
+                                <div className="w-full flex flex-col sm:flex-row sm:items-center gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-gray-500 whitespace-nowrap">Thời gian:</span>
+                                        <div className="flex flex-wrap gap-1">
+                                            <button
+                                                className={`px-2 py-1 rounded-lg text-xs font-medium transition-colors ${filter.period === 'all'
                                                     ? 'bg-black text-white'
-                                                    : 'px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                 }`}
-                                            onClick={() => setFilter(prev => ({ ...prev, period: 'all' }))}
-                                        >
-                                            Tất cả
-                                        </button>
-                                        <button
-                                            className={`px-2 py-1 rounded-lg text-xs font-medium transition-colors ${filter.period === 'day'
+                                                onClick={() => setFilter(prev => ({ ...prev, period: 'all' }))}
+                                            >
+                                                Tất cả
+                                            </button>
+                                            <button
+                                                className={`px-2 py-1 rounded-lg text-xs font-medium transition-colors ${filter.period === 'day'
                                                     ? 'bg-black text-white'
-                                                    : 'px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                 }`}
-                                            onClick={() => setFilter(prev => ({ ...prev, period: 'day' }))}
-                                        >
-                                            Ngày
-                                        </button>
-                                        <button
-                                            className={`px-2 py-1 rounded-lg text-xs font-medium transition-colors ${filter.period === 'month'
+                                                onClick={() => setFilter(prev => ({ ...prev, period: 'day' }))}
+                                            >
+                                                Ngày
+                                            </button>
+                                            <button
+                                                className={`px-2 py-1 rounded-lg text-xs font-medium transition-colors ${filter.period === 'month'
                                                     ? 'bg-black text-white'
-                                                    : 'px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                 }`}
-                                            onClick={() => setFilter(prev => ({ ...prev, period: 'month' }))}
-                                        >
-                                            Tháng
-                                        </button>
-                                        <button
-                                            className={`px-2 py-1 rounded-lg text-xs font-medium transition-colors ${filter.period === 'year'
+                                                onClick={() => setFilter(prev => ({ ...prev, period: 'month' }))}
+                                            >
+                                                Tháng
+                                            </button>
+                                            <button
+                                                className={`px-2 py-1 rounded-lg text-xs font-medium transition-colors ${filter.period === 'year'
                                                     ? 'bg-black text-white'
-                                                    : 'px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                 }`}
-                                            onClick={() => setFilter(prev => ({ ...prev, period: 'year' }))}
-                                        >
-                                            Năm
-                                        </button>
+                                                onClick={() => setFilter(prev => ({ ...prev, period: 'year' }))}
+                                            >
+                                                Năm
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
 
-                                {filter.period !== 'all' && (
-                                    <div className="w-full sm:w-auto flex items-center gap-2">
-                            {filter.period === 'day' && (
-                                <input
-                                    type="date"
-                                    value={filter.day}
-                                    onChange={(e) => setFilter(prev => ({ ...prev, day: e.target.value }))}
-                                                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
-                                />
-                            )}
-                            {filter.period === 'month' && (
-                                <input
-                                    type="month"
-                                    value={filter.month}
-                                    onChange={(e) => setFilter(prev => ({ ...prev, month: e.target.value }))}
-                                                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
-                                />
-                            )}
-                            {filter.period === 'year' && (
-                                <input
-                                    type="number"
-                                    value={filter.year}
-                                    onChange={(e) => setFilter(prev => ({ ...prev, year: e.target.value }))}
-                                    min="2000"
-                                    max="2100"
-                                                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
-                                    placeholder="Năm"
-                                />
-                            )}
-                        </div>
+                                    {filter.period !== 'all' && (
+                                        <div className="w-full sm:w-auto flex items-center gap-2 mt-2 sm:mt-0">
+                                {filter.period === 'day' && (
+                                    <input
+                                        type="date"
+                                        value={filter.day}
+                                        onChange={(e) => setFilter(prev => ({ ...prev, day: e.target.value }))}
+                                                    className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+                                    />
                                 )}
-                    </div>
+                                {filter.period === 'month' && (
+                                    <input
+                                        type="month"
+                                        value={filter.month}
+                                        onChange={(e) => setFilter(prev => ({ ...prev, month: e.target.value }))}
+                                                    className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+                                    />
+                                )}
+                                {filter.period === 'year' && (
+                                    <input
+                                        type="number"
+                                        value={filter.year}
+                                        onChange={(e) => setFilter(prev => ({ ...prev, year: e.target.value }))}
+                                        min="2000"
+                                        max="2100"
+                                                    className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-black"
+                                        placeholder="Năm"
+                                    />
+                                )}
+                            </div>
+                                    )}
+                                </div>
+                            </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
-                        <div className="p-3 sm:p-4 bg-gray-50 rounded-xl">
-                            <p className="text-xs sm:text-sm text-gray-500">Số dư</p>
-                            <p className={`text-lg sm:text-2xl font-semibold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className="p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+                            <p className="text-xs text-gray-500">Số dư</p>
+                            <p className={`text-base sm:text-2xl font-semibold truncate ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                 {formatCurrency(balance)}
                             </p>
                         </div>
-                        <div className="p-3 sm:p-4 bg-gray-50 rounded-xl">
-                            <p className="text-xs sm:text-sm text-gray-500">Thu nhập</p>
-                            <p className="text-lg sm:text-2xl font-semibold text-green-600">
+                        <div className="p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+                            <p className="text-xs text-gray-500">Thu nhập</p>
+                            <p className="text-base sm:text-2xl font-semibold truncate text-green-600">
                                 {formatCurrency(income)}
                             </p>
                         </div>
-                        <div className="p-3 sm:p-4 bg-gray-50 rounded-xl">
-                            <p className="text-xs sm:text-sm text-gray-500">Chi tiêu</p>
-                            <p className="text-lg sm:text-2xl font-semibold text-red-600">
-                                        {formatCurrency(expenseTotal)}
+                        <div className="p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+                            <p className="text-xs text-gray-500">Chi tiêu</p>
+                            <p className="text-base sm:text-2xl font-semibold truncate text-red-600">
+                                {formatCurrency(expenseTotal)}
                             </p>
                         </div>
-                        <div className="p-3 sm:p-4 bg-gray-50 rounded-xl">
-                            <p className="text-xs sm:text-sm text-gray-500">Số giao dịch</p>
-                            <p className="text-lg sm:text-2xl font-semibold">{filteredExpenses.length}</p>
+                        <div className="p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+                            <p className="text-xs text-gray-500">Số giao dịch</p>
+                            <p className="text-base sm:text-2xl font-semibold truncate">{filteredExpenses.length}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Quick Transaction Input with AI */}
-                <div className="p-4 sm:p-6 border-b border-gray-200">
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-sm font-medium flex items-center gap-2">
-                            <SparklesIcon className="h-4 w-4 text-gray-600" />
+                <div className="py-3 px-2 sm:p-6 border-b border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                            <SparklesIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-600" />
                             Thêm giao dịch nhanh với AI
                         </h3>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+                    <div className="bg-gray-50 rounded-lg sm:rounded-xl p-2 sm:p-4">
                         <p className="text-xs text-gray-600 mb-2">
                             Ví dụ: "Mua cà phê 35.000đ", "Tiền lương tháng 6: 15 triệu"
                         </p>
                         <div className="relative">
                             <textarea
-                                className="w-full p-3 pr-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 min-h-[60px] shadow-sm"
+                                className="w-full p-2 sm:p-3 pr-10 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 min-h-[50px] sm:min-h-[60px] shadow-sm"
                                 placeholder="Nhập mô tả giao dịch bằng ngôn ngữ tự nhiên..."
                                 value={smartInput}
                                 onChange={(e) => setSmartInput(e.target.value)}
@@ -1158,13 +1160,13 @@ export function ExpenseManager() {
                             <button
                                 onClick={() => analyzeExpense(smartInput)}
                                 disabled={isAnalyzing || !smartInput.trim()}
-                                className="absolute right-3 bottom-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="absolute right-2 sm:right-3 bottom-2 sm:bottom-3 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isAnalyzing ? (
-                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600" />
+                                    <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-gray-600" />
                                 ) : (
-                                    <div className="flex items-center gap-1 bg-black hover:bg-gray-800 transition-colors py-1.5 px-3 rounded-lg text-white">
-                                        <SparklesIcon className="h-4 w-4" />
+                                    <div className="flex items-center gap-1 bg-black hover:bg-gray-800 transition-colors py-1 sm:py-1.5 px-2 sm:px-3 rounded-lg text-white">
+                                        <SparklesIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                         <span className="text-xs font-medium">Thêm</span>
                                     </div>
                                 )}
@@ -1175,15 +1177,15 @@ export function ExpenseManager() {
 
                         {/* Recent Transactions - Redesigned */}
                         <div className="border-t border-gray-200">
-                            <div className="p-5">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                            <div className="p-3 sm:p-5">
+                                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                    <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100">
                                         Giao dịch gần đây
-                                        <span className="text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">
+                                        <span className="text-xs sm:text-sm font-normal text-gray-600 dark:text-gray-400 ml-1">
                                             ({Math.min(expenses.length, 10)} giao dịch)
                                         </span>
                                     </h2>
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                                         {format(new Date(), 'MMMM yyyy', { locale: vi })}
                                     </span>
                                 </div>
@@ -1193,33 +1195,33 @@ export function ExpenseManager() {
                                         {getRecentTransactions().map((exp) => (
                                             <div
                                                 key={exp.id}
-                                                className="group flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-all duration-200"
+                                                className="group flex items-center gap-3 sm:gap-4 p-2 sm:p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-all duration-200"
                                             >
                                                 <div
-                                                    className={`p-2.5 rounded-lg ${exp.amount >= 0 
+                                                    className={`p-2 sm:p-2.5 rounded-lg ${exp.amount >= 0 
                                                         ? 'bg-green-100 dark:bg-green-800/30 border border-green-200 dark:border-green-800' 
                                                         : 'bg-red-100 dark:bg-red-800/30 border border-red-200 dark:border-red-800'}`}
                                                 >
                                                     {exp.amount >= 0 ? (
-                                                        <ArrowDownIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
+                                                        <ArrowDownIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" />
                                                     ) : (
-                                                        <ArrowUpIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+                                                        <ArrowUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400" />
                                                     )}
                                                 </div>
 
                                                 <div className="flex-1 flex items-center justify-between min-w-0">
-                                                    <div className="space-y-1 truncate pr-2">
-                                                        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                    <div className="space-y-0.5 sm:space-y-1 truncate pr-2">
+                                                        <h3 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
                                                             {exp.category}
                                                         </h3>
-                                                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                        <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 truncate">
                                                             {exp.description || 'Không có mô tả'} • {format(new Date(exp.date), 'dd/MM/yyyy')}
                                                         </p>
                                                     </div>
 
-                                                    <div className="flex items-center gap-2 pl-3">
+                                                    <div className="flex items-center gap-1 sm:gap-2 pl-1 sm:pl-3">
                                                         <span
-                                                            className={`text-sm font-medium ${exp.amount >= 0 
+                                                            className={`text-xs sm:text-sm font-medium ${exp.amount >= 0 
                                                                 ? 'text-green-600 dark:text-green-400' 
                                                                 : 'text-red-600 dark:text-red-400'}`}
                                                         >
@@ -1227,18 +1229,18 @@ export function ExpenseManager() {
                                                             {formatCurrency(Math.abs(exp.amount))}
                                                         </span>
                                                         
-                                                        <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <div className="flex items-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                                             <button
                                                                 onClick={() => handleEdit(exp)}
-                                                                className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors"
+                                                                className="p-1 sm:p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors"
                                                             >
-                                                                <PencilSquareIcon className="h-4 w-4" />
+                                                                <PencilSquareIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                                             </button>
                                                             <button
                                                                 onClick={() => handleDelete(exp.id!)}
-                                                                className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-100 rounded-full transition-colors"
+                                                                className="p-1 sm:p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-100 rounded-full transition-colors"
                                                             >
-                                                                <TrashIcon className="h-4 w-4" />
+                                                                <TrashIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                                             </button>
                                                         </div>
                                                     </div>
@@ -1247,9 +1249,9 @@ export function ExpenseManager() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-10">
-                                        <DocumentTextIcon className="h-14 w-14 mx-auto text-gray-300" />
-                                        <p className="mt-2 text-gray-500 text-base">Chưa có giao dịch nào.</p>
+                                    <div className="text-center py-8 sm:py-10">
+                                        <DocumentTextIcon className="h-10 w-10 sm:h-14 sm:w-14 mx-auto text-gray-300" />
+                                        <p className="mt-2 text-gray-500 text-sm sm:text-base">Chưa có giao dịch nào.</p>
                                     </div>
                                 )}
                             </div>
@@ -1259,38 +1261,38 @@ export function ExpenseManager() {
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab('history')}
-                                        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium 
+                                        className="w-full flex items-center justify-center gap-2 py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg text-xs sm:text-sm font-medium 
                                         bg-gradient-to-r from-black to-gray-800 text-white
                                         hover:from-gray-800 hover:to-gray-700
                                         shadow-sm hover:shadow transform transition-all duration-200
-                                        hover:-translate-y-0.5 active:translate-y-0
+                                        active:translate-y-0.5
                                         focus:outline-none focus:ring-2 focus:ring-gray-500"
                                     >
                                         <span>Xem tất cả giao dịch</span>
-                                        <ArrowRightIcon className="h-4 w-4" />
+                                        <ArrowRightIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                     </button>
                                 </div>
                             )}
                         </div>
                 {/* Charts Section */}
                 {filteredExpenses.length > 0 && (
-                    <div className="p-6 border-t border-gray-200">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-medium">Biểu đồ phân tích</h2>
+                    <div className="py-4 px-2 sm:p-6 border-t border-gray-200">
+                        <div className="flex justify-between items-center mb-3 sm:mb-4">
+                            <h2 className="text-sm sm:text-lg font-medium">Biểu đồ phân tích</h2>
                             <button
                                 onClick={() => setShowCharts(!showCharts)}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors"
+                                className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors"
                             >
                                 {showCharts ? 'Ẩn biểu đồ' : 'Hiện biểu đồ'}
                             </button>
                         </div>
                         
                         {showCharts && (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 gap-4 sm:gap-6">
                                 {/* Thu nhập & Chi tiêu theo tháng - Line Chart */}
-                                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-                                    <h3 className="text-sm font-medium mb-4">Thu chi theo thời gian</h3>
-                                    <div className="h-[250px]">
+                                <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 shadow-sm p-3 sm:p-4">
+                                    <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">Thu chi theo thời gian</h3>
+                                    <div className="h-[200px] sm:h-[250px]">
                                         {expenses.length > 0 && (() => {
                                             const monthlyData = getMonthlyData(filteredExpenses);
                                             const months = Object.keys(monthlyData).sort((a, b) => {
@@ -1331,9 +1333,12 @@ export function ExpenseManager() {
                                                     legend: {
                                                         position: 'top' as const,
                                                         labels: {
-                                                            boxWidth: 10,
-                                                            padding: 10,
+                                                            boxWidth: 8,
+                                                            padding: 8,
                                                             usePointStyle: true,
+                                                            font: {
+                                                                size: 10,
+                                                            }
                                                         }
                                                     },
                                                     tooltip: {
@@ -1348,10 +1353,20 @@ export function ExpenseManager() {
                                                     y: {
                                                         beginAtZero: true,
                                                         ticks: {
+                                                            font: {
+                                                                size: 10,
+                                                            },
                                                             callback: function(value: any) {
                                                                 if (value >= 1000000) return (value / 1000000).toFixed(0) + 'M';
                                                                 if (value >= 1000) return (value / 1000).toFixed(0) + 'k';
                                                                 return value;
+                                                            }
+                                                        }
+                                                    },
+                                                    x: {
+                                                        ticks: {
+                                                            font: {
+                                                                size: 10,
                                                             }
                                                         }
                                                     }
@@ -1364,9 +1379,9 @@ export function ExpenseManager() {
                                 </div>
 
                                 {/* Phân bổ Chi tiêu theo danh mục - Doughnut Chart */}
-                                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-                                    <h3 className="text-sm font-medium mb-4">Chi tiêu theo danh mục</h3>
-                                    <div className="h-[250px] flex justify-center">
+                                <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 shadow-sm p-3 sm:p-4">
+                                    <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">Chi tiêu theo danh mục</h3>
+                                    <div className="h-[180px] sm:h-[250px] flex justify-center">
                                         {filteredExpenses.filter(e => e.amount < 0).length > 0 && (() => {
                                             const expenseCategoryData = getCategoryData(filteredExpenses, 'expense');
                                             const categories = Object.keys(expenseCategoryData);
@@ -1405,8 +1420,8 @@ export function ExpenseManager() {
                                                         data: amounts,
                                                         backgroundColor: generateColors(categories.length),
                                                         borderColor: 'rgb(255, 255, 255)',
-                                                        borderWidth: 2,
-                                                        hoverOffset: 10
+                                                        borderWidth: 1,
+                                                        hoverOffset: 5
                                                     }
                                                 ]
                                             };
@@ -1416,11 +1431,14 @@ export function ExpenseManager() {
                                                 maintainAspectRatio: false,
                                                 plugins: {
                                                     legend: {
-                                                        position: 'right' as const,
+                                                        position: window.innerWidth < 640 ? 'bottom' as const : 'right' as const,
                                                         labels: {
-                                                            boxWidth: 10,
-                                                            padding: 10,
+                                                            boxWidth: 8,
+                                                            padding: 6,
                                                             usePointStyle: true,
+                                                            font: {
+                                                                size: 10,
+                                                            }
                                                         }
                                                     },
                                                     tooltip: {
@@ -1440,16 +1458,16 @@ export function ExpenseManager() {
                                 </div>
 
                                 {/* Thu nhập theo danh mục - Bar Chart */}
-                                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-                                    <h3 className="text-sm font-medium mb-4">Top danh mục thu nhập</h3>
-                                    <div className="h-[250px]">
+                                <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 shadow-sm p-3 sm:p-4">
+                                    <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">Top danh mục thu nhập</h3>
+                                    <div className="h-[180px] sm:h-[250px]">
                                         {filteredExpenses.filter(e => e.amount > 0).length > 0 && (() => {
                                             const incomeCategoryData = getCategoryData(filteredExpenses, 'income');
                                             
                                             // Sort categories by amount (descending)
                                             const sortedCategories = Object.entries(incomeCategoryData)
                                                 .sort(([, amountA], [, amountB]) => amountB - amountA)
-                                                .slice(0, 10); // Limit to top 10 categories
+                                                .slice(0, 5); // Limit to top 5 categories for mobile
                                             
                                             const categories = sortedCategories.map(([category]) => category);
                                             const amounts = sortedCategories.map(([, amount]) => amount);
@@ -1463,7 +1481,7 @@ export function ExpenseManager() {
                                                         backgroundColor: 'rgba(34, 197, 94, 0.8)',
                                                         borderColor: 'rgb(21, 128, 61)',
                                                         borderWidth: 1,
-                                                        borderRadius: 5,
+                                                        borderRadius: 3,
                                                         hoverBackgroundColor: 'rgb(34, 197, 94)'
                                                     }
                                                 ]
@@ -1489,10 +1507,20 @@ export function ExpenseManager() {
                                                     x: {
                                                         beginAtZero: true,
                                                         ticks: {
+                                                            font: {
+                                                                size: 10,
+                                                            },
                                                             callback: function(value: any) {
                                                                 if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
                                                                 if (value >= 1000) return (value / 1000).toFixed(0) + 'k';
                                                                 return value;
+                                                            }
+                                                        }
+                                                    },
+                                                    y: {
+                                                        ticks: {
+                                                            font: {
+                                                                size: 10,
                                                             }
                                                         }
                                                     }
@@ -1505,16 +1533,16 @@ export function ExpenseManager() {
                                 </div>
 
                                 {/* Chi tiêu top danh mục - Bar Chart */}
-                                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-                                    <h3 className="text-sm font-medium mb-4">Top danh mục chi tiêu</h3>
-                                    <div className="h-[250px]">
+                                <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 shadow-sm p-3 sm:p-4">
+                                    <h3 className="text-xs sm:text-sm font-medium mb-3 sm:mb-4">Top danh mục chi tiêu</h3>
+                                    <div className="h-[180px] sm:h-[250px]">
                                         {filteredExpenses.filter(e => e.amount < 0).length > 0 && (() => {
                                             const expenseCategoryData = getCategoryData(filteredExpenses, 'expense');
                                             
                                             // Sort categories by amount (descending)
                                             const sortedCategories = Object.entries(expenseCategoryData)
                                                 .sort(([, amountA], [, amountB]) => amountB - amountA)
-                                                .slice(0, 10); // Limit to top 10 categories
+                                                .slice(0, 5); // Limit to top 5 categories for mobile
                                             
                                             const categories = sortedCategories.map(([category]) => category);
                                             const amounts = sortedCategories.map(([, amount]) => amount);
@@ -1528,7 +1556,7 @@ export function ExpenseManager() {
                                                         backgroundColor: 'rgba(239, 68, 68, 0.8)',
                                                         borderColor: 'rgb(185, 28, 28)',
                                                         borderWidth: 1,
-                                                        borderRadius: 5,
+                                                        borderRadius: 3,
                                                         hoverBackgroundColor: 'rgb(239, 68, 68)'
                                                     }
                                                 ]
@@ -1554,10 +1582,20 @@ export function ExpenseManager() {
                                                     x: {
                                                         beginAtZero: true,
                                                         ticks: {
+                                                            font: {
+                                                                size: 10,
+                                                            },
                                                             callback: function(value: any) {
                                                                 if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
                                                                 if (value >= 1000) return (value / 1000).toFixed(0) + 'k';
                                                                 return value;
+                                                            }
+                                                        }
+                                                    },
+                                                    y: {
+                                                        ticks: {
+                                                            font: {
+                                                                size: 10,
                                                             }
                                                         }
                                                     }
@@ -1821,10 +1859,10 @@ export function ExpenseManager() {
 
                 {/* Wallet Modal */}
                 {showWalletModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
                         <div className="bg-white rounded-xl w-full max-w-md shadow-lg">
-                            <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                                <h2 className="text-lg font-semibold">Cập nhật số dư ví</h2>
+                            <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-100">
+                                <h2 className="text-base sm:text-lg font-semibold">Cập nhật số dư ví</h2>
                                 <button
                                     onClick={() => {
                                         setShowWalletModal(false);
@@ -1836,13 +1874,13 @@ export function ExpenseManager() {
                                 </button>
                             </div>
                             
-                            <div className="p-4">
-                                <p className="text-sm text-gray-600 mb-4">
+                            <div className="p-3 sm:p-4">
+                                <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
                                     Nhập số dư mới cho ví của bạn. Thao tác này sẽ ghi đè số dư hiện tại.
                                 </p>
                                 
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <div className="mb-3 sm:mb-4">
+                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                                         Số dư mới
                                     </label>
                                     <div className="relative">
@@ -1851,11 +1889,11 @@ export function ExpenseManager() {
                                             value={newBalance}
                                             onChange={(e) => setNewBalance(e.target.value)}
                                             placeholder="Nhập số dư mới"
-                                            className="w-full p-2.5 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 shadow-sm"
+                                            className="w-full p-2 sm:p-2.5 pr-8 sm:pr-10 text-xs sm:text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 shadow-sm"
                                             min="0"
                                             required
                                         />
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-xs sm:text-sm">
                                             {settings.currency.symbol}
                                         </span>
                                     </div>
@@ -1865,7 +1903,7 @@ export function ExpenseManager() {
                                     <button
                                         onClick={handleUpdateWallet}
                                         disabled={!newBalance || isNaN(parseFloat(newBalance)) || parseFloat(newBalance) < 0}
-                                        className="w-full py-2.5 px-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="w-full py-2 sm:py-2.5 px-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         Cập nhật số dư
                                     </button>
@@ -1874,7 +1912,7 @@ export function ExpenseManager() {
                                             setShowWalletModal(false);
                                             setNewBalance('');
                                         }}
-                                        className="w-full py-2.5 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                                        className="w-full py-2 sm:py-2.5 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-xs sm:text-sm"
                                     >
                                         Hủy
                                     </button>
