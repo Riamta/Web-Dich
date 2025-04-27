@@ -37,8 +37,8 @@ import {
 } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react';
 import { PageView } from '@/models/PageView';
-import { FaKeyboard, FaDice, FaUser  } from 'react-icons/fa';
-import { FaMoneyBillTransfer } from "react-icons/fa6";
+import { FaKeyboard, FaDice  } from 'react-icons/fa';
+import { FaMoneyBillTransfer,FaUser  } from "react-icons/fa6";
 import { MdOutlinePassword, MdTranslate } from "react-icons/md";
 
 
@@ -286,7 +286,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Username tools",
                 description: "Username tools",
-                icon: <FaUser className="w-6 h-6 text-black" />,
+                icon: <FaUser  className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/username-tools",
                 category: "Utility"

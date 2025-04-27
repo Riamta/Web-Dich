@@ -35,8 +35,8 @@ import {
   ClipboardDocumentCheckIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline';
-import { FaDice, FaKeyboard, FaUser } from "react-icons/fa";
-import { FaMoneyBillTransfer } from "react-icons/fa6";
+import { FaDice, FaKeyboard } from "react-icons/fa";
+import { FaMoneyBillTransfer,FaUser  } from "react-icons/fa6";
 import { MdOutlinePassword, MdTranslate } from "react-icons/md";
 
 import { useSidebar } from '@/contexts/SidebarContext';
