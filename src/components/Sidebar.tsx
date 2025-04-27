@@ -14,7 +14,7 @@ import {
   SparklesIcon,
   PuzzlePieceIcon,
   PhotoIcon,
-  HeartIcon,
+  HeartIcon,  
   BookOpenIcon,
   Square3Stack3DIcon,
   CurrencyDollarIcon,
@@ -32,8 +32,13 @@ import {
   ClockIcon,
   RectangleStackIcon,
   CalculatorIcon,
-  ClipboardDocumentCheckIcon
+  ClipboardDocumentCheckIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline';
+import { FaDice, FaKeyboard, } from "react-icons/fa";
+import { FaMoneyBillTransfer } from "react-icons/fa6";
+import { MdTranslate } from "react-icons/md";
+
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useState } from 'react';
 
@@ -66,7 +71,7 @@ const menuGroups: MenuGroup[] = [
       {
         name: 'Dịch văn bản',
         path: '/translate',
-        icon: <LanguageIcon className="w-5 h-5" />
+        icon: <MdTranslate className="w-5 h-5" />
       },
       {
         name: 'Dịch hội thoại',
@@ -130,9 +135,14 @@ const menuGroups: MenuGroup[] = [
     icon: <Square3Stack3DIcon className="w-5 h-5" />,
     items: [
       {
+        name: 'Kiểm tra tốc độ gõ',
+        path: '/typing-speed',
+        icon: <FaKeyboard className="w-5 h-5" />
+      },
+      {
         name: 'Công cụ ngẫu nhiên',
         path: '/random-tools',
-        icon: <QuestionMarkCircleIcon className="w-5 h-5" />
+        icon: <FaDice className="w-5 h-5" />
       },
       {
         name: 'Chuyển đổi tiền tệ',
@@ -193,7 +203,7 @@ const menuGroups: MenuGroup[] = [
       {
         name: 'Chuyển đổi tiền tệ',
         path: '/currency',
-        icon: <CurrencyDollarIcon className="w-5 h-5" />
+        icon: <FaMoneyBillTransfer className="w-5 h-5" />
       },
       {
         name: 'Tính lãi suất',
@@ -262,7 +272,7 @@ function MobileSidebar() {
       />
       <div className="fixed inset-y-0 left-0 w-[90vw] max-w-[320px] bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 flex flex-col z-50 md:hidden shadow-lg transition-colors">
         {/* Header */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-700 dark:to-gray-900 flex items-center justify-center text-white">
               <SparklesIcon className="w-5 h-5" />
@@ -277,8 +287,8 @@ function MobileSidebar() {
           </button>
         </div>
 
-        {/* Menu */}
-        <div className="flex-1 py-4 px-3 overflow-y-auto">
+        {/* Menu - with own scrollable area */}
+        <div className="flex-1 py-4 px-3 overflow-y-auto h-[calc(100vh-4rem)] scrollbar-thin">
           <Link 
             href="/"
             className={`flex items-center gap-3 px-4 py-2.5 mb-3 rounded-lg ${
@@ -366,12 +376,12 @@ function DesktopSidebar() {
 
   return (
     <aside 
-      className={`hidden md:flex flex-col border-r border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 transition-all duration-300 z-30 ${
+      className={`hidden md:block fixed top-0 left-0 h-screen border-r border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 transition-all duration-300 z-30 ${
         isCollapsed ? 'w-[70px]' : 'w-[260px]'
       }`}
     >
       {/* Header */}
-      <div className="h-16 flex items-center px-6 border-b border-gray-100 dark:border-gray-700">
+      <div className="h-16 flex items-center px-6 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
         <Link href="/" className="flex items-center gap-3.5 overflow-hidden">
           <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-700 dark:to-gray-900 flex items-center justify-center text-white">
             <SparklesIcon className="w-5 h-5" />
@@ -391,9 +401,9 @@ function DesktopSidebar() {
         </button>
       </div>
 
-      {/* Menu */}
-      <div className="flex-1 pt-4 pb-6 overflow-y-auto">
-        <div className={`px-3 mb-3 ${isCollapsed ? 'text-center' : ''}`}>
+      {/* Menu - with own scrollable area */}
+      <div className="overflow-y-auto h-[calc(100vh-4rem)] scrollbar-thin">
+        <div className={`px-3 py-4 ${isCollapsed ? 'text-center' : ''}`}>
           <Link 
             href="/"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg ${
@@ -472,10 +482,14 @@ function DesktopSidebar() {
 }
 
 export default function Sidebar() {
+  const { isCollapsed } = useSidebar();
+
   return (
     <>
       <MobileSidebar />
       <DesktopSidebar />
+      {/* Add spacer div to push content */}
+      <div className={`hidden md:block ${isCollapsed ? 'w-[70px]' : 'w-[260px]'} transition-all duration-300`}></div>
     </>
   );
 }

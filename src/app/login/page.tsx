@@ -15,7 +15,7 @@ export default function LoginPage() {
     if (user) {
       setIsRedirecting(true)
       // Redirect to workout scheduler or home page
-      router.push('/workout-scheduler')
+      router.push('/')
     }
   }, [user, router])
   
@@ -95,7 +95,7 @@ export default function LoginPage() {
               <span>Tiếp tục mà không đăng nhập</span>
             </button>
             <p className="mt-1 text-xs text-gray-500">
-              Lịch tập của bạn sẽ chỉ được lưu trên thiết bị này
+              Các chức năng liên quan tới lưu dữ liệu sẽ chỉ được lưu trên thiết bị này
             </p>
           </div>
         </div>
