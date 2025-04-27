@@ -100,6 +100,38 @@ service cloud.firestore {
       // Không cho phép xóa ví
       allow delete: if false;
     }
+    
+    // Workouts collection
+    match /workouts/{workoutId} {
+      // Allow read if the document belongs to the authenticated user
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Allow create if the user is authenticated and they're setting their own userId
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Allow delete if the document belongs to the authenticated user
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Allow update if the document belongs to the authenticated user and they're not changing the userId
+      allow update: if isAuthenticated() 
+        && resource.data.userId == request.auth.uid 
+        && request.resource.data.userId == request.auth.uid;
+    }
+    
+    // Workout progress collection to track history
+    match /workoutProgress/{progressId} {
+      // Allow read if the document belongs to the authenticated user
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Allow create if the user is authenticated and they're setting their own userId
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Allow update if the document belongs to the authenticated user
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Don't allow deletion of workout history to maintain records
+      allow delete: if false;
+    }
 
     // Mặc định chặn tất cả các truy cập khác
     match /{document=**} {

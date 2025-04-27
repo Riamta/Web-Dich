@@ -92,6 +92,8 @@ export default function BMICalculator() {
     const [gender, setGender] = useState<'male' | 'female'>('male')
     const [bmiResult, setBmiResult] = useState<BMIResult | null>(null)
     const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [workoutAdvice, setWorkoutAdvice] = useState<string>('')
+    const [isLoadingWorkoutAdvice, setIsLoadingWorkoutAdvice] = useState<boolean>(false)
 
     const getHealthInfo = async (bmi: number, category: string, height: number, age?: number, gender?: string) => {
         setIsLoading(true)
@@ -165,6 +167,29 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
         }
     }
 
+    const getWorkoutAdvice = async (bmi: number, category: string) => {
+        setIsLoadingWorkoutAdvice(true);
+        try {
+            const prompt = `Tôi có chỉ số BMI ${bmi} và được phân loại là "${category}". 
+Hãy đưa ra lời khuyên về việc tập luyện phù hợp với tình trạng sức khỏe của tôi. 
+Bao gồm:
+1. Các lợi ích của việc tập luyện với BMI của tôi
+2. Loại bài tập nào phù hợp nhất
+3. Tần suất tập luyện khuyến nghị
+4. Những lưu ý đặc biệt khi tập luyện
+
+Trả lời ngắn gọn, súc tích bằng định dạng markdown, khoảng 150-200 từ.`;
+
+            const response = await aiService.processWithAI(prompt);
+            setWorkoutAdvice(response);
+        } catch (error) {
+            console.error('Error getting workout advice:', error);
+            setWorkoutAdvice('Không thể tải lời khuyên tập luyện. Vui lòng thử lại sau.');
+        } finally {
+            setIsLoadingWorkoutAdvice(false);
+        }
+    };
+
     const calculateBMI = async () => {
         if (!height || !weight) return
 
@@ -195,6 +220,9 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
             healthScore: 0
         }
         setBmiResult(basicResult)
+
+        // Get workout advice in parallel with health info
+        getWorkoutAdvice(Number(bmi.toFixed(1)), category)
 
         // Sau đó tải thông tin chi tiết từ AI
         try {
@@ -418,6 +446,24 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
                                             <ReactMarkdown>{bmiResult.aiAdvice}</ReactMarkdown>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            {/* Workout Advice Section */}
+                            <div className="p-4 bg-gray-50 rounded-md">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <ClipboardDocumentCheckIcon className="w-5 h-5" />
+                                    <span className="font-medium">Lời khuyên tập luyện</span>
+                                    {isLoadingWorkoutAdvice && (
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 ml-2"></div>
+                                    )}
+                                </div>
+                                <div className="prose max-w-none">
+                                    {workoutAdvice ? (
+                                        <ReactMarkdown>{workoutAdvice}</ReactMarkdown>
+                                    ) : (
+                                        <p className="text-gray-500 italic">Đang tải lời khuyên tập luyện...</p>
+                                    )}
                                 </div>
                             </div>
 
