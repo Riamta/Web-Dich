@@ -22,17 +22,6 @@ export default function Page() {
             </div>
           </TabsContent>
         </Tabs>
-
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-medium">Username Tips</h2>
-          <ul className="space-y-2 text-sm text-gray-600">
-            <li>• Choose a unique username that represents you</li>
-            <li>• Avoid using personal information like birth dates</li>
-            <li>• Consider adding random numbers or characters</li>
-            <li>• Make sure it's easy to remember and type</li>
-            <li>• Check if the username is available on platforms you use</li>
-          </ul>
-        </div>
       </div>
     </main>
   )

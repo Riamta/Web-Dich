@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group"
+import { Switch } from "@/components/ui/switch"
 import { Check, Copy, Wand2 } from "lucide-react"
 import { aiService } from "@/lib/ai-service"
 
@@ -15,6 +16,7 @@ export function UsernameGenerator() {
   const [loading, setLoading] = useState(false)
   const [hint, setHint] = useState("")
   const [count, setCount] = useState(3)
+  const [requireHintWords, setRequireHintWords] = useState(false)
 
   const generateAIUsernames = async () => {
     if (!hint.trim() || loading) return
@@ -28,8 +30,8 @@ Yêu cầu:
 - Username nên ngắn gọn, tối đa 15 ký tự
 - Username có thể bao gồm chữ cái, số
 - KHÔNG sử dụng ký tự đặc biệt như !@#$%^&*
-- Đảm bảo username dễ đọc và dễ nhớ
 - Có thể sử dụng tiếng Anh hoặc kết hợp tiếng Anh và số
+${requireHintWords ? '- BẮT BUỘC PHẢI bao gồm ' + hint + ' trong username' : ''}
 - CHỈ trả về danh sách ${count} username, mỗi username một dòng
 - KHÔNG đánh số thứ tự
 - KHÔNG có giải thích hoặc văn bản thêm
@@ -95,19 +97,32 @@ Gợi ý: "${hint}"`;
         </p>
       </div>
 
-      <div className="space-y-2">
-        <Label>Number of usernames to generate</Label>
-        <div className="flex space-x-4">
-          {[1, 2, 3, 4, 5].map((num) => (
-            <Button 
-              key={num}
-              variant={count === num ? "default" : "outline"} 
-              size="sm"
-              onClick={() => setCount(num)}
-            >
-              {num}
-            </Button>
-          ))}
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label>Number of usernames to generate</Label>
+          <div className="flex space-x-4">
+            {[1, 2, 3, 4, 5].map((num) => (
+              <Button 
+                key={num}
+                variant={count === num ? "default" : "outline"} 
+                size="sm"
+                onClick={() => setCount(num)}
+              >
+                {num}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Label htmlFor="require-hint-words" className="text-sm cursor-pointer">
+            Require words from hint in username
+          </Label>
+          <Switch
+            id="require-hint-words"
+            checked={requireHintWords}
+            onCheckedChange={setRequireHintWords}
+          />
         </div>
       </div>
 
