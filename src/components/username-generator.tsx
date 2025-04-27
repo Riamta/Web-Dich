@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group"
 import { Switch } from "@/components/ui/switch"
-import { Check, Copy, Wand2 } from "lucide-react"
+import { Check, Copy, Wand2, Dices } from "lucide-react"
 import { aiService } from "@/lib/ai-service"
 
 export function UsernameGenerator() {
@@ -58,6 +58,44 @@ Gợi ý: "${hint}"`;
     }
   }
 
+  const generateRandomUsernames = async () => {
+    if (loading) return
+    
+    setLoading(true)
+    try {
+      const prompt = `Tạo ${count} tên người dùng (username) ngẫu nhiên sáng tạo.
+
+Yêu cầu:
+- Trả về CHÍNH XÁC ${count} username, mỗi username một dòng
+- Username nên ngắn gọn, tối đa 15 ký tự
+- Username có thể bao gồm chữ cái, số
+- KHÔNG sử dụng ký tự đặc biệt như !@#$%^&*
+- Có thể sử dụng tiếng Anh hoặc kết hợp tiếng Anh và số
+- Đa dạng về chủ đề (game, công nghệ, thiên nhiên, v.v.)
+- CHỈ trả về danh sách ${count} username, mỗi username một dòng
+- KHÔNG đánh số thứ tự
+- KHÔNG có giải thích hoặc văn bản thêm`;
+
+      const result = await aiService.processWithAI(prompt)
+      const generatedUsernames = result
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line && !line.includes(':') && !line.startsWith('-'))
+        .slice(0, count)
+      
+      setUsernames(generatedUsernames)
+      
+      if (generatedUsernames.length > 0) {
+        setSelectedUsername(generatedUsernames[0])
+      }
+    } catch (error) {
+      console.error("Failed to generate random usernames:", error)
+    } finally {
+      setLoading(false)
+      setCopiedIndex(null)
+    }
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
@@ -91,9 +129,17 @@ Gợi ý: "${hint}"`;
             {loading ? "Generating..." : "Generate"}
             {!loading && <Wand2 className="ml-2 h-4 w-4" />}
           </Button>
+          <Button
+            variant="outline"
+            onClick={generateRandomUsernames}
+            disabled={loading}
+            className="whitespace-nowrap"
+          >
+            <Dices className="ml-2 h-4 w-4" />
+          </Button>
         </div>
         <p className="text-sm text-muted-foreground">
-          Enter a hint and AI will create usernames based on it
+          Enter a hint and AI will create usernames based on it or generate random usernames
         </p>
       </div>
 
