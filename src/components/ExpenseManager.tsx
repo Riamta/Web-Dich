@@ -75,8 +75,6 @@ const INCOME_CATEGORIES = [
     'Cho thuê',
     'Bán hàng',
     'Freelance',
-    'Tiền lãi',
-    'Cổ tức',
     'Bảo hiểm',
     'Thừa kế',
     'Quà tặng',
@@ -705,197 +703,270 @@ export function ExpenseManager() {
 
                 {/* Settings Modal */}
                 {showSettings && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-                            <h2 className="text-xl font-semibold mb-4">Cài đặt</h2>
-                            
-                            {/* Tiền tệ */}
-                            <div className="mb-6">
-                                <h3 className="text-lg font-medium mb-3">Cài đặt tiền tệ</h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Ký hiệu tiền tệ
-                                        </label>
-                                        <div className="flex gap-2 mb-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => setSettings(prev => ({
-                                                    ...prev,
-                                                    currency: { ...prev.currency, symbol: 'đ' }
-                                                }))}
-                                                className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${settings.currency.symbol === 'đ'
-                                                        ? 'bg-black text-white border-black'
-                                                        : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-                                                    }`}
-                                            >
-                                                VND (đ)
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setSettings(prev => ({
-                                                    ...prev,
-                                                    currency: { ...prev.currency, symbol: '$' }
-                                                }))}
-                                                className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${settings.currency.symbol === '$'
-                                                        ? 'bg-black text-white border-black'
-                                                        : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-                                                    }`}
-                                            >
-                                                USD ($)
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setSettings(prev => ({
-                                                    ...prev,
-                                                    currency: { ...prev.currency, symbol: '¥' }
-                                                }))}
-                                                className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${settings.currency.symbol === '¥'
-                                                        ? 'bg-black text-white border-black'
-                                                        : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-                                                    }`}
-                                            >
-                                                CNY (¥)
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setSettings(prev => ({
-                                                    ...prev,
-                                                    currency: { ...prev.currency, symbol: '¥' }
-                                                }))}
-                                                className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${settings.currency.symbol === '¥'
-                                                        ? 'bg-black text-white border-black'
-                                                        : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-                                                    }`}
-                                            >
-                                                JPY (¥)
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setSettings(prev => ({
-                                                    ...prev,
-                                                    currency: { ...prev.currency, symbol: '₩' }
-                                                }))}
-                                                className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${settings.currency.symbol === '₩'
-                                                        ? 'bg-black text-white border-black'
-                                                        : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-                                                    }`}
-                                            >
-                                                KRW (₩)
-                                            </button>
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={settings.currency.symbol}
-                                            onChange={(e) => setSettings(prev => ({
-                                                ...prev,
-                                                currency: { ...prev.currency, symbol: e.target.value }
-                                            }))}
-                                            className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                            placeholder="Hoặc nhập ký hiệu khác"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Vị trí ký hiệu
-                                        </label>
-                                        <select
-                                            value={settings.currency.position}
-                                            onChange={(e) => setSettings(prev => ({
-                                                ...prev,
-                                                currency: { ...prev.currency, position: e.target.value as 'before' | 'after' }
-                                            }))}
-                                            className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                        >
-                                            <option value="before">Trước số tiền</option>
-                                            <option value="after">Sau số tiền</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Dấu phân cách thập phân
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={settings.currency.decimalSeparator}
-                                            onChange={(e) => setSettings(prev => ({
-                                                ...prev,
-                                                currency: { ...prev.currency, decimalSeparator: e.target.value }
-                                            }))}
-                                            className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Dấu phân cách hàng nghìn
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={settings.currency.thousandsSeparator}
-                                            onChange={(e) => setSettings(prev => ({
-                                                ...prev,
-                                                currency: { ...prev.currency, thousandsSeparator: e.target.value }
-                                            }))}
-                                            className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                        />
-                                    </div>
-                                </div>
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-lg">
+                            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                                <h2 className="text-lg font-semibold">Cài đặt</h2>
+                                <button 
+                                    onClick={() => setShowSettings(false)}
+                                    className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                                >
+                                    <XMarkIcon className="h-5 w-5 text-gray-500" />
+                                </button>
                             </div>
                             
-                            {/* Quản lý dữ liệu */}
-                            <div className="mb-6">
-                                <h3 className="text-lg font-medium mb-3">Quản lý dữ liệu</h3>
-                                <div className="space-y-3">
-                                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                                        <h4 className="font-medium mb-2">Xuất dữ liệu</h4>
-                                        <p className="text-sm text-gray-600 mb-3">
-                                            Xuất tất cả dữ liệu chi tiêu, thu nhập và cài đặt của bạn ra file JSON để sao lưu.
-                                        </p>
-                                        <button
-                                            onClick={handleExport}
-                                            className="w-full flex justify-center items-center gap-2 px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-                                        >
-                                            <ArrowUpIcon className="h-4 w-4" />
-                                            <span>Xuất dữ liệu</span>
-                                        </button>
+                            <div className="p-4">
+                                {/* Tiền tệ */}
+                                <div className="mb-6">
+                                    <h3 className="text-md font-medium mb-3 flex items-center">
+                                        <Cog6ToothIcon className="h-4 w-4 mr-2 text-gray-500" />
+                                        Cài đặt tiền tệ
+                                    </h3>
+                                    <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Ký hiệu tiền tệ
+                                            </label>
+                                            <div className="flex flex-wrap gap-2 mb-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings(prev => ({
+                                                        ...prev,
+                                                        currency: { ...prev.currency, symbol: 'đ' }
+                                                    }))}
+                                                    className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${settings.currency.symbol === 'đ'
+                                                        ? 'bg-black text-white border-black'
+                                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    VND (đ)
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings(prev => ({
+                                                        ...prev,
+                                                        currency: { ...prev.currency, symbol: '$' }
+                                                    }))}
+                                                    className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${settings.currency.symbol === '$'
+                                                        ? 'bg-black text-white border-black'
+                                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    USD ($)
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings(prev => ({
+                                                        ...prev,
+                                                        currency: { ...prev.currency, symbol: '¥' }
+                                                    }))}
+                                                    className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${settings.currency.symbol === '¥'
+                                                        ? 'bg-black text-white border-black'
+                                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    CNY (¥)
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings(prev => ({
+                                                        ...prev,
+                                                        currency: { ...prev.currency, symbol: '₩' }
+                                                    }))}
+                                                    className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${settings.currency.symbol === '₩'
+                                                        ? 'bg-black text-white border-black'
+                                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    KRW (₩)
+                                                </button>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={settings.currency.symbol}
+                                                onChange={(e) => setSettings(prev => ({
+                                                    ...prev,
+                                                    currency: { ...prev.currency, symbol: e.target.value }
+                                                }))}
+                                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 shadow-sm"
+                                                placeholder="Hoặc nhập ký hiệu khác"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Vị trí ký hiệu
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings(prev => ({
+                                                        ...prev,
+                                                        currency: { ...prev.currency, position: 'before' }
+                                                    }))}
+                                                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                                                        settings.currency.position === 'before'
+                                                            ? 'bg-black text-white'
+                                                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    Trước số tiền
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings(prev => ({
+                                                        ...prev,
+                                                        currency: { ...prev.currency, position: 'after' }
+                                                    }))}
+                                                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                                                        settings.currency.position === 'after'
+                                                            ? 'bg-black text-white'
+                                                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    Sau số tiền
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Dấu phân cách thập phân
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings(prev => ({
+                                                        ...prev,
+                                                        currency: { ...prev.currency, decimalSeparator: ',' }
+                                                    }))}
+                                                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                                                        settings.currency.decimalSeparator === ','
+                                                            ? 'bg-black text-white'
+                                                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    Dấu phẩy (,)
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings(prev => ({
+                                                        ...prev,
+                                                        currency: { ...prev.currency, decimalSeparator: '.' }
+                                                    }))}
+                                                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                                                        settings.currency.decimalSeparator === '.'
+                                                            ? 'bg-black text-white'
+                                                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    Dấu chấm (.)
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Dấu phân cách hàng nghìn
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings(prev => ({
+                                                        ...prev,
+                                                        currency: { ...prev.currency, thousandsSeparator: '.' }
+                                                    }))}
+                                                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                                                        settings.currency.thousandsSeparator === '.'
+                                                            ? 'bg-black text-white'
+                                                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    Dấu chấm (.)
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings(prev => ({
+                                                        ...prev,
+                                                        currency: { ...prev.currency, thousandsSeparator: ',' }
+                                                    }))}
+                                                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                                                        settings.currency.thousandsSeparator === ','
+                                                            ? 'bg-black text-white'
+                                                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    Dấu phẩy (,)
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    
-                                    {expenses.length > 0 && (
-                                        <div className="p-4 bg-red-50 rounded-lg border border-red-100">
-                                            <h4 className="font-medium text-red-700 mb-2">Xóa tất cả dữ liệu</h4>
-                                            <p className="text-sm text-red-600 mb-3">
-                                                Cảnh báo: Hành động này sẽ xóa tất cả giao dịch của bạn và không thể hoàn tác.
+                                </div>
+                                
+                                {/* Quản lý dữ liệu */}
+                                <div className="mb-6">
+                                    <h3 className="text-md font-medium mb-3 flex items-center">
+                                        <ArrowUpIcon className="h-4 w-4 mr-2 text-gray-500" />
+                                        Quản lý dữ liệu
+                                    </h3>
+                                    <div className="space-y-3">
+                                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                            <h4 className="font-medium text-gray-800 mb-2 flex items-center">
+                                                <ArrowUpIcon className="h-4 w-4 mr-1.5 text-gray-600" />
+                                                Xuất dữ liệu
+                                            </h4>
+                                            <p className="text-sm text-gray-600 mb-3">
+                                                Xuất tất cả dữ liệu chi tiêu, thu nhập và cài đặt của bạn ra file JSON để sao lưu.
                                             </p>
                                             <button
-                                                onClick={() => {
-                                                    if (confirm('Bạn có chắc chắn muốn xóa tất cả giao dịch? Hành động này không thể hoàn tác.')) {
-                                                        handleClearAllExpenses();
-                                                        setShowSettings(false);
-                                                    }
-                                                }}
-                                                className="w-full flex justify-center items-center gap-2 px-3 py-2 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                                                onClick={handleExport}
+                                                className="w-full flex justify-center items-center gap-2 px-3 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
                                             >
-                                                <TrashIcon className="h-4 w-4" />
-                                                <span>Xóa tất cả dữ liệu</span>
+                                                <ArrowUpIcon className="h-4 w-4" />
+                                                <span>Xuất dữ liệu</span>
                                             </button>
                                         </div>
-                                    )}
+                                        
+                                        {expenses.length > 0 && (
+                                            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                                <h4 className="font-medium text-gray-800 mb-2 flex items-center">
+                                                    <TrashIcon className="h-4 w-4 mr-1.5 text-gray-600" />
+                                                    Xóa tất cả dữ liệu
+                                                </h4>
+                                                <p className="text-sm text-gray-700 mb-3">
+                                                    Cảnh báo: Hành động này sẽ xóa tất cả giao dịch của bạn và không thể hoàn tác.
+                                                </p>
+                                                <button
+                                                    onClick={() => {
+                                                        if (confirm('Bạn có chắc chắn muốn xóa tất cả giao dịch? Hành động này không thể hoàn tác.')) {
+                                                            handleClearAllExpenses();
+                                                            setShowSettings(false);
+                                                        }
+                                                    }}
+                                                    className="w-full flex justify-center items-center gap-2 px-3 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+                                                >
+                                                    <TrashIcon className="h-4 w-4" />
+                                                    <span>Xóa tất cả dữ liệu</span>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div className="flex justify-end gap-2 mt-6">
-                                <button
-                                    onClick={() => setShowSettings(false)}
-                                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                >
-                                    Hủy
-                                </button>
-                                <button
-                                    onClick={handleSaveSettings}
-                                    className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
-                                >
-                                    Lưu
-                                </button>
+                                
+                                <div className="flex flex-col gap-2 mt-6">
+                                    <button
+                                        onClick={handleSaveSettings}
+                                        className="w-full py-2.5 px-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium flex justify-center items-center gap-2"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                        Lưu cài đặt
+                                    </button>
+                                    <button
+                                        onClick={() => setShowSettings(false)}
+                                        className="w-full py-2.5 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                                    >
+                                        Hủy
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -903,27 +974,55 @@ export function ExpenseManager() {
 
                 {/* Add Transaction Modal */}
                 {showAddForm && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-xl p-6 w-full max-w-md">
-                            <h2 className="text-xl font-semibold mb-4">
-                                {editingExpense ? 'Sửa giao dịch' : 'Thêm giao dịch mới'}
-                            </h2>
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-lg">
+                            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                                <h2 className="text-lg font-semibold">
+                                    {editingExpense ? 'Sửa giao dịch' : 'Thêm giao dịch mới'}
+                                </h2>
+                                <button 
+                                    onClick={() => {
+                                        setShowAddForm(false);
+                                        setEditingExpense(null);
+                                        setFormData({
+                                            amount: '',
+                                            category: '',
+                                            description: '',
+                                            date: format(new Date(), 'yyyy-MM-dd'),
+                                            type: 'expense'
+                                        });
+                                        setSmartInput('');
+                                    }}
+                                    className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                                >
+                                    <XMarkIcon className="h-5 w-5 text-gray-500" />
+                                </button>
+                            </div>
                             
                             {/* AI Powered Input */}
-                            <div className="mb-6 bg-gradient-to-r from-gray-50 to-gray-50 p-4 rounded-xl border border-gray-100">
+                            <div className="p-4 bg-gray-50 border-b border-gray-100">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <SparklesIcon className="h-5 w-5 text-gray-500" />
-                                    <h3 className="font-medium text-gray-700">Nhập bằng AI</h3>
+                                    <SparklesIcon className="h-5 w-5 text-gray-600" />
+                                    <h3 className="font-medium text-gray-800">Nhập bằng AI</h3>
                                 </div>
                                 <p className="text-xs text-gray-600 mb-3">
-                                    Mô tả giao dịch bằng ngôn ngữ tự nhiên. Ví dụ: "Mua sắm quần áo hết 500.000đ hôm qua" hoặc "Nhận lương 10 triệu hôm nay"
+                                    Ví dụ: "Mua sắm quần áo hết 500.000đ hôm qua" hoặc "Nhận lương 10 triệu hôm nay"
                                 </p>
                                 <div className="relative">
                                     <textarea
-                                        className="w-full p-3 pr-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 min-h-[80px]"
-                                        placeholder="Nhập mô tả giao dịch của bạn..."
+                                        className="w-full p-3 pr-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 min-h-[80px] shadow-sm"
+                                        placeholder="Nhập mô tả giao dịch bằng ngôn ngữ tự nhiên..."
                                         value={smartInput}
                                         onChange={(e) => setSmartInput(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                if (!smartInput.trim() || isAnalyzing) return;
+                                                
+                                                const analyzeButton = e.currentTarget.parentElement?.querySelector('button');
+                                                analyzeButton?.click();
+                                            }
+                                        }}
                                     ></textarea>
                                     <button
                                         onClick={async () => {
@@ -942,7 +1041,6 @@ export function ExpenseManager() {
                                                    - Danh mục thu nhập: ${INCOME_CATEGORIES.join(', ')}
                                                 4. Tóm tắt mô tả ngắn gọn
                                                 5. Nếu có thông tin ngày, xác định ngày. Nếu không, sử dụng ngày hiện tại.
-                                                
                                                 Chỉ trả về JSON, không thêm bất kỳ text nào khác:
                                                 {
                                                     "type": "income" | "expense",
@@ -971,10 +1069,9 @@ export function ExpenseManager() {
                                                     amount: Math.abs(analysis.amount).toString(),
                                                     category: analysis.category,
                                                     description: analysis.description || smartInput,
-                                                    date: analysis.date || format(new Date(), 'yyyy-MM-dd'),
+                                                    date: format(new Date(), 'yyyy-MM-dd'),
                                                     type: analysis.type
                                                 });
-                                                
                                                 // Clear the smart input
                                                 setSmartInput('');
                                                 
@@ -986,12 +1083,12 @@ export function ExpenseManager() {
                                             }
                                         }}
                                         disabled={isAnalyzing || !smartInput.trim()}
-                                        className="absolute right-2 bottom-2 p-2 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="absolute right-3 bottom-3 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isAnalyzing ? (
-                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500" />
+                                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600" />
                                         ) : (
-                                            <div className="flex items-center gap-1 bg-gray-200 hover:bg-gray-200 transition-colors py-1 px-2 rounded-lg">
+                                            <div className="flex items-center gap-1 bg-black hover:bg-gray-800 transition-colors py-1.5 px-3 rounded-lg text-white">
                                                 <SparklesIcon className="h-4 w-4" />
                                                 <span className="text-xs font-medium">Phân tích</span>
                                             </div>
@@ -1000,130 +1097,138 @@ export function ExpenseManager() {
                                 </div>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Loại giao dịch
-                                    </label>
-                                    <div className="flex gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setFormData(prev => ({ ...prev, type: 'expense' }))}
-                                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                                                formData.type === 'expense'
-                                                    ? 'bg-red-600 text-white'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                        >
-                                            Chi tiêu
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setFormData(prev => ({ ...prev, type: 'income' }))}
-                                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                                                formData.type === 'income'
-                                                    ? 'bg-green-600 text-white'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                        >
-                                            Thu nhập
-                                        </button>
+                            <form onSubmit={handleSubmit} className="p-4">
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Loại giao dịch
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, type: 'expense' }))}
+                                                className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                                                    formData.type === 'expense'
+                                                        ? 'bg-red-600 text-white'
+                                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                }`}
+                                            >
+                                                <ArrowUpIcon className="h-4 w-4" />
+                                                Chi tiêu
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, type: 'income' }))}
+                                                className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                                                    formData.type === 'income'
+                                                        ? 'bg-green-600 text-white'
+                                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                }`}
+                                            >
+                                                <ArrowDownIcon className="h-4 w-4" />
+                                                Thu nhập
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Số tiền
-                                    </label>
-                                    <div className="relative">
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Số tiền
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                value={formData.amount}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                                                placeholder="Nhập số tiền"
+                                                className="w-full p-2.5 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 shadow-sm"
+                                                min="0"
+                                                required
+                                            />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                                                {settings.currency.symbol}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Danh mục
+                                        </label>
+                                        <select
+                                            value={formData.category}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                                            className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 shadow-sm appearance-none bg-white"
+                                            required
+                                        >
+                                            <option value="" disabled>Chọn danh mục</option>
+                                            {formData.type === 'expense' 
+                                                ? EXPENSE_CATEGORIES.map(cat => (
+                                                    <option key={cat} value={cat}>{cat}</option>
+                                                ))
+                                                : INCOME_CATEGORIES.map(cat => (
+                                                    <option key={cat} value={cat}>{cat}</option>
+                                                ))
+                                            }
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Mô tả
+                                        </label>
                                         <input
-                                            type="number"
-                                            value={formData.amount}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
-                                            placeholder="Nhập số tiền"
-                                            className="w-full p-2 pr-8 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                            min="0"
+                                            type="text"
+                                            value={formData.description}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                                            placeholder="Nhập mô tả (không bắt buộc)"
+                                            className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 shadow-sm"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Ngày
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={formData.date}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                                            className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 shadow-sm"
                                             required
                                         />
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                                            {settings.currency.symbol}
-                                        </span>
                                     </div>
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Danh mục
-                                    </label>
-                                    <select
-                                        value={formData.category}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                                        className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                        required
-                                    >
-                                        <option value="" disabled>Chọn danh mục</option>
-                                        {formData.type === 'expense' 
-                                            ? EXPENSE_CATEGORIES.map(cat => (
-                                                <option key={cat} value={cat}>{cat}</option>
-                                            ))
-                                            : INCOME_CATEGORIES.map(cat => (
-                                                <option key={cat} value={cat}>{cat}</option>
-                                            ))
-                                        }
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Mô tả
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.description}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                        placeholder="Nhập mô tả (không bắt buộc)"
-                                        className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                    />
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Ngày
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={formData.date}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                                        className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                                        required
-                                    />
-                                </div>
-                                
-                                <div className="flex justify-end gap-2 mt-6">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setShowAddForm(false);
-                                            setEditingExpense(null);
-                                            setFormData({
-                                                amount: '',
-                                                category: '',
-                                                description: '',
-                                                date: format(new Date(), 'yyyy-MM-dd'),
-                                                type: 'expense'
-                                            });
-                                            setSmartInput('');
-                                        }}
-                                        className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                    >
-                                        Hủy
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
-                                    >
-                                        {editingExpense ? 'Cập nhật' : 'Thêm'}
-                                    </button>
+                                    
+                                    <div className="pt-2">
+                                        <button
+                                            type="submit"
+                                            className={`w-full py-2.5 px-4 rounded-lg text-white font-medium transition-colors ${
+                                                formData.type === 'expense'
+                                                ? 'bg-red-600 hover:bg-red-700'
+                                                : 'bg-green-600 hover:bg-green-700'
+                                            }`}
+                                        >
+                                            {editingExpense ? 'Cập nhật giao dịch' : 'Thêm giao dịch'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setShowAddForm(false);
+                                                setEditingExpense(null);
+                                                setFormData({
+                                                    amount: '',
+                                                    category: '',
+                                                    description: '',
+                                                    date: format(new Date(), 'yyyy-MM-dd'),
+                                                    type: 'expense'
+                                                });
+                                                setSmartInput('');
+                                            }}
+                                            className="w-full mt-2 py-2.5 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                                        >
+                                            Hủy
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -1329,11 +1434,11 @@ export function ExpenseManager() {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -20 }}
-                                        className="p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                                        className="p-3 sm:p-4 bg-gray-50 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${expense.amount >= 0 ? 'bg-green-600' : 'bg-red-600'
-                                                }`}>
+                                            }`}>
                                                 {expense.amount >= 0 ? (
                                                     <ArrowDownIcon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                                                 ) : (
@@ -1342,7 +1447,7 @@ export function ExpenseManager() {
                                             </div>
                                             <div>
                                                 <p className={`text-sm sm:text-base font-medium ${expense.amount >= 0 ? 'text-green-600' : 'text-red-600'
-                                                    }`}>
+                                                }`}>
                                                     {formatCurrency(Math.abs(expense.amount))}
                                                 </p>
                                                 <p className="text-xs sm:text-sm text-gray-500">{expense.description}</p>
@@ -1353,7 +1458,7 @@ export function ExpenseManager() {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className={`px-2 py-1 text-xs sm:text-sm rounded-full ${expense.amount >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                                                }`}>
+                                            }`}>
                                                 {expense.category}
                                             </span>
                                             <div className="flex gap-1">
