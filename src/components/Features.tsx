@@ -1,46 +1,51 @@
 'use client'
 
 import Link from 'next/link'
-import {
-    DocumentTextIcon,
-    LanguageIcon,
-    BookOpenIcon,
-    ChatBubbleLeftRightIcon,
-    BoltIcon,
-    CodeBracketIcon,
-    UserIcon,
-    HeartIcon,
-    FilmIcon,
-    DocumentIcon,
-    ChatBubbleLeftIcon,
-    LightBulbIcon,
-    SparklesIcon,
-    WrenchIcon,
-    AcademicCapIcon,
-    CurrencyDollarIcon,
-    QrCodeIcon,
-    EnvelopeIcon,
-    CreditCardIcon,
-    CalculatorIcon,
-    ClockIcon,
-    RectangleStackIcon,
-    StarIcon,
-    BeakerIcon,
-    EyeIcon,
-    MagnifyingGlassIcon,
-    CloudIcon,
-    FlagIcon,
-    ArrowPathIcon,
-    ArrowsRightLeftIcon,
-    ClipboardDocumentCheckIcon,
-    ChartBarIcon
-} from '@heroicons/react/24/outline'
+import { 
+  FaDice, 
+  FaKeyboard, 
+  FaHeart, 
+  FaHome, 
+  FaBook, 
+  FaStar, 
+  FaFlagUsa, 
+  FaCloud, 
+  FaQrcode, 
+  FaClock, 
+  FaRegClipboard, 
+  FaCalculator, 
+  FaChevronDown,
+  FaMagic,
+  FaSearch,
+  FaEye
+} from "react-icons/fa";
+import { 
+  FaMoneyBillTransfer, 
+  FaUser, 
+  FaChartSimple 
+} from "react-icons/fa6";
+import { 
+  MdOutlinePassword, 
+  MdTranslate, 
+  MdOutlineChatBubbleOutline,
+  MdOutlineMovie, 
+  MdOutlineQuestionMark, 
+  MdOutlineSchool, 
+  MdOutlineDocumentScanner, 
+  MdOutlineModeEdit, 
+  MdOutlinePhoto, 
+  MdGrid3X3, 
+  MdOutlineCurrencyExchange, 
+  MdEmail, 
+  MdOutlineCreditCard,
+  MdStackedLineChart,
+  MdScience,
+  MdOutlineLightbulb,
+  MdOutlineRestartAlt,
+  MdOutlineSwapHoriz
+} from "react-icons/md";
 import { useEffect, useState } from 'react';
 import { PageView } from '@/models/PageView';
-import { FaKeyboard, FaDice  } from 'react-icons/fa';
-import { FaMoneyBillTransfer,FaUser  } from "react-icons/fa6";
-import { MdOutlinePassword, MdTranslate } from "react-icons/md";
-
 
 interface FeatureCardProps {
     title: string
@@ -98,7 +103,7 @@ const FeatureCard = ({ title, description, icon, views, path, badge, isHot }: Fe
 
                 <div className="mt-auto flex justify-end text-xs text-gray-400">
                     <div className="flex items-center gap-1">
-                        <EyeIcon className="h-3 w-3" />
+                        <FaEye className="h-3 w-3" />
                         <span>{views}</span>
                     </div>
                 </div>
@@ -111,7 +116,7 @@ const categories: CategoryProps[] = [
     {
         title: "Công cụ AI",
         description: "Các công cụ sử dụng trí tuệ nhân tạo",
-        icon: <SparklesIcon className="w-6 h-6 text-black" />,
+        icon: <FaMagic className="w-6 h-6 text-black" />,
         features: [
             {
                 title: "Dịch thuật AI",
@@ -124,7 +129,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Dịch hội thoại",
                 description: "Dịch các cuộc hội thoại và đoạn chat",
-                icon: <ChatBubbleLeftIcon className="w-6 h-6 text-black" />,
+                icon: <MdOutlineChatBubbleOutline className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/conversation-translate",
                 category: "AI"
@@ -132,7 +137,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Dịch phụ đề",
                 description: "Dịch file phụ đề SRT sang nhiều ngôn ngữ",
-                icon: <FilmIcon className="w-6 h-6 text-black" />,
+                icon: <MdOutlineMovie className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/srt-translate",
                 category: "AI"
@@ -140,7 +145,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Từ điển",
                 description: "Tra cứu từ điển đa ngôn ngữ",
-                icon: <BookOpenIcon className="w-6 h-6 text-black" />,
+                icon: <FaBook className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/dictionary",
                 category: "AI"
@@ -148,7 +153,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Học từ vựng",
                 description: "Học và luyện tập từ vựng hiệu quả",
-                icon: <BoltIcon className="w-6 h-6 text-black" />,
+                icon: <MdOutlineSchool className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/vocabulary",
                 category: "AI"
@@ -156,7 +161,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Tạo câu hỏi",
                 description: "Tạo các bài tập và câu hỏi trắc nghiệm",
-                icon: <DocumentTextIcon className="w-6 h-6 text-black" />,
+                icon: <MdOutlineQuestionMark className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/quiz",
                 category: "AI"
@@ -164,7 +169,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Cải thiện văn bản",
                 description: "Nâng cao chất lượng văn bản của bạn",
-                icon: <CodeBracketIcon className="w-6 h-6 text-black" />,
+                icon: <FaMagic className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/enhance-text",
                 category: "AI"
@@ -172,7 +177,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Tóm tắt văn bản",
                 description: "Tự động tóm tắt văn bản dài",
-                icon: <DocumentIcon className="w-6 h-6 text-black" />,
+                icon: <MdOutlineDocumentScanner className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/summarize",
                 category: "AI"
@@ -180,7 +185,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Giải bài tập",
                 description: "Giải bài tập bằng AI",
-                icon: <BoltIcon className="w-6 h-6 text-black" />,
+                icon: <MdOutlineLightbulb className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/aisolver",
                 category: "AI"
@@ -188,7 +193,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Hỗ trợ tán gái",
                 description: "Hỗ trợ tán gái bằng AI",
-                icon: <HeartIcon className="w-6 h-6 text-black" />,
+                icon: <FaHeart className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/flirting",
                 category: "AI"
@@ -196,7 +201,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Xem bói",
                 description: "Xem bói bằng AI",
-                icon: <StarIcon className="w-6 h-6 text-black" />,
+                icon: <FaStar className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/fortune-telling",
                 category: "AI"
@@ -206,7 +211,7 @@ const categories: CategoryProps[] = [
     {
         title: "Tiện ích",
         description: "Các công cụ hỗ trợ tiện ích",
-        icon: <WrenchIcon className="w-6 h-6 text-black" />,
+        icon: <MdGrid3X3 className="w-6 h-6 text-black" />,
         features: [
             {
                 title: "Kiểm tra tốc độ gõ",
@@ -229,7 +234,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Thông tin quốc gia",
                 description: "Thông tin chi tiết về quốc gia",
-                icon: <FlagIcon className="w-6 h-6 text-black" />,
+                icon: <FaFlagUsa className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/countries",
                 category: "Utility"
@@ -237,7 +242,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Dự báo thời tiết",
                 description: "Xem dự báo thời tiết chi tiết với bản đồ tương tác",
-                icon: <CloudIcon className="w-6 h-6 text-black" />,
+                icon: <FaCloud className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/weather",
                 badge: "New",
@@ -246,7 +251,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Mã QR",
                 description: "Tạo và quét mã QR",
-                icon: <QrCodeIcon className="w-6 h-6 text-black" />,
+                icon: <FaQrcode className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/qrcode",
                 category: "Utility"
@@ -254,7 +259,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Email tạm thời",
                 description: "Tạo email tạm",
-                icon: <EnvelopeIcon className="w-6 h-6 text-black" />,
+                icon: <MdEmail className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/temp-mail",
                 category: "Utility"
@@ -262,7 +267,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Chuyển đổi múi giờ",
                 description: "Chuyển đổi múi giờ giữa các thành phố trên thế giới",
-                icon: <ClockIcon className="w-6 h-6 text-black" />,
+                icon: <FaClock className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/utilities/time-converter",
                 category: "Utility"
@@ -270,7 +275,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Chuyển đổi đơn vị",
                 description: "Chuyển đổi đơn vị giữa các đơn vị khác nhau",
-                icon: <RectangleStackIcon className="w-6 h-6 text-black" />,
+                icon: <MdStackedLineChart className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/utilities/unit-converter",
                 category: "Utility"
@@ -278,7 +283,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Tính tuổi",
                 description: "Tính tuổi của bạn",
-                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
+                icon: <FaCalculator className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/utilities/age-calculator",
                 category: "Utility"
@@ -304,7 +309,7 @@ const categories: CategoryProps[] = [
     {
         title: "Tài chính",
         description: "Các công cụ tài chính",
-        icon: <CurrencyDollarIcon className="w-6 h-6 text-black" />,
+        icon: <MdOutlineCurrencyExchange className="w-6 h-6 text-black" />,
         features: [
             {
                 title: "Chuyển đổi tiền tệ",
@@ -318,7 +323,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Tính lãi suất",
                 description: "Tính lãi suất tiết kiệm",
-                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
+                icon: <FaCalculator className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/utilities/interest-calculator",
                 category: "Finance"
@@ -326,7 +331,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Tính khoản vay",
                 description: "Tính khoản vay và lãi suất",
-                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
+                icon: <FaCalculator className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/utilities/loan-calculator",
                 category: "Finance"
@@ -334,7 +339,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Quản lý chi tiêu",
                 description: "Quản lý chi tiêu của bạn",
-                icon: <CreditCardIcon className="w-6 h-6 text-black" />,
+                icon: <MdOutlineCreditCard className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/money-love",
                 category: "Finance"
@@ -345,12 +350,12 @@ const categories: CategoryProps[] = [
     {
         title: "Sức khỏe",
         description: "Các công cụ sức khỏe",
-        icon: <HeartIcon className="w-6 h-6 text-black" />,
+        icon: <FaHeart className="w-6 h-6 text-black" />,
         features: [
             {
                 title: "Tính chỉ số BMI",
                 description: "Tính chỉ số BMI của bạn",
-                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
+                icon: <FaCalculator className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/utilities/bmi-calculator",
                 category: "Health"
@@ -358,7 +363,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Lên lịch luyện tập",
                 description: "Tạo lịch tập phù hợp với cơ thể bạn",
-                icon: <ClipboardDocumentCheckIcon className="w-6 h-6 text-black" />,
+                icon: <FaRegClipboard className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/workout-scheduler",
                 badge: "New",
@@ -367,7 +372,7 @@ const categories: CategoryProps[] = [
             {
                 title: "Công thức nấu ăn",
                 description: "Tạo công thức nấu ăn bằng AI",
-                icon: <BeakerIcon className="w-6 h-6 text-black" />,
+                icon: <MdScience className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/recipe-generator",
                 category: "Health"
@@ -476,7 +481,7 @@ export default function Features() {
                 {/* Search Bar */}
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <MagnifyingGlassIcon className="h-4 w-4 text-gray-400" />
+                        <FaSearch className="h-4 w-4 text-gray-400" />
                     </div>
                     <input
                         type="text"
@@ -556,7 +561,7 @@ export default function Features() {
                 {filteredCategories.length === 0 && (
                     <div className="text-center py-20">
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                            <MagnifyingGlassIcon className="w-8 h-8 text-gray-400" />
+                            <FaSearch className="w-8 h-8 text-gray-400" />
                         </div>
                         <p className="text-gray-500 text-lg font-light">
                             Không tìm thấy kết quả phù hợp với tìm kiếm của bạn.

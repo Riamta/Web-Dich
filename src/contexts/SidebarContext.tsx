@@ -33,6 +33,20 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     }
   }, [isOpen])
 
+  // Initialize mobile sidebar state
+  useEffect(() => {
+    // Get saved mobile sidebar state from localStorage if available
+    const savedIsOpen = localStorage.getItem('sidebarOpen')
+    if (savedIsOpen !== null) {
+      setIsOpen(savedIsOpen === 'true')
+    }
+  }, [])
+
+  // Save mobile sidebar state to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebarOpen', String(isOpen))
+  }, [isOpen])
+
   // Initialize desktop state
   useEffect(() => {
     // Get saved desktop collapsed state from localStorage if available

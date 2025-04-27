@@ -2,45 +2,49 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import {
-  BeakerIcon,
-  LanguageIcon,
-  FilmIcon,
-  QuestionMarkCircleIcon,
-  AcademicCapIcon,
-  ChatBubbleLeftRightIcon,
-  DocumentTextIcon,
-  PencilIcon,
-  SparklesIcon,
-  PuzzlePieceIcon,
-  PhotoIcon,
-  HeartIcon,  
-  BookOpenIcon,
-  Square3Stack3DIcon,
-  CurrencyDollarIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  EnvelopeIcon,
-  CreditCardIcon,
-  ChevronLeftIcon,
-  XMarkIcon,
-  HomeIcon,
-  StarIcon,
-  FlagIcon,
-  CloudIcon,
-  QrCodeIcon,
-  ClockIcon,
-  RectangleStackIcon,
-  CalculatorIcon,
-  ClipboardDocumentCheckIcon,
-  ChartBarIcon
-} from '@heroicons/react/24/outline';
-import { FaDice, FaKeyboard } from "react-icons/fa";
-import { FaMoneyBillTransfer,FaUser  } from "react-icons/fa6";
-import { MdOutlinePassword, MdTranslate } from "react-icons/md";
+import { XMarkIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { 
+  FaDice, 
+  FaKeyboard, 
+  FaHeart, 
+  FaHome, 
+  FaBook, 
+  FaStar, 
+  FaFlagUsa, 
+  FaCloud, 
+  FaQrcode, 
+  FaClock, 
+  FaRegClipboard, 
+  FaCalculator, 
+  FaChevronDown,
+  FaMagic
+} from "react-icons/fa";
+import { 
+  FaMoneyBillTransfer, 
+  FaUser, 
+  FaChartSimple 
+} from "react-icons/fa6";
+import { 
+  MdOutlinePassword, 
+  MdTranslate, 
+  MdOutlineChatBubbleOutline,
+  MdOutlineMovie, 
+  MdOutlineQuestionMark, 
+  MdOutlineSchool, 
+  MdOutlineDocumentScanner, 
+  MdOutlineModeEdit, 
+  MdOutlinePhoto, 
+  MdGrid3X3, 
+  MdOutlineCurrencyExchange, 
+  MdEmail, 
+  MdOutlineCreditCard,
+  MdStackedLineChart,
+  MdScience,
+  MdOutlineLightbulb
+} from "react-icons/md";
 
 import { useSidebar } from '@/contexts/SidebarContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface MenuItem {
   name: string;
@@ -59,12 +63,12 @@ interface MenuGroup {
 const menuGroups: MenuGroup[] = [
   {
     name: 'Công cụ AI',
-    icon: <SparklesIcon className="w-5 h-5" />,
+    icon: <FaMagic className="w-5 h-5" />,
     items: [
       {
         name: 'Chat với AI',
         path: 'https://chat.amri2k.com/',
-        icon: <ChatBubbleLeftRightIcon className="w-5 h-5" />,
+        icon: <MdOutlineChatBubbleOutline className="w-5 h-5" />,
         isExternal: true,
         target: '_blank'
       },
@@ -76,63 +80,63 @@ const menuGroups: MenuGroup[] = [
       {
         name: 'Dịch hội thoại',
         path: '/conversation-translate',
-        icon: <ChatBubbleLeftRightIcon className="w-5 h-5" />
+        icon: <MdOutlineChatBubbleOutline className="w-5 h-5" />
       },
       {
         name: 'Dịch phụ đề',
         path: '/srt-translate',
-        icon: <FilmIcon className="w-5 h-5" />
+        icon: <MdOutlineMovie className="w-5 h-5" />
       },
       {
         name: 'Tóm tắt văn bản',
         path: '/summarize',
-        icon: <DocumentTextIcon className="w-5 h-5" />
+        icon: <MdOutlineDocumentScanner className="w-5 h-5" />
       },
       {
         name: 'Cải thiện văn bản',
         path: '/enhance-text',
-        icon: <SparklesIcon className="w-5 h-5" />
+        icon: <FaMagic className="w-5 h-5" />
       },
       {
         name: 'Hỗ trợ tán gái',
         path: '/flirting',
-        icon: <HeartIcon className="w-5 h-5" />
+        icon: <FaHeart className="w-5 h-5" />
       },
       {
         name: 'Tạo câu hỏi',
         path: '/quiz',
-        icon: <QuestionMarkCircleIcon className="w-5 h-5" />
+        icon: <MdOutlineQuestionMark className="w-5 h-5" />
       },
       {
         name: 'Giải bài tập',
         path: '/aisolver',
-        icon: <PuzzlePieceIcon className="w-5 h-5" />
+        icon: <MdOutlineLightbulb className="w-5 h-5" />
       },
       {
         name: 'Học từ vựng',
         path: '/vocabulary',
-        icon: <AcademicCapIcon className="w-5 h-5" />
+        icon: <MdOutlineSchool className="w-5 h-5" />
       },
       {
         name: 'Từ điển',
         path: '/dictionary',
-        icon: <BookOpenIcon className="w-5 h-5" />
+        icon: <FaBook className="w-5 h-5" />
       },
       {
         name: 'Tạo công thức nấu ăn',
         path: '/recipe-generator',
-        icon: <BeakerIcon className="w-5 h-5" />
+        icon: <MdScience className="w-5 h-5" />
       },
       {
         name: 'Xem bói',
         path: '/fortune-telling',
-        icon: <StarIcon className="w-5 h-5" />
+        icon: <FaStar className="w-5 h-5" />
       }
     ]
   },
   {
     name: 'Tiện ích',
-    icon: <Square3Stack3DIcon className="w-5 h-5" />,
+    icon: <MdGrid3X3 className="w-5 h-5" />,
     items: [
       {
         name: 'Kiểm tra tốc độ gõ',
@@ -147,47 +151,47 @@ const menuGroups: MenuGroup[] = [
       {
         name: 'Chuyển đổi tiền tệ',
         path: '/currency',
-        icon: <CurrencyDollarIcon className="w-5 h-5" />
+        icon: <MdOutlineCurrencyExchange className="w-5 h-5" />
       },
       {
         name: 'Quản lý chi tiêu',
         path: '/money-love',
-        icon: <CreditCardIcon className="w-5 h-5" />
+        icon: <MdOutlineCreditCard className="w-5 h-5" />
       },
       {
         name: 'Email tạm thời',
         path: '/temp-mail',
-        icon: <EnvelopeIcon className="w-5 h-5" />
+        icon: <MdEmail className="w-5 h-5" />
       },
       {
         name: 'Thông tin quốc gia',
         path: '/countries',
-        icon: <FlagIcon className="w-5 h-5" />
+        icon: <FaFlagUsa className="w-5 h-5" />
       },
       {
         name: 'Dự báo thời tiết',
         path: '/weather',
-        icon: <CloudIcon className="w-5 h-5" />
+        icon: <FaCloud className="w-5 h-5" />
       },
       {
         name: 'Mã QR',
         path: '/qrcode',
-        icon: <QrCodeIcon className="w-5 h-5" />
+        icon: <FaQrcode className="w-5 h-5" />
       },
       {
         name: 'Chuyển đổi múi giờ',
         path: '/utilities/time-converter',
-        icon: <ClockIcon className="w-5 h-5" />
+        icon: <FaClock className="w-5 h-5" />
       },
       {
         name: 'Chuyển đổi đơn vị',
         path: '/utilities/unit-converter',
-        icon: <RectangleStackIcon className="w-5 h-5" />
+        icon: <MdStackedLineChart className="w-5 h-5" />
       },
       {
         name: 'Tính tuổi',
         path: '/utilities/age-calculator',
-        icon: <CalculatorIcon className="w-5 h-5" />
+        icon: <FaCalculator className="w-5 h-5" />
       },
       {
         name: 'Username tools',
@@ -203,7 +207,7 @@ const menuGroups: MenuGroup[] = [
   },
   {
     name: 'Tài chính',
-    icon: <CurrencyDollarIcon className="w-5 h-5" />,
+    icon: <MdOutlineCurrencyExchange className="w-5 h-5" />,
     items: [
       {
         name: 'Chuyển đổi tiền tệ',
@@ -213,38 +217,38 @@ const menuGroups: MenuGroup[] = [
       {
         name: 'Tính lãi suất',
         path: '/utilities/interest-calculator',
-        icon: <CalculatorIcon className="w-5 h-5" />
+        icon: <FaCalculator className="w-5 h-5" />
       },
       {
         name: 'Tính khoản vay',
         path: '/utilities/loan-calculator',
-        icon: <CalculatorIcon className="w-5 h-5" />
+        icon: <FaCalculator className="w-5 h-5" />
       },
       {
         name: 'Quản lý chi tiêu',
         path: '/money-love',
-        icon: <CreditCardIcon className="w-5 h-5" />
+        icon: <MdOutlineCreditCard className="w-5 h-5" />
       }
     ]
   },
   {
     name: 'Sức khỏe',
-    icon: <HeartIcon className="w-5 h-5" />,
+    icon: <FaHeart className="w-5 h-5" />,
     items: [
       {
         name: 'Tính chỉ số BMI',
         path: '/utilities/bmi-calculator',
-        icon: <CalculatorIcon className="w-5 h-5" />
+        icon: <FaCalculator className="w-5 h-5" />
       },
       {
         name: 'Công thức nấu ăn',
         path: '/recipe-generator',
-        icon: <BeakerIcon className="w-5 h-5" />
+        icon: <MdScience className="w-5 h-5" />
       },
       {
         name: 'Lên lịch luyện tập',
         path: '/workout-scheduler',
-        icon: <ClipboardDocumentCheckIcon className="w-5 h-5" />
+        icon: <FaRegClipboard className="w-5 h-5" />
       }
     ]
   }
@@ -260,11 +264,22 @@ function MobileSidebar() {
     'Sức khỏe': true
   });
 
+  // Load expanded groups from localStorage on mount
+  useEffect(() => {
+    const savedExpandedGroups = localStorage.getItem('mobileExpandedGroups');
+    if (savedExpandedGroups) {
+      setExpandedGroups(JSON.parse(savedExpandedGroups));
+    }
+  }, []);
+
   const toggleGroup = (groupName: string) => {
-    setExpandedGroups(prev => ({
-      ...prev,
-      [groupName]: !prev[groupName]
-    }));
+    const newExpandedGroups = {
+      ...expandedGroups,
+      [groupName]: !expandedGroups[groupName]
+    };
+    setExpandedGroups(newExpandedGroups);
+    // Save to localStorage
+    localStorage.setItem('mobileExpandedGroups', JSON.stringify(newExpandedGroups));
   };
 
   if (!isOpen) return null;
@@ -280,7 +295,7 @@ function MobileSidebar() {
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-700 dark:to-gray-900 flex items-center justify-center text-white">
-              <SparklesIcon className="w-5 h-5" />
+              <FaMagic className="w-5 h-5" />
             </div>
             <span className="font-medium text-lg text-gray-900 dark:text-white">Amri2k</span>
           </Link>
@@ -303,7 +318,7 @@ function MobileSidebar() {
             } transition-colors`}
             onClick={() => setIsOpen(false)}
           >
-            <HomeIcon className="w-5 h-5" />
+            <FaHome className="w-5 h-5" />
             <span className="font-medium text-sm">Trang chủ</span>
           </Link>
           
@@ -323,7 +338,7 @@ function MobileSidebar() {
                 <span className="flex-1 text-left font-medium text-sm">
                   {group.name}
                 </span>
-                <ChevronDownIcon 
+                <FaChevronDown 
                   className={`w-4 h-4 text-gray-400 transition-transform duration-200
                     ${expandedGroups[group.name] ? 'rotate-180' : ''}`} 
                 />
@@ -372,11 +387,22 @@ function DesktopSidebar() {
     'Sức khỏe': true
   });
 
+  // Load expanded groups from localStorage on mount
+  useEffect(() => {
+    const savedExpandedGroups = localStorage.getItem('desktopExpandedGroups');
+    if (savedExpandedGroups) {
+      setExpandedGroups(JSON.parse(savedExpandedGroups));
+    }
+  }, []);
+
   const toggleGroup = (groupName: string) => {
-    setExpandedGroups(prev => ({
-      ...prev,
-      [groupName]: !prev[groupName]
-    }));
+    const newExpandedGroups = {
+      ...expandedGroups,
+      [groupName]: !expandedGroups[groupName]
+    };
+    setExpandedGroups(newExpandedGroups);
+    // Save to localStorage
+    localStorage.setItem('desktopExpandedGroups', JSON.stringify(newExpandedGroups));
   };
 
   return (
@@ -389,7 +415,7 @@ function DesktopSidebar() {
       <div className="h-16 flex items-center px-6 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
         <Link href="/" className="flex items-center gap-3.5 overflow-hidden">
           <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-700 dark:to-gray-900 flex items-center justify-center text-white">
-            <SparklesIcon className="w-5 h-5" />
+            <FaMagic className="w-5 h-5" />
           </div>
           {!isCollapsed && (
             <span className="font-medium text-base text-gray-900 dark:text-white whitespace-nowrap">
@@ -417,7 +443,7 @@ function DesktopSidebar() {
                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
             } transition-colors`}
           >
-            <HomeIcon className="w-5 h-5 flex-shrink-0" />
+            <FaHome className="w-5 h-5 flex-shrink-0" />
             {!isCollapsed && <span className="font-medium text-sm">Trang chủ</span>}
           </Link>
         </div>
@@ -441,7 +467,7 @@ function DesktopSidebar() {
                 <span className="flex-1 text-left font-medium text-sm">
                   {group.name}
                 </span>
-                <ChevronDownIcon 
+                <FaChevronDown 
                   className={`w-4 h-4 text-gray-400 transition-transform duration-200
                     ${expandedGroups[group.name] ? 'rotate-180' : ''}`} 
                 />
