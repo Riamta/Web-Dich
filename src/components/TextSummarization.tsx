@@ -240,7 +240,7 @@ export default function TextSummarization() {
         <>
             {/* Input Form */}
             <div className="space-y-4">
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 space-y-4">
                     <div className="flex items-center justify-between">
                         <label htmlFor="text" className="block text-sm font-medium text-gray-700 flex items-center gap-2">
                             <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
@@ -442,7 +442,7 @@ export default function TextSummarization() {
             </div>
 
             {/* Output */}
-            <div ref={resultRef} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+            <div ref={resultRef} className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 space-y-4">
                 <div className="flex items-center justify-between">
                     <label htmlFor="text" className="block text-sm font-medium text-gray-700 flex items-center gap-2">
                         <DocumentArrowUpIcon className="h-5 w-5 text-gray-400" />
