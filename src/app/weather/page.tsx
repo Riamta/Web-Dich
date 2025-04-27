@@ -474,7 +474,7 @@ export default function Weather() {
     }, [refreshing])
 
     return (
-        <div ref={pageRef} className="w-full max-w-full overflow-x-hidden">
+        <div ref={pageRef} className="mx-auto px-2 py-8 max-w-7xl">
             {/* Pull-to-refresh indicator */}
             <div className="pull-to-refresh-indicator">
                 <div className="pull-to-refresh-spinner"></div>
@@ -482,7 +482,7 @@ export default function Weather() {
             </div>
             
             {/* Sticky Header for Mobile */}
-            <div className="sticky top-0 z-10 px-2 bg-white pb-2 shadow-sm sm:shadow-none mb-2 sm:mb-0 w-full">
+            <div className="sticky top-0 z-10 px-2 pb-2 shadow-sm sm:shadow-none mb-2 sm:mb-0 w-full">
                 <div className="flex items-center justify-between">
                     <h1 className="text-xl sm:text-3xl font-bold mb-0 sm:mb-4">Dự báo thời tiết</h1>
                     
