@@ -31,7 +31,8 @@ import {
     CloudIcon,
     FlagIcon,
     ArrowPathIcon,
-    ArrowsRightLeftIcon
+    ArrowsRightLeftIcon,
+    ClipboardDocumentCheckIcon
 } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react';
 import { PageView } from '@/models/PageView';
@@ -56,7 +57,7 @@ interface CategoryProps {
 const FeatureCard = ({ title, description, icon, views, path, badge, isHot }: FeatureCardProps) => {
     // Determine if this feature is popular based on view count
     const isPopular = views > 100; // Consider features with more than 100 views as popular
-    
+
     return (
         <Link href={path} className="block group">
             <div className="p-6 rounded-xl border border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm transition-all duration-300 h-full flex flex-col">
@@ -88,7 +89,7 @@ const FeatureCard = ({ title, description, icon, views, path, badge, isHot }: Fe
                         <p className="text-xs text-gray-500 mt-1">{description}</p>
                     </div>
                 </div>
-                
+
                 <div className="mt-auto flex justify-end text-xs text-gray-400">
                     <div className="flex items-center gap-1">
                         <EyeIcon className="h-3 w-3" />
@@ -182,13 +183,6 @@ const categories: CategoryProps[] = [
                 icon: <StarIcon className="w-6 h-6 text-black" />,
                 views: 0,
                 path: "/fortune-telling"
-            },
-            {
-                title: "Tạo công thức nấu ăn",
-                description: "Tạo công thức nấu ăn bằng AI",
-                icon: <BeakerIcon className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/recipe-generator"
             }
         ]
     },
@@ -219,35 +213,6 @@ const categories: CategoryProps[] = [
                 views: 0,
                 path: "/weather",
                 badge: "New"
-            },
-            {
-                title: "Chuyển đổi tiền tệ",
-                description: "Chuyển đổi giữa các loại tiền tệ khác nhau",
-                icon: <CurrencyDollarIcon className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/currency",
-                badge: "New"
-            },
-            {
-                title: "Tính lãi suất",
-                description: "Tính lãi suất tiết kiệm",
-                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/utilities/interest-calculator"
-            },
-            {
-                title: "Tính khoản vay",
-                description: "Tính khoản vay và lãi suất",
-                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/utilities/loan-calculator"
-            },
-            {
-                title: "Quản lý chi tiêu",
-                description: "Quản lý chi tiêu của bạn",
-                icon: <CreditCardIcon className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/money-love"
             },
             {
                 title: "Tạo tên người dùng",
@@ -285,13 +250,6 @@ const categories: CategoryProps[] = [
                 path: "/utilities/unit-converter"
             },
             {
-                title: "Tính chỉ số BMI",
-                description: "Tính chỉ số BMI của bạn",
-                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/utilities/bmi-calculator"
-            },
-            {
                 title: "Tính tuổi",
                 description: "Tính tuổi của bạn",
                 icon: <CalculatorIcon className="w-6 h-6 text-black" />,
@@ -308,6 +266,72 @@ const categories: CategoryProps[] = [
             }
         ]
     },
+    {
+        title: "Tài chính",
+        description: "Các công cụ tài chính",
+        icon: <CurrencyDollarIcon className="w-6 h-6 text-black" />,
+        features: [
+            {
+                title: "Chuyển đổi tiền tệ",
+                description: "Chuyển đổi giữa các loại tiền tệ khác nhau",
+                icon: <CurrencyDollarIcon className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/currency",
+                badge: "New"
+            },
+            {
+                title: "Tính lãi suất",
+                description: "Tính lãi suất tiết kiệm",
+                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/utilities/interest-calculator"
+            },
+            {
+                title: "Tính khoản vay",
+                description: "Tính khoản vay và lãi suất",
+                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/utilities/loan-calculator"
+            },
+            {
+                title: "Quản lý chi tiêu",
+                description: "Quản lý chi tiêu của bạn",
+                icon: <CreditCardIcon className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/money-love"
+            },
+
+        ]
+    },
+    {
+        title: "Sức khỏe",
+        description: "Các công cụ sức khỏe",
+        icon: <HeartIcon className="w-6 h-6 text-black" />,
+        features: [
+            {
+                title: "Tính chỉ số BMI",
+                description: "Tính chỉ số BMI của bạn",
+                icon: <CalculatorIcon className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/utilities/bmi-calculator"
+            },
+            {
+                title: "Lên lịch luyện tập",
+                description: "Tạo lịch tập phù hợp với cơ thể bạn",
+                icon: <ClipboardDocumentCheckIcon className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/workout-scheduler",
+                badge: "New"
+            },
+            {
+                title: "Công thức nấu ăn",
+                description: "Tạo công thức nấu ăn bằng AI",
+                icon: <BeakerIcon className="w-6 h-6 text-black" />,
+                views: 0,
+                path: "/recipe-generator"
+            }
+        ]
+    }
 ]
 
 export default function Features() {
@@ -343,13 +367,13 @@ export default function Features() {
             ...category,
             features: category.features.filter(feature => {
                 if (!debouncedSearchQuery) return true;
-                
+
                 const normalizedSearch = normalizeText(debouncedSearchQuery);
                 const normalizedTitle = normalizeText(feature.title);
                 const normalizedDescription = normalizeText(feature.description);
-                
+
                 return normalizedTitle.includes(normalizedSearch) ||
-                       normalizedDescription.includes(normalizedSearch);
+                    normalizedDescription.includes(normalizedSearch);
             })
         }))
         .filter(category => category.features.length > 0);
@@ -379,7 +403,7 @@ export default function Features() {
     //   revalidateOnFocus: false,
     //   dedupingInterval: 60 * 1000, // Dedupe requests within 1 minute
     // });
-    
+
     useEffect(() => {
         // Helper function to update top pages
         const updateTopPages = (viewsMap: Record<string, number>) => {
@@ -388,7 +412,7 @@ export default function Features() {
                 .sort((a, b) => b[1] - a[1]) // Sort by views in descending order
                 .slice(0, 3) // Take top 3
                 .map(([path]) => path); // Extract just the paths
-            
+
             setTopPages(sortedPaths);
         };
 
@@ -437,11 +461,10 @@ export default function Features() {
                 <div className="flex flex-wrap justify-center gap-2">
                     <button
                         onClick={() => setSelectedCategory(null)}
-                        className={`px-4 py-2 rounded-full text-sm font-normal transition-all duration-300 ${
-                            selectedCategory === null
-                                ? 'bg-gray-900 text-white shadow-sm'
-                                : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                        }`}
+                        className={`px-4 py-2 rounded-full text-sm font-normal transition-all duration-300 ${selectedCategory === null
+                            ? 'bg-gray-900 text-white shadow-sm'
+                            : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                            }`}
                     >
                         Tất cả
                     </button>
@@ -449,11 +472,10 @@ export default function Features() {
                         <button
                             key={category.title}
                             onClick={() => setSelectedCategory(category.title)}
-                            className={`px-4 py-2 rounded-full text-sm font-normal transition-all duration-300 ${
-                                selectedCategory === category.title
-                                    ? 'bg-gray-900 text-white shadow-sm'
-                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                            }`}
+                            className={`px-4 py-2 rounded-full text-sm font-normal transition-all duration-300 ${selectedCategory === category.title
+                                ? 'bg-gray-900 text-white shadow-sm'
+                                : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                                }`}
                         >
                             {category.title}
                         </button>
@@ -497,7 +519,7 @@ export default function Features() {
                         <p className="text-gray-500 text-lg font-light">
                             Không tìm thấy kết quả phù hợp với tìm kiếm của bạn.
                         </p>
-                        <button 
+                        <button
                             onClick={() => setSearchQuery('')}
                             className="mt-3 text-sm text-gray-900 underline underline-offset-2"
                         >

@@ -24,7 +24,15 @@ import {
   CreditCardIcon,
   ChevronLeftIcon,
   XMarkIcon,
-  HomeIcon
+  HomeIcon,
+  StarIcon,
+  FlagIcon,
+  CloudIcon,
+  QrCodeIcon,
+  ClockIcon,
+  RectangleStackIcon,
+  CalculatorIcon,
+  ClipboardDocumentCheckIcon
 } from '@heroicons/react/24/outline';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useState } from 'react';
@@ -109,6 +117,11 @@ const menuGroups: MenuGroup[] = [
         name: 'Tạo công thức nấu ăn',
         path: '/recipe-generator',
         icon: <BeakerIcon className="w-5 h-5" />
+      },
+      {
+        name: 'Xem bói',
+        path: '/fortune-telling',
+        icon: <StarIcon className="w-5 h-5" />
       }
     ]
   },
@@ -140,6 +153,83 @@ const menuGroups: MenuGroup[] = [
         name: 'Email tạm thời',
         path: '/temp-mail',
         icon: <EnvelopeIcon className="w-5 h-5" />
+      },
+      {
+        name: 'Thông tin quốc gia',
+        path: '/countries',
+        icon: <FlagIcon className="w-5 h-5" />
+      },
+      {
+        name: 'Dự báo thời tiết',
+        path: '/weather',
+        icon: <CloudIcon className="w-5 h-5" />
+      },
+      {
+        name: 'Mã QR',
+        path: '/qrcode',
+        icon: <QrCodeIcon className="w-5 h-5" />
+      },
+      {
+        name: 'Chuyển đổi múi giờ',
+        path: '/utilities/time-converter',
+        icon: <ClockIcon className="w-5 h-5" />
+      },
+      {
+        name: 'Chuyển đổi đơn vị',
+        path: '/utilities/unit-converter',
+        icon: <RectangleStackIcon className="w-5 h-5" />
+      },
+      {
+        name: 'Tính tuổi',
+        path: '/utilities/age-calculator',
+        icon: <CalculatorIcon className="w-5 h-5" />
+      }
+    ]
+  },
+  {
+    name: 'Tài chính',
+    icon: <CurrencyDollarIcon className="w-5 h-5" />,
+    items: [
+      {
+        name: 'Chuyển đổi tiền tệ',
+        path: '/currency',
+        icon: <CurrencyDollarIcon className="w-5 h-5" />
+      },
+      {
+        name: 'Tính lãi suất',
+        path: '/utilities/interest-calculator',
+        icon: <CalculatorIcon className="w-5 h-5" />
+      },
+      {
+        name: 'Tính khoản vay',
+        path: '/utilities/loan-calculator',
+        icon: <CalculatorIcon className="w-5 h-5" />
+      },
+      {
+        name: 'Quản lý chi tiêu',
+        path: '/money-love',
+        icon: <CreditCardIcon className="w-5 h-5" />
+      }
+    ]
+  },
+  {
+    name: 'Sức khỏe',
+    icon: <HeartIcon className="w-5 h-5" />,
+    items: [
+      {
+        name: 'Tính chỉ số BMI',
+        path: '/utilities/bmi-calculator',
+        icon: <CalculatorIcon className="w-5 h-5" />
+      },
+      {
+        name: 'Công thức nấu ăn',
+        path: '/recipe-generator',
+        icon: <BeakerIcon className="w-5 h-5" />
+      },
+      {
+        name: 'Lên lịch luyện tập',
+        path: '/workout-scheduler',
+        icon: <ClipboardDocumentCheckIcon className="w-5 h-5" />
       }
     ]
   }
@@ -150,7 +240,9 @@ function MobileSidebar() {
   const { isOpen, setIsOpen } = useSidebar();
   const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({
     'Công cụ AI': true,
-    'Tiện ích': true
+    'Tiện ích': true,
+    'Tài chính': true,
+    'Sức khỏe': true
   });
 
   const toggleGroup = (groupName: string) => {
@@ -260,7 +352,9 @@ function DesktopSidebar() {
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({
     'Công cụ AI': true,
-    'Tiện ích': true
+    'Tiện ích': true,
+    'Tài chính': true,
+    'Sức khỏe': true
   });
 
   const toggleGroup = (groupName: string) => {

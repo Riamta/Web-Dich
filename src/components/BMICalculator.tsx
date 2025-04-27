@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { ScaleIcon, ArrowsUpDownIcon, BoltIcon, HeartIcon, InformationCircleIcon, CommandLineIcon, CalculatorIcon } from '@heroicons/react/24/outline'
+import { ScaleIcon, ArrowsUpDownIcon, BoltIcon, HeartIcon, InformationCircleIcon, CommandLineIcon, CalculatorIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline'
 import { aiService } from '@/lib/ai-service'
 import ReactMarkdown from 'react-markdown'
+import Link from 'next/link'
 
 interface BMIResult {
     bmi: number
@@ -418,6 +419,17 @@ Hãy viết ngắn gọn, dễ hiểu và sử dụng markdown để định d�
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* Workout Scheduler Button */}
+                            <div className="mt-6 flex justify-center">
+                                <Link
+                                    href={`/workout-scheduler?bmi=${bmiResult.bmi}&category=${encodeURIComponent(bmiResult.category)}`}
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+                                >
+                                    <ClipboardDocumentCheckIcon className="w-5 h-5" />
+                                    Lên lịch tập luyện phù hợp
+                                </Link>
                             </div>
                         </div>
                     )}

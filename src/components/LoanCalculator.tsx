@@ -88,8 +88,8 @@ export function LoanCalculator() {
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-            <div className="mb-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mx-auto px-2 py-8 max-w-7xl">
+            <div className="mb-6">  
                 <h1 className="text-2xl font-semibold mb-2">CÔNG CỤ TÍNH LÃI VAY NGÂN HÀNG</h1>
                 <p className="text-gray-600 mb-4">
                     Công cụ tính lãi vay ngân hàng giúp bạn dễ dàng biết được số tiền phải trả hàng tháng và tổng số tiền phải trả.
