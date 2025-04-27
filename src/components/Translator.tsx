@@ -936,7 +936,7 @@ export default function Translator() {
 
             {/* Source Content */}
             {activeTab === 'file' ? (
-              <div className="p-4 sm:p-6">
+              <div className="p-4 sm:p-4">
                 {uploadedFiles.length > 0 ? (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -1058,7 +1058,7 @@ export default function Translator() {
                     }
                   }}
                   style={{ overflow: 'hidden' }}
-                  className="w-full p-4 sm:p-6 resize-none focus:outline-none text-base min-h-[300px] sm:min-h-[500px] bg-transparent"
+                  className="w-full p-4 sm:p-4 resize-none focus:outline-none text-base min-h-[300px] sm:min-h-[500px] bg-transparent border border-gray-100"
                   placeholder={isDragging ? 'Drop text file here' : 'Enter text to translate...'}
                 />
               </div>
@@ -1068,7 +1068,7 @@ export default function Translator() {
           {/* Translated Text Panel */}
           <div className="relative">
             {/* Translated Panel Toolbar */}
-            <div className="flex items-center justify-between px-3 sm:px-4 py-2 border-b border-gray-200 bg-gray-50/80">
+            <div className="flex items-center justify-between px-3 sm:px-4 py-1 border-b border-gray-200 bg-gray-50/80">
               <div className="text-sm font-medium text-gray-500">Translation</div>
               <div className="flex items-center gap-1">
                 {activeTab === 'file' ? (
@@ -1136,7 +1136,7 @@ export default function Translator() {
             <div
               ref={translatedTextRef}
               style={{ height: `${contentHeight}px` }}
-              className="p-4 sm:p-6 overflow-y-auto min-h-[300px] sm:min-h-[500px]"
+              className="p-4 sm:p-4 overflow-y-auto min-h-[300px] sm:min-h-[500px]"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center h-full">

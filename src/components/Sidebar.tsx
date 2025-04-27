@@ -40,10 +40,12 @@ import {
   MdOutlineCreditCard,
   MdStackedLineChart,
   MdScience,
-  MdOutlineLightbulb
+  MdOutlineLightbulb,
+  MdOutlineSettings
 } from "react-icons/md";
 
 import { useSidebar } from '@/contexts/SidebarContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useState, useEffect } from 'react';
 
 interface MenuItem {
@@ -256,6 +258,7 @@ const menuGroups: MenuGroup[] = [
 function MobileSidebar() {
   const pathname = usePathname();
   const { isOpen, setIsOpen } = useSidebar();
+  const { t } = useLanguage();
   const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({
     'Công cụ AI': true,
     'Tiện ích': true,
@@ -317,7 +320,7 @@ function MobileSidebar() {
             onClick={() => setIsOpen(false)}
           >
             <FaHome className="w-5 h-5" />
-            <span className="font-medium text-sm">Trang chủ</span>
+            <span className="font-medium text-sm">{t('common.home')}</span>
           </Link>
 
           <div className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-3">
@@ -369,6 +372,21 @@ function MobileSidebar() {
             </div>
           ))}
         </div>
+        
+        {/* Settings at bottom */}
+        <div className="mt-auto border-t border-gray-100 dark:border-gray-700 py-4 px-3">
+          <Link
+            href="/settings"
+            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg ${pathname === '/settings'
+              ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+              } transition-colors`}
+            onClick={() => setIsOpen(false)}
+          >
+            <MdOutlineSettings className="w-5 h-5" />
+            <span className="font-medium text-sm">{t('common.settings')}</span>
+          </Link>
+        </div>
       </div>
     </>
   );
@@ -377,6 +395,7 @@ function MobileSidebar() {
 function DesktopSidebar() {
   const pathname = usePathname();
   const { isCollapsed, setIsCollapsed } = useSidebar();
+  const { t } = useLanguage();
   const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({
     'Công cụ AI': true,
     'Tiện ích': true,
@@ -429,7 +448,7 @@ function DesktopSidebar() {
       </div>
 
       {/* Menu - with own scrollable area */}
-      <div className="overflow-y-auto h-[calc(100vh-4rem)] scrollbar-thin">
+      <div className="overflow-y-auto h-[calc(100vh-4rem-60px)] scrollbar-thin">
         <div className={`px-3 py-4 ${isCollapsed ? 'text-center' : ''}`}>
           <Link
             href="/"
@@ -439,7 +458,7 @@ function DesktopSidebar() {
               } transition-colors`}
           >
             <FaHome className="w-5 h-5 flex-shrink-0" />
-            {!isCollapsed && <span className="font-medium text-sm">Trang chủ</span>}
+            {!isCollapsed && <span className="font-medium text-sm">{t('common.home')}</span>}
           </Link>
         </div>
 
@@ -501,6 +520,21 @@ function DesktopSidebar() {
             )}
           </div>
         ))}
+      </div>
+      
+      {/* Settings at the bottom */}
+      <div className="absolute bottom-0 left-0 right-0 border-t border-gray-100 dark:border-gray-700 py-4 px-3">
+        <Link
+          href="/settings"
+          className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-lg ${pathname === '/settings'
+            ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+            } transition-colors`}
+          title={isCollapsed ? t('common.settings') : undefined}
+        >
+          <MdOutlineSettings className="w-5 h-5 flex-shrink-0" />
+          {!isCollapsed && <span className="font-medium text-sm">{t('common.settings')}</span>}
+        </Link>
       </div>
     </aside>
   );

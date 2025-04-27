@@ -1,51 +1,52 @@
-'use client'
-
 import Link from 'next/link'
-import { 
-  FaDice, 
-  FaKeyboard, 
-  FaHeart, 
-  FaHome, 
-  FaBook, 
-  FaStar, 
-  FaFlagUsa, 
-  FaCloud, 
-  FaQrcode, 
-  FaClock, 
-  FaRegClipboard, 
-  FaCalculator, 
-  FaChevronDown,
-  FaMagic,
-  FaSearch,
-  FaEye
+import {
+    FaDice,
+    FaKeyboard,
+    FaHeart,
+    FaHome,
+    FaBook,
+    FaStar,
+    FaFlagUsa,
+    FaCloud,
+    FaQrcode,
+    FaClock,
+    FaRegClipboard,
+    FaCalculator,
+    FaChevronDown,
+    FaMagic,
+    FaSearch,
+    FaEye
 } from "react-icons/fa";
-import { 
-  FaMoneyBillTransfer, 
-  FaUser, 
-  FaChartSimple 
+import {
+    FaMoneyBillTransfer,
+    FaUser,
+    FaChartSimple
 } from "react-icons/fa6";
-import { 
-  MdOutlinePassword, 
-  MdTranslate, 
-  MdOutlineChatBubbleOutline,
-  MdOutlineMovie, 
-  MdOutlineQuestionMark, 
-  MdOutlineSchool, 
-  MdOutlineDocumentScanner, 
-  MdOutlineModeEdit, 
-  MdOutlinePhoto, 
-  MdGrid3X3, 
-  MdOutlineCurrencyExchange, 
-  MdEmail, 
-  MdOutlineCreditCard,
-  MdStackedLineChart,
-  MdScience,
-  MdOutlineLightbulb,
-  MdOutlineRestartAlt,
-  MdOutlineSwapHoriz
+import {
+    MdOutlinePassword,
+    MdTranslate,
+    MdOutlineChatBubbleOutline,
+    MdOutlineMovie,
+    MdOutlineQuestionMark,
+    MdOutlineSchool,
+    MdOutlineDocumentScanner,
+    MdOutlineModeEdit,
+    MdOutlinePhoto,
+    MdGrid3X3,
+    MdOutlineCurrencyExchange,
+    MdEmail,
+    MdOutlineCreditCard,
+    MdStackedLineChart,
+    MdScience,
+    MdOutlineLightbulb,
+    MdOutlineRestartAlt,
+    MdOutlineSwapHoriz,
+    MdOutlineAutoFixHigh,
+    MdCrop
 } from "react-icons/md";
 import { useEffect, useState } from 'react';
 import { PageView } from '@/models/PageView';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface FeatureCardProps {
     title: string
@@ -55,14 +56,15 @@ interface FeatureCardProps {
     path: string
     badge?: 'Popular' | 'New'
     isHot?: boolean,
-    category?: string
+    categories?: string[]
+    multiCategory?: boolean
 }
+
 
 interface CategoryProps {
     title: string
     description: string
     icon: React.ReactNode
-    features: FeatureCardProps[]
 }
 
 const FeatureCard = ({ title, description, icon, views, path, badge, isHot }: FeatureCardProps) => {
@@ -112,282 +114,301 @@ const FeatureCard = ({ title, description, icon, views, path, badge, isHot }: Fe
     )
 }
 
-const categories: CategoryProps[] = [
+// Category definitions
+const categoryDefinitions: CategoryProps[] = [
     {
-        title: "Công cụ AI",
+        title: "AI",
         description: "Các công cụ sử dụng trí tuệ nhân tạo",
-        icon: <FaMagic className="w-6 h-6 text-black" />,
-        features: [
-            {
-                title: "Dịch thuật AI",
-                description: "Dịch văn bản giữa các ngôn ngữ bằng AI",
-                icon: <MdTranslate className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/translate",
-                category: "AI"
-            },
-            {
-                title: "Dịch hội thoại",
-                description: "Dịch các cuộc hội thoại và đoạn chat",
-                icon: <MdOutlineChatBubbleOutline className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/conversation-translate",
-                category: "AI"
-            },
-            {
-                title: "Dịch phụ đề",
-                description: "Dịch file phụ đề SRT sang nhiều ngôn ngữ",
-                icon: <MdOutlineMovie className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/srt-translate",
-                category: "AI"
-            },
-            {
-                title: "Từ điển",
-                description: "Tra cứu từ điển đa ngôn ngữ",
-                icon: <FaBook className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/dictionary",
-                category: "AI"
-            },
-            {
-                title: "Học từ vựng",
-                description: "Học và luyện tập từ vựng hiệu quả",
-                icon: <MdOutlineSchool className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/vocabulary",
-                category: "AI"
-            },
-            {
-                title: "Tạo câu hỏi",
-                description: "Tạo các bài tập và câu hỏi trắc nghiệm",
-                icon: <MdOutlineQuestionMark className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/quiz",
-                category: "AI"
-            },
-            {
-                title: "Cải thiện văn bản",
-                description: "Nâng cao chất lượng văn bản của bạn",
-                icon: <FaMagic className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/enhance-text",
-                category: "AI"
-            },
-            {
-                title: "Tóm tắt văn bản",
-                description: "Tự động tóm tắt văn bản dài",
-                icon: <MdOutlineDocumentScanner className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/summarize",
-                category: "AI"
-            },
-            {
-                title: "Giải bài tập",
-                description: "Giải bài tập bằng AI",
-                icon: <MdOutlineLightbulb className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/aisolver",
-                category: "AI"
-            },
-            {
-                title: "Hỗ trợ tán gái",
-                description: "Hỗ trợ tán gái bằng AI",
-                icon: <FaHeart className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/flirting",
-                category: "AI"
-            },
-            {
-                title: "Xem bói",
-                description: "Xem bói bằng AI",
-                icon: <FaStar className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/fortune-telling",
-                category: "AI"
-            }
-        ]
+        icon: <FaMagic className="w-6 h-6 text-black" />
     },
     {
-        title: "Tiện ích",
+        title: "Utilities",
         description: "Các công cụ hỗ trợ tiện ích",
-        icon: <MdGrid3X3 className="w-6 h-6 text-black" />,
-        features: [
-            {
-                title: "Kiểm tra tốc độ gõ",
-                description: "Kiểm tra và cải thiện tốc độ gõ phím của bạn",
-                icon: <FaKeyboard className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/typing-speed",
-                badge: "New",
-                category: "Utility"
-            },
-            {
-                title: "Công cụ ngẫu nhiên",
-                description: "Tạo số ngẫu nhiên, chuỗi",
-                icon: <FaDice className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/random",
-                badge: "New",
-                category: "Utility"
-            },
-            {
-                title: "Thông tin quốc gia",
-                description: "Thông tin chi tiết về quốc gia",
-                icon: <FaFlagUsa className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/countries",
-                category: "Utility"
-            },
-            {
-                title: "Dự báo thời tiết",
-                description: "Xem dự báo thời tiết chi tiết với bản đồ tương tác",
-                icon: <FaCloud className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/weather",
-                badge: "New",
-                category: "Utility"
-            },
-            {
-                title: "Mã QR",
-                description: "Tạo và quét mã QR",
-                icon: <FaQrcode className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/qrcode",
-                category: "Utility"
-            },
-            {
-                title: "Email tạm thời",
-                description: "Tạo email tạm",
-                icon: <MdEmail className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/temp-mail",
-                category: "Utility"
-            },
-            {
-                title: "Chuyển đổi múi giờ",
-                description: "Chuyển đổi múi giờ giữa các thành phố trên thế giới",
-                icon: <FaClock className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/utilities/time-converter",
-                category: "Utility"
-            },
-            {
-                title: "Chuyển đổi đơn vị",
-                description: "Chuyển đổi đơn vị giữa các đơn vị khác nhau",
-                icon: <MdStackedLineChart className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/utilities/unit-converter",
-                category: "Utility"
-            },
-            {
-                title: "Tính tuổi",
-                description: "Tính tuổi của bạn",
-                icon: <FaCalculator className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/utilities/age-calculator",
-                category: "Utility"
-            },
-            {
-                title: "Username tools",
-                description: "Username tools",
-                icon: <FaUser  className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/username-tools",
-                category: "Utility"
-            },
-            {
-                title: "Password tools",
-                description: "Password tools",
-                icon: <MdOutlinePassword className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/password-tools",
-                category: "Utility"
-            }
-        ]
+        icon: <MdGrid3X3 className="w-6 h-6 text-black" />
     },
     {
-        title: "Tài chính",
+        title: "Fiance",
         description: "Các công cụ tài chính",
-        icon: <MdOutlineCurrencyExchange className="w-6 h-6 text-black" />,
-        features: [
-            {
-                title: "Chuyển đổi tiền tệ",
-                description: "Chuyển đổi giữa các loại tiền tệ khác nhau",
-                icon: <FaMoneyBillTransfer className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/currency",
-                badge: "New",
-                category: "Finance"
-            },
-            {
-                title: "Tính lãi suất",
-                description: "Tính lãi suất tiết kiệm",
-                icon: <FaCalculator className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/utilities/interest-calculator",
-                category: "Finance"
-            },
-            {
-                title: "Tính khoản vay",
-                description: "Tính khoản vay và lãi suất",
-                icon: <FaCalculator className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/utilities/loan-calculator",
-                category: "Finance"
-            },
-            {
-                title: "Quản lý chi tiêu",
-                description: "Quản lý chi tiêu của bạn",
-                icon: <MdOutlineCreditCard className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/money-love",
-                category: "Finance"
-            },
-
-        ]
+        icon: <MdOutlineCurrencyExchange className="w-6 h-6 text-black" />
     },
     {
-        title: "Sức khỏe",
+        title: "Health",
         description: "Các công cụ sức khỏe",
-        icon: <FaHeart className="w-6 h-6 text-black" />,
-        features: [
-            {
-                title: "Tính chỉ số BMI",
-                description: "Tính chỉ số BMI của bạn",
-                icon: <FaCalculator className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/utilities/bmi-calculator",
-                category: "Health"
-            },
-            {
-                title: "Lên lịch luyện tập",
-                description: "Tạo lịch tập phù hợp với cơ thể bạn",
-                icon: <FaRegClipboard className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/workout-scheduler",
-                badge: "New",
-                category: "Health"
-            },
-            {
-                title: "Công thức nấu ăn",
-                description: "Tạo công thức nấu ăn bằng AI",
-                icon: <MdScience className="w-6 h-6 text-black" />,
-                views: 0,
-                path: "/recipe-generator",
-                category: "Health"
-            }
-        ]
+        icon: <FaHeart className="w-6 h-6 text-black" />
     }
-]
+];
 
 export default function Features() {
+    const { t } = useLanguage();
     const [pageViews, setPageViews] = useState<Record<string, number>>({});
     const [topPages, setTopPages] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-
+    // All available features with their metadata
+    const allFeatures: FeatureCardProps[] = [
+        {
+            title: t('translate.ai_translate'),
+            description: t('translate.ai_translate_description'),
+            icon: <MdTranslate className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/translate",
+            categories: ["AI", "Utilities"],
+            multiCategory: true
+        },
+        {
+            title: t('translate.conversation_translate'),
+            description: t('translate.conversation_translate_description'),
+            icon: <MdOutlineChatBubbleOutline className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/conversation-translate",
+            categories: ["AI"]
+        },
+        {
+            title: "Dịch phụ đề",
+            description: "Dịch file phụ đề SRT sang nhiều ngôn ngữ",
+            icon: <MdOutlineMovie className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/srt-translate",
+            categories: ["AI"]
+        },
+        {
+            title: "Từ điển",
+            description: "Tra cứu từ điển đa ngôn ngữ",
+            icon: <FaBook className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/dictionary",
+            categories: ["AI", "Utilities"],
+            multiCategory: true
+        },
+        {
+            title: "Học từ vựng",
+            description: "Học và luyện tập từ vựng hiệu quả",
+            icon: <MdOutlineSchool className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/vocabulary",
+            categories: ["AI"]
+        },
+        {
+            title: "Tạo câu hỏi",
+            description: "Tạo các bài tập và câu hỏi trắc nghiệm",
+            icon: <MdOutlineQuestionMark className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/quiz",
+            categories: ["AI"]
+        },
+        {
+            title: "Cải thiện văn bản",
+            description: "Nâng cao chất lượng văn bản của bạn",
+            icon: <FaMagic className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/enhance-text",
+            categories: ["AI"]
+        },
+        {
+            title: "Tóm tắt văn bản",
+            description: "Tự động tóm tắt văn bản dài",
+            icon: <MdOutlineDocumentScanner className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/summarize",
+            categories: ["AI"]
+        },
+        {
+            title: "Giải bài tập",
+            description: "Giải bài tập bằng AI",
+            icon: <MdOutlineLightbulb className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/aisolver",
+            categories: ["AI"]
+        },
+        {
+            title: "Hỗ trợ tán gái",
+            description: "Hỗ trợ tán gái bằng AI",
+            icon: <FaHeart className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/flirting",
+            categories: ["AI"]
+        },
+        {
+            title: "Xem bói",
+            description: "Xem bói bằng AI",
+            icon: <FaStar className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/fortune-telling",
+            categories: ["AI"]
+        },
+        {
+            title: "Kiểm tra tốc độ gõ",
+            description: "Kiểm tra và cải thiện tốc độ gõ phím của bạn",
+            icon: <FaKeyboard className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/typing-speed",
+            badge: "New",
+            categories: ["Utilities"]
+        },
+        {
+            title: "Công cụ ngẫu nhiên",
+            description: "Tạo số ngẫu nhiên, chuỗi",
+            icon: <FaDice className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/random",
+            badge: "New",
+            categories: ["Utilities"]
+        },
+        {
+            title: "Thông tin quốc gia",
+            description: "Thông tin chi tiết về quốc gia",
+            icon: <FaFlagUsa className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/countries",
+            categories: ["Utilities"]
+        },
+        {
+            title: "Dự báo thời tiết",
+            description: "Xem dự báo thời tiết chi tiết với bản đồ tương tác",
+            icon: <FaCloud className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/weather",
+            badge: "New",
+            categories: ["Utilities"]
+        },
+        {
+            title: "Mã QR",
+            description: "Tạo và quét mã QR",
+            icon: <FaQrcode className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/qrcode",
+            categories: ["Utilities"]
+        },
+        {
+            title: "Email tạm thời",
+            description: "Tạo email tạm",
+            icon: <MdEmail className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/temp-mail",
+            categories: ["Utilities"]
+        },
+        {
+            title: "Chuyển đổi múi giờ",
+            description: "Chuyển đổi múi giờ giữa các thành phố trên thế giới",
+            icon: <FaClock className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/utilities/time-converter",
+            categories: ["Utilities"]
+        },
+        {
+            title: "Chuyển đổi đơn vị",
+            description: "Chuyển đổi đơn vị giữa các đơn vị khác nhau",
+            icon: <MdStackedLineChart className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/utilities/unit-converter",
+            categories: ["Utilities"]
+        },
+        {
+            title: "Tính tuổi",
+            description: "Tính tuổi của bạn",
+            icon: <FaCalculator className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/utilities/age-calculator",
+            categories: ["Utilities"]
+        },
+        {
+            title: "Username tools",
+            description: "Username tools",
+            icon: <FaUser className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/username-tools",
+            categories: ["Utilities"]
+        },
+        {
+            title: "Password tools",
+            description: "Password tools",
+            icon: <MdOutlinePassword className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/password-tools",
+            categories: ["Utilities"]
+        },
+        {
+            title: "Chuyển đổi tiền tệ",
+            description: "Chuyển đổi giữa các loại tiền tệ khác nhau",
+            icon: <FaMoneyBillTransfer className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/currency",
+            badge: "New",
+            categories: ["Fiance", "Utilities"],
+            multiCategory: true
+        },
+        {
+            title: "Tính lãi suất",
+            description: "Tính lãi suất tiết kiệm",
+            icon: <FaCalculator className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/utilities/interest-calculator",
+            categories: ["Fiance"]
+        },
+        {
+            title: "Tính khoản vay",
+            description: "Tính khoản vay và lãi suất",
+            icon: <FaCalculator className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/utilities/loan-calculator",
+            categories: ["Fiance"]
+        },
+        {
+            title: "Quản lý chi tiêu",
+            description: "Quản lý chi tiêu của bạn",
+            icon: <MdOutlineCreditCard className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/money-love",
+            categories: ["Fiance"]
+        },
+        {
+            title: "Tính chỉ số BMI",
+            description: "Tính chỉ số BMI của bạn",
+            icon: <FaCalculator className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/utilities/bmi-calculator",
+            categories: ["Health"]
+        },
+        {
+            title: "Lên lịch luyện tập",
+            description: "Tạo lịch tập phù hợp với cơ thể bạn",
+            icon: <FaRegClipboard className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/workout-scheduler",
+            badge: "New",
+            categories: ["Health"]
+        },
+        {
+            title: "Công thức nấu ăn",
+            description: "Tạo công thức nấu ăn bằng AI",
+            icon: <MdScience className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/recipe-generator",
+            categories: ["Health", "AI"],
+            multiCategory: true
+         },
+        {
+            title: "Công cụ cắt ảnh",
+            description: "Cắt, xoay, thay đổi kích thước ảnh của bạn",
+            icon: <MdCrop className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/image-cropper",
+            badge: "New",
+            categories: ["Utilities"]
+        }
+        // ,
+        // {
+        //     title: t('image_remover.title'),
+        //     description: t('image_remover.description'),
+        //     icon: <MdOutlineAutoFixHigh className="w-6 h-6 text-black" />,
+        //     views: 0,
+        //     path: "/image-bg-remover",
+        //     badge: "New",
+        //     categories: ["AI", "Utilities"],
+        //     multiCategory: true
+        // }
+    ];
     // Debounce search query
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -406,6 +427,49 @@ export default function Features() {
             .replace(/[đĐ]/g, 'd')           // Handle Vietnamese đ/Đ
             .trim();
     };
+
+    // Assign each feature to exactly one category - the first one in categoryDefinitions 
+    // that it belongs to (applies only to features without multiCategory=true)
+    const assignedFeatures = new Map(); // Maps feature path to its assigned category
+
+    // First, iterate through categories in order
+    categoryDefinitions.forEach(category => {
+        // Find features for this category that haven't been assigned yet
+        allFeatures.forEach(feature => {
+            // Skip multi-category features, they'll be handled separately
+            if (feature.multiCategory) return;
+
+            if (
+                feature.categories?.includes(category.title) &&
+                !assignedFeatures.has(feature.path)
+            ) {
+                // Assign this feature to this category
+                assignedFeatures.set(feature.path, category.title);
+            }
+        });
+    });
+
+    // Generate categories with their features for rendering
+    const categories = categoryDefinitions.map(category => {
+        // Get features that should appear in this category
+        const categoryFeatures = allFeatures.filter(feature =>
+            // Include if it's a multi-category feature that belongs to this category
+            (feature.multiCategory && feature.categories?.includes(category.title)) ||
+            // OR if it's a single-category feature assigned to this category
+            (!feature.multiCategory && assignedFeatures.get(feature.path) === category.title)
+        );
+
+        // Create a unique key for each feature in this category
+        const featuresWithKeys = categoryFeatures.map(feature => ({
+            ...feature,
+            uniqueKey: `${feature.path}-${category.title}`
+        }));
+
+        return {
+            ...category,
+            features: featuresWithKeys
+        };
+    });
 
     // Filter features based on search query and selected category
     const filteredCategories = categories
@@ -515,7 +579,7 @@ export default function Features() {
                     >
                         Tất cả
                     </button>
-                    {categories.map((category) => (
+                    {categoryDefinitions.map((category) => (
                         <button
                             key={category.title}
                             onClick={() => setSelectedCategory(category.title)}
@@ -545,11 +609,15 @@ export default function Features() {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {category.features.map((feature, featureIndex) => (
+                            {category.features.map((feature) => (
                                 <FeatureCard
-                                    key={featureIndex}
-                                    {...feature}
+                                    key={feature.uniqueKey}
+                                    title={feature.title}
+                                    description={feature.description}
+                                    icon={feature.icon}
                                     views={pageViews[feature.path] || 0}
+                                    path={feature.path}
+                                    badge={feature.badge}
                                     isHot={topPages.includes(feature.path)}
                                 />
                             ))}
@@ -577,4 +645,4 @@ export default function Features() {
             </div>
         </div>
     )
-} 
+}

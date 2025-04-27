@@ -282,7 +282,7 @@ export default function TextEnhancement() {
                                 onDragOver={handleDragOver}
                                 onDrop={handleDrop}
                                 style={{ overflow: 'hidden' }}
-                                className="w-full p-4 sm:p-6 resize-none focus:outline-none text-base min-h-[300px] sm:min-h-[500px] bg-transparent"
+                                className="w-full p-4 sm:p-6 resize-none focus:outline-none text-base min-h-[300px] sm:min-h-[500px] bg-transparent border border-gray-50"
                                 placeholder={isDragging ? 'Drop text file here' : 'Enter text to enhance...'}
                             />
                         </div>

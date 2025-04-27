@@ -28,6 +28,11 @@ interface TranslationTone {
     specialInstructions?: string
 }
 
+interface GroundedResponse {
+    text: string;
+    sources?: string;
+}
+
 export const TRANSLATION_TONES: Record<string, TranslationTone> = {
     custom: {
         name: 'Tùy chỉnh',
@@ -205,6 +210,51 @@ class AIService {
                 timestamp: new Date().toISOString()
             });
             throw new Error('Failed to process with OpenRouter');
+        }
+    }
+
+    async processWithGoogleSearch(prompt: string): Promise<GroundedResponse> {
+        console.log(`📤 Sending request to ${this.config.model} with Google Search...`);
+        
+        if (!this.config.model.startsWith('gemini')) {
+            throw new Error('Google Search is only available with Gemini models');
+        }
+        
+        const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+        if (!geminiKey) {
+            throw new Error('Gemini API key is not configured');
+        }
+        
+        try {
+            const ai = new GoogleGenAI({ apiKey: geminiKey });
+            const response = await ai.models.generateContent({
+                model: this.config.model,
+                contents: prompt,
+                config: {
+                    tools: [{ googleSearch: {} }],
+                },
+            });
+            
+            let sources = '';
+            if (response.candidates && 
+                response.candidates[0] && 
+                response.candidates[0].groundingMetadata && 
+                response.candidates[0].groundingMetadata.searchEntryPoint && 
+                response.candidates[0].groundingMetadata.searchEntryPoint.renderedContent) {
+                sources = response.candidates[0].groundingMetadata.searchEntryPoint.renderedContent;
+            }
+            
+            return {
+                text: response.text || '',
+                sources: sources
+            };
+        } catch (error) {
+            console.error('❌ Gemini with Google Search error:', {
+                model: this.config.model,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                timestamp: new Date().toISOString()
+            });
+            throw new Error('Failed to process with Gemini using Google Search');
         }
     }
 
