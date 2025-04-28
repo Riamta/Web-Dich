@@ -1,7 +1,7 @@
 import { aiService } from './ai-service';
 import { dictionaryService } from './dictionary-service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { getLanguageName } from './utils';
+import { getLanguageName } from '@/constants/languages';
 import { TRANSLATION_TONES } from './ai-service';
 
 interface TranslationOptions {
