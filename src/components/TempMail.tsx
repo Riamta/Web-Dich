@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { mailTmService, type Domain, type Message, type MessageDetails } from '@/lib/mail-tm'
 import { EnvelopeIcon, TrashIcon, ArrowPathIcon, ClipboardDocumentIcon, EyeIcon, EyeSlashIcon, ArrowRightOnRectangleIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline'
-import { generatePassword, generateRandomUsername } from '@/lib/utils'
 
 export function TempMail() {
     const [domains, setDomains] = useState<Domain[]>([])
@@ -50,7 +49,12 @@ export function TempMail() {
             setError('Failed to fetch domains')
         }
     }
-
+    const generateRandomUsername = () => {
+        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    }
+    const generatePassword = () => {
+        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    }
     const generateRandomUsernameHandler = () => {
         setUsername(generateRandomUsername())
     }
