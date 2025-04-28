@@ -59,7 +59,7 @@ Trả về kết quả dưới dạng JSON với định dạng sau:
       "id": 1,
       "text": "Nội dung câu hỏi",
       "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
-      "scores": [0, 3, 7, 10]
+      "scores": từ 1 tới 10
     },
     ...
   ]
