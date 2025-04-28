@@ -1,7 +1,6 @@
 'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import { GlobeAltIcon } from '@heroicons/react/24/outline';
 import {
   Select,
   SelectContent,
@@ -9,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import ReactCountryFlag from "react-country-flag";
 
 export default function LanguageSwitcher() {
   const { language, setLanguage, t } = useLanguage();
@@ -20,15 +20,48 @@ export default function LanguageSwitcher() {
   return (
     <div className="relative">
       <Select value={language} onValueChange={handleValueChange}>
-        <SelectTrigger className="w-[120px] rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-0 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 ease-in-out focus:ring-2 focus:ring-primary">
+        <SelectTrigger className="w-[80px] rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-0 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 ease-in-out focus:ring-2 focus:ring-primary">
           <div className="flex items-center space-x-2">
-            <GlobeAltIcon className="h-5 w-5" />
-            <SelectValue placeholder={language === 'en' ? 'EN' : 'VI'} />
+            <ReactCountryFlag 
+              countryCode={language === 'en' ? 'GB' : 'VN'} 
+              svg 
+              style={{
+                width: '1.5em',
+                height: '1.5em'
+              }}
+            />
+            <span className="text-xs font-medium">
+              {language === 'en' ? 'EN' : 'VI'}
+            </span>
           </div>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="en">{t('common.english')}</SelectItem>
-          <SelectItem value="vi">{t('common.vietnamese')}</SelectItem>
+          <SelectItem value="en">
+            <div className="flex items-center space-x-2">
+              <ReactCountryFlag 
+                countryCode="GB" 
+                svg 
+                style={{
+                  width: '1.5em',
+                  height: '1.5em'
+                }}
+              />
+              <span>{t('common.english')}</span>
+            </div>
+          </SelectItem>
+          <SelectItem value="vi">
+            <div className="flex items-center space-x-2">
+              <ReactCountryFlag 
+                countryCode="VN" 
+                svg 
+                style={{
+                  width: '1.5em',
+                  height: '1.5em'
+                }}
+              />
+              <span>{t('common.vietnamese')}</span>
+            </div>
+          </SelectItem>
         </SelectContent>
       </Select>
     </div>

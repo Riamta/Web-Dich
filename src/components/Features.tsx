@@ -617,26 +617,30 @@ export default function Features() {
                 </div>
 
                 {/* Category Filter */}
-                <div className="flex flex-wrap justify-center gap-2">
+                <div className="flex flex-wrap justify-center gap-2 bg-white dark:bg-gray-800 rounded-full p-1.5 max-w-fit mx-auto shadow-sm">
                     <button
                         onClick={() => setSelectedCategory(null)}
-                        className={`px-4 py-2 rounded-full text-sm font-normal transition-all duration-300 ${selectedCategory === null
+                        className={`px-4 py-2 rounded-full text-sm font-normal transition-all duration-300 flex items-center gap-2 ${selectedCategory === null
                             ? 'bg-gray-900 text-white shadow-sm'
-                            : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                            : ' text-gray-700 hover:bg-gray-100'
                             }`}
                     >
-                        Tất cả
+                        <MdGrid3X3 className="w-4 h-4 flex-shrink-0" />
+                        <span className="flex-shrink-0">Tất cả</span>
                     </button>
                     {categoryDefinitions.map((category) => (
                         <button
                             key={category.title}
                             onClick={() => setSelectedCategory(category.title)}
-                            className={`px-4 py-2 rounded-full text-sm font-normal transition-all duration-300 ${selectedCategory === category.title
+                            className={`px-4 py-2 rounded-full text-sm font-normal transition-all duration-300 flex items-center gap-2 ${selectedCategory === category.title
                                 ? 'bg-gray-900 text-white shadow-sm'
-                                : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                                : 'text-gray-700 hover:bg-gray-100'
                                 }`}
                         >
-                            {category.title}
+                            <div className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+                                {category.icon}
+                            </div>
+                            <span className="flex-shrink-0">{category.title}</span>
                         </button>
                     ))}
                 </div>
@@ -656,7 +660,7 @@ export default function Features() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {category.features.map((feature) => (
                                 <FeatureCard
                                     key={feature.uniqueKey}
