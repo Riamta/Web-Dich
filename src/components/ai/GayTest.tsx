@@ -47,9 +47,8 @@ Yêu cầu:
 - Mỗi câu hỏi đều là trắc nghiệm với 4 lựa chọn
 - Mỗi lựa chọn đi kèm với điểm số từ 0-10 (0: hoàn toàn không gay, 10: rất gay)
 - Nội dung câu hỏi nên đa dạng về sở thích, quan điểm và thói quen
-- Không sử dụng các câu hỏi quá đơn giản như "Bạn thích màu gì?"
-- Các câu hỏi phải vui vẻ, không quá sâu và không xúc phạm
 - Các câu trả lời nên đa dạng và không quá rõ ràng đâu là câu trả lời "đúng"
+- Bộ câu hỏi như của các bác sĩ tâm lý
 
 Trả về kết quả dưới dạng JSON với định dạng sau:
 {
