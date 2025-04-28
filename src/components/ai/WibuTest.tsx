@@ -47,7 +47,6 @@ export default function WibuTest() {
 Yêu cầu:
 - Tạo những câu hỏi liên quan đến anime, manga, văn hóa Nhật Bản, cosplay, và các thuật ngữ otaku
 - Mỗi câu hỏi đều là trắc nghiệm với 4 lựa chọn
-- Mỗi lựa chọn đi kèm với điểm số từ 0-10 (0: hoàn toàn không wibu, 10: wibu cấp độ cao)
 - Nội dung câu hỏi đa dạng về sở thích, kiến thức và thói quen liên quan đến anime/manga
 - Các câu hỏi nên dễ hiểu cho cả người mới và người hâm mộ lâu năm
 - Bao gồm các chủ đề như: thói quen xem anime, sưu tầm figure, cosplay, kiến thức anime/manga, âm nhạc Nhật Bản
@@ -60,7 +59,7 @@ Trả về kết quả dưới dạng JSON với định dạng sau:
       "id": 1,
       "text": "Nội dung câu hỏi",
       "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
-      "scores": từ 1 tới 10
+      "scores": từ 1 tới 10 phụ thuộc vào mức độ Wibu
     },
     ...
   ]
@@ -69,7 +68,7 @@ Trả về kết quả dưới dạng JSON với định dạng sau:
 Chỉ trả về JSON, không thêm giải thích hay chú thích.`
 
       const response = await aiService.processWithAI(prompt)
-      
+
       try {
         // Extract JSON from response
         const jsonMatch = response.match(/\{[\s\S]*\}/)
@@ -98,7 +97,7 @@ Chỉ trả về JSON, không thêm giải thích hay chú thích.`
   const handleAnswerChange = (questionId: number, optionIndex: number) => {
     // Disable navigation temporarily
     setIsNavigationDisabled(true)
-    
+
     // Update answers
     setAnswers(prev => ({
       ...prev,
@@ -255,11 +254,11 @@ Chỉ trả về đoạn phân tích, không thêm tiêu đề hay kết luận.
               <div>
                 <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">Kiểm tra độ Wibu của bạn</h2>
                 <p className="text-gray-600 max-w-md mx-auto">
-                  Trả lời 10 câu hỏi để biết mức độ đam mê anime/manga của bạn cao đến đâu! 
+                  Trả lời 10 câu hỏi để biết mức độ đam mê anime/manga của bạn cao đến đâu!
                   Bạn đã sẵn sàng để biết mình là "Wibu thứ thiệt" hay chỉ là "Fan anime bình thường"?
                 </p>
               </div>
-              <Button 
+              <Button
                 onClick={generateQuestions}
                 className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-8 text-lg font-bold"
                 size="lg"
@@ -279,8 +278,8 @@ Chỉ trả về đoạn phân tích, không thêm tiêu đề hay kết luận.
           {testStarted && !result && !generating && questions.length > 0 && (
             <div className="space-y-4">
               <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-blue-500 to-purple-600" 
+                <div
+                  className="h-full bg-gradient-to-r from-blue-500 to-purple-600"
                   style={{ width: `${(Object.keys(answers).length / questions.length) * 100}%` }}
                 ></div>
               </div>
@@ -298,8 +297,8 @@ Chỉ trả về đoạn phân tích, không thêm tiêu đề hay kết luận.
                     disabled={isNavigationDisabled}
                     className={cn(
                       "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors",
-                      answers[questions[index].id] !== undefined 
-                        ? "bg-blue-100 text-blue-800 border-2 border-blue-300" 
+                      answers[questions[index].id] !== undefined
+                        ? "bg-blue-100 text-blue-800 border-2 border-blue-300"
                         : "bg-red-100 text-red-800 border-2 border-red-300",
                       currentQuestionIndex === index && "ring-2 ring-offset-2 ring-purple-500",
                       isNavigationDisabled && "opacity-70 cursor-not-allowed"
@@ -324,7 +323,7 @@ Chỉ trả về đoạn phân tích, không thêm tiêu đề hay kết luận.
                     className="space-y-3 pl-2"
                   >
                     {currentQuestion.options.map((option, optIndex) => (
-                      <div key={optIndex} 
+                      <div key={optIndex}
                         className={cn(
                           "flex items-center space-x-2 p-2 rounded-md transition-colors",
                           isNavigationDisabled && answers[currentQuestion.id] === optIndex
@@ -332,14 +331,14 @@ Chỉ trả về đoạn phân tích, không thêm tiêu đề hay kết luận.
                             : "hover:bg-gray-50"
                         )}
                       >
-                        <RadioGroupItem 
-                          value={optIndex.toString()} 
+                        <RadioGroupItem
+                          value={optIndex.toString()}
                           id={`q${currentQuestion.id}-opt${optIndex}`}
-                          disabled={isNavigationDisabled} 
+                          disabled={isNavigationDisabled}
                           className="text-purple-600"
                         />
-                        <Label 
-                          htmlFor={`q${currentQuestion.id}-opt${optIndex}`} 
+                        <Label
+                          htmlFor={`q${currentQuestion.id}-opt${optIndex}`}
                           className={cn(
                             "cursor-pointer w-full",
                             isNavigationDisabled && answers[currentQuestion.id] === optIndex && "font-medium"
@@ -354,8 +353,8 @@ Chỉ trả về đoạn phân tích, không thêm tiêu đề hay kết luận.
               )}
 
               <div className="flex justify-between items-center pt-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={goToPreviousQuestion}
                   disabled={currentQuestionIndex === 0 || isNavigationDisabled}
                   className="flex items-center gap-1 border-blue-200 text-blue-700"
@@ -364,15 +363,15 @@ Chỉ trả về đoạn phân tích, không thêm tiêu đề hay kết luận.
                 </Button>
 
                 {currentQuestionIndex === questions.length - 1 ? (
-                  <Button 
-                    onClick={calculateResult} 
+                  <Button
+                    onClick={calculateResult}
                     disabled={loading || !allQuestionsAnswered || isNavigationDisabled}
                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                   >
                     {loading ? 'Đang tính điểm...' : 'Xem kết quả'}
                   </Button>
                 ) : (
-                  <Button 
+                  <Button
                     variant="outline"
                     onClick={goToNextQuestion}
                     disabled={isNavigationDisabled}
@@ -398,14 +397,14 @@ Chỉ trả về đoạn phân tích, không thêm tiêu đề hay kết luận.
               <div className="flex flex-col items-center mb-6">
                 <div className="relative mb-1">
                   <div className="text-xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Độ Wibu của bạn là:
+                      <span className="text-2xl font-bold text-center" style={{ color: getScoreColor(result.score) }}>
+                      {result.level}
+                    </span> 
                   </div>
                   <div className="absolute -top-6 -right-4 text-3xl transform rotate-12">🍥</div>
                 </div>
 
-                <div 
-                  className="relative w-36 h-36 rounded-full flex items-center justify-center bg-white mb-4 shadow-lg"
-                >
+                <div className="relative w-36 h-36 rounded-full flex items-center justify-center bg-white mb-4 shadow-lg">
                   <svg className="w-36 h-36 absolute" viewBox="0 0 100 100">
                     <defs>
                       <linearGradient id="wibu-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -418,21 +417,21 @@ Chỉ trả về đoạn phân tích, không thêm tiêu đề hay kết luận.
                         <stop offset="100%" stopColor="#FF66CC" />
                       </linearGradient>
                     </defs>
-                    <circle 
-                      cx="50" 
-                      cy="50" 
-                      r="42" 
-                      fill="none" 
-                      stroke="#e5e7eb" 
-                      strokeWidth="12" 
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      fill="none"
+                      stroke="#e5e7eb"
+                      strokeWidth="12"
                     />
-                    <circle 
-                      cx="50" 
-                      cy="50" 
-                      r="42" 
-                      fill="none" 
-                      stroke="url(#wibu-gradient)" 
-                      strokeWidth="14" 
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="42"
+                      fill="none"
+                      stroke="url(#wibu-gradient)"
+                      strokeWidth="14"
                       strokeDasharray={`${2 * Math.PI * 42 * result.score / 100} ${2 * Math.PI * 42 * (100 - result.score) / 100}`}
                       strokeDashoffset={2 * Math.PI * 42 * 25 / 100}
                       transform="rotate(-90 50 50)"
@@ -442,17 +441,15 @@ Chỉ trả về đoạn phân tích, không thêm tiêu đề hay kết luận.
                     <span className="text-4xl font-bold" style={{ color: getScoreColor(result.score), textShadow: "0px 0px 2px rgba(0,0,0,0.1)" }}>
                       {result.score}%
                     </span>
-                    <span className="text-base font-bold text-center" style={{ color: getScoreColor(result.score) }}>
-                      {result.level}
-                    </span>
+
                   </div>
                 </div>
-                
+
                 <div className="text-base text-gray-700 p-5 bg-white/70 rounded-md w-full shadow-sm border border-purple-100">
                   <p className="font-medium text-center">{result.explanation}</p>
                 </div>
-                
-                <Button 
+
+                <Button
                   onClick={restartTest}
                   className="mt-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-6 font-bold"
                   size="lg"

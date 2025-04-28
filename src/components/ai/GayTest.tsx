@@ -57,7 +57,7 @@ Trả về kết quả dưới dạng JSON với định dạng sau:
       "id": 1,
       "text": "Nội dung câu hỏi",
       "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
-      "scores": [0,2,4,6,8,10]
+      "scores": 1 tới 10
     },
     ...
   ]
@@ -391,10 +391,8 @@ Chỉ trả về đoạn phân tích, không thêm tiêu đề hay kết luận.
                     {result && (
                         <div className="p-4 rounded-md bg-gradient-to-r from-pink-50 to-purple-50">
                             <div className="flex flex-col items-center mb-6">
-                                <div className="text-xl font-bold mb-3">Độ Gay của bạn là:</div>
-                                <div
-                                    className="relative w-36 h-36 rounded-full flex items-center justify-center bg-white mb-4 shadow-lg"
-                                >
+                                <span className="text-2xl font-bold" style={{ color: getScoreColor(result.score) }}>{getScoreLabel(result.score)}</span>
+                                <div className="relative w-36 h-36 rounded-full flex items-center justify-center bg-white mb-4 shadow-lg" >
                                     <svg className="w-36 h-36 absolute" viewBox="0 0 100 100">
                                         <defs>
                                             <linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -430,9 +428,6 @@ Chỉ trả về đoạn phân tích, không thêm tiêu đề hay kết luận.
                                     <div className="flex flex-col items-center">
                                         <span className="text-4xl font-bold" style={{ color: getScoreColor(result.score), textShadow: "0px 0px 2px rgba(0,0,0,0.1)" }}>
                                             {result.score}%
-                                        </span>
-                                        <span className="text-base font-bold" style={{ color: getScoreColor(result.score) }}>
-                                            {getScoreLabel(result.score)}
                                         </span>
                                     </div>
                                 </div>

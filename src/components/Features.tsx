@@ -21,7 +21,8 @@ import {
 import {
     FaMoneyBillTransfer,
     FaUser,
-    FaChartSimple
+    FaChartSimple,
+    FaBookJournalWhills
 } from "react-icons/fa6";
 import {
     MdOutlinePassword,
@@ -414,7 +415,16 @@ export default function Features() {
             icon: <FaHeart className="w-6 h-6 text-black" />,
             views: 0,
             path: "/ai/gay-test",
-            categories: ["AI", "Quiz"],
+            categories: ["Quiz"],
+            multiCategory: true
+        },
+        {
+            title: "Wibu Test",
+            description: "Wibu Test",
+            icon: <FaBookJournalWhills className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/ai/wibu-test",
+            categories: ["Quiz"],
             multiCategory: true
         },
         {
