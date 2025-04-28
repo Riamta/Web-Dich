@@ -16,7 +16,8 @@ import {
     FaMagic,
     FaSearch,
     FaEye,
-    FaRobot
+    FaRobot,
+    FaLanguage
 } from "react-icons/fa";
 import {
     FaMoneyBillTransfer,
@@ -426,6 +427,14 @@ export default function Features() {
             path: "/ai/wibu-test",
             categories: ["Quiz"],
             multiCategory: true
+        },
+        {
+            title: "English Test",
+            description: "English Quiz",
+            icon: <FaLanguage className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/ai/english",
+            categories: ["Quiz"]
         },
         {
             title: "Ai Detector",
