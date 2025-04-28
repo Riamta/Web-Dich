@@ -15,6 +15,7 @@ export default function RandomTextPage() {
   const [randomText, setRandomText] = useState<string | null>(null)
   const [removeSelectedItem, setRemoveSelectedItem] = useState<boolean>(false)
   const [selectedIndex, setSelectedIndex] = useState<number>(-1)
+  const [error, setError] = useState<string | null>(null)
 
   // Update textItems whenever textList changes
   useEffect(() => {
@@ -27,18 +28,25 @@ export default function RandomTextPage() {
 
   // Select a random item from the text list
   const generateRandomText = () => {
-    if (textItems.length === 0) {
-      setRandomText('Vui lòng nhập danh sách của bạn')
-      return
-    }
+    setError(null)
     
-    const randomIndex = Math.floor(Math.random() * textItems.length)
-    setRandomText(textItems[randomIndex])
-    setSelectedIndex(randomIndex)
-    
-    // Remove the selected item if option is enabled
-    if (removeSelectedItem) {
-      removeItem(randomIndex)
+    try {
+      if (textItems.length === 0) {
+        setError('Vui lòng nhập danh sách của bạn')
+        return
+      }
+      
+      const randomIndex = Math.floor(Math.random() * textItems.length)
+      setRandomText(textItems[randomIndex])
+      setSelectedIndex(randomIndex)
+      
+      // Remove the selected item if option is enabled
+      if (removeSelectedItem) {
+        removeItem(randomIndex)
+      }
+    } catch (error) {
+      console.error('Error generating text:', error)
+      setError('Có lỗi xảy ra khi chọn ngẫu nhiên. Vui lòng thử lại.')
     }
   }
   
@@ -93,106 +101,123 @@ export default function RandomTextPage() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-6">
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-gray-700">
-                  Danh sách (mỗi dòng là một mục)
-                </label>
-                
-                <div className="flex space-x-2">
-                  <button
-                    onClick={shuffleItems}
-                    disabled={textItems.length <= 1}
-                    className="p-1.5 rounded bg-gray-50 text-gray-500 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none"
-                    title="Xáo trộn danh sách"
-                  >
-                    <ArrowsUpDownIcon className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={sortItemsAscending}
-                    disabled={textItems.length <= 1}
-                    className="p-1.5 rounded bg-gray-50 text-gray-500 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none"
-                    title="Sắp xếp A-Z"
-                  >
-                    <ArrowUpIcon className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={sortItemsDescending}
-                    disabled={textItems.length <= 1}
-                    className="p-1.5 rounded bg-gray-50 text-gray-500 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none"
-                    title="Sắp xếp Z-A"
-                  >
-                    <ArrowDownIcon className="w-4 h-4" />
-                  </button>
-                </div>
+    <div className="min-h-screen py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden">
+          <div className="p-8">
+            <div className="space-y-8">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-blue-800 mb-2">📝 Text Generator</h1>
+                <p className="text-gray-600">
+                  Chọn ngẫu nhiên một mục từ danh sách của bạn.
+                </p>
               </div>
-              <textarea
-                value={textList}
-                onChange={(e) => setTextList(e.target.value)}
-                placeholder="Nhập danh sách của bạn ở đây, mỗi dòng một mục"
-                rows={6}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
-              />
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-500">
-                {textItems.length > 0 ? (
-                  <p>Có {textItems.length} mục trong danh sách</p>
-                ) : (
-                  <p>Vui lòng nhập danh sách của bạn</p>
-                )}
-              </div>
-              
-              <div className="flex items-center">
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={removeSelectedItem}
-                    onChange={(e) => setRemoveSelectedItem(e.target.checked)}
-                    className="w-4 h-4 text-gray-900 rounded focus:ring-0"
-                  />
-                  <span className="ml-2 text-sm text-gray-600">Xóa sau khi chọn</span>
-                </label>
-              </div>
-            </div>
-            
-            <button
-              onClick={generateRandomText}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
-              disabled={textItems.length === 0}
-            >
-              <ArrowPathIcon className="w-4 h-4" />
-              <span>Chọn ngẫu nhiên</span>
-            </button>
-          </div>
 
-          {randomText !== null && (
-            <div className="mt-6">
-              <div className="bg-gray-50 p-6 rounded-lg border border-gray-100">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Kết quả</p>
-                    <p className="text-xl font-medium text-gray-900 break-words">{randomText}</p>
+              <div className="space-y-6">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-blue-800">
+                      Danh sách (mỗi dòng là một mục)
+                    </label>
+                    
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={shuffleItems}
+                        disabled={textItems.length <= 1}
+                        className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:text-blue-800 hover:bg-blue-100 disabled:opacity-50 disabled:pointer-events-none transition-all"
+                        title="Xáo trộn danh sách"
+                      >
+                        <ArrowsUpDownIcon className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={sortItemsAscending}
+                        disabled={textItems.length <= 1}
+                        className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:text-blue-800 hover:bg-blue-100 disabled:opacity-50 disabled:pointer-events-none transition-all"
+                        title="Sắp xếp A-Z"
+                      >
+                        <ArrowUpIcon className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={sortItemsDescending}
+                        disabled={textItems.length <= 1}
+                        className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:text-blue-800 hover:bg-blue-100 disabled:opacity-50 disabled:pointer-events-none transition-all"
+                        title="Sắp xếp Z-A"
+                      >
+                        <ArrowDownIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <textarea
+                    value={textList}
+                    onChange={(e) => setTextList(e.target.value)}
+                    placeholder="Nhập danh sách của bạn ở đây, mỗi dòng một mục"
+                    rows={6}
+                    className="w-full rounded-xl border-2 border-blue-200 px-4 py-3 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-200 transition-all"
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-blue-600">
+                    {textItems.length > 0 ? (
+                      <p>Có {textItems.length} mục trong danh sách</p>
+                    ) : (
+                      <p>Vui lòng nhập danh sách của bạn</p>
+                    )}
                   </div>
                   
-                  {!removeSelectedItem && selectedIndex >= 0 && (
-                    <button
-                      onClick={removeCurrentItem}
-                      className="p-2 text-gray-500 hover:text-red-500 transition-colors"
-                      title="Xóa mục này khỏi danh sách"
-                    >
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
-                  )}
+                  <div className="flex items-center">
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={removeSelectedItem}
+                        onChange={(e) => setRemoveSelectedItem(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-blue-300"
+                      />
+                      <span className="ml-2 text-sm text-blue-600">Xóa sau khi chọn</span>
+                    </label>
+                  </div>
                 </div>
+                
+                <button
+                  onClick={generateRandomText}
+                  className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all transform hover:scale-[1.02] disabled:opacity-70 disabled:hover:scale-100 shadow-lg"
+                  disabled={textItems.length === 0}
+                >
+                  <ArrowPathIcon className="w-5 h-5" />
+                  <span className="font-medium">Chọn ngẫu nhiên</span>
+                </button>
               </div>
+
+              {error && (
+                <div className="mt-4 p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-600 text-sm">
+                  {error}
+                </div>
+              )}
+
+              {randomText !== null && !error && (
+                <div className="mt-8">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-xl border-2 border-blue-200 text-center transform transition-all hover:scale-[1.02]">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="text-sm text-blue-600 mb-3">Kết quả</p>
+                        <p className="text-2xl font-medium text-blue-800 break-words">{randomText}</p>
+                      </div>
+                      
+                      {!removeSelectedItem && selectedIndex >= 0 && (
+                        <button
+                          onClick={removeCurrentItem}
+                          className="p-2 text-blue-600 hover:text-red-500 transition-colors"
+                          title="Xóa mục này khỏi danh sách"
+                        >
+                          <TrashIcon className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <style>{`
           * {
@@ -48,10 +48,10 @@ export default function RootLayout({
         `}</style>
       </head>
       <body className={inter.className}>
-        <LayoutContent className={`${inter.className} antialiased`}>
-          {children}
-        </LayoutContent>
-        <Toaster />
+          <LayoutContent className={`${inter.className} antialiased`}>
+            {children}
+          </LayoutContent>
+          <Toaster />
       </body>
     </html>
   )

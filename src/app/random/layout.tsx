@@ -11,8 +11,14 @@ import {
   KeyIcon,
   CubeIcon,
   CurrencyDollarIcon,
-  UserIcon
+  UserIcon,
+  CalendarIcon,
+  FaceSmileIcon,
+  Squares2X2Icon,
 } from '@heroicons/react/24/outline'
+import { QuoteIcon } from 'lucide-react'
+import { MdOutlineFastfood } from 'react-icons/md'
+import { GiCard10Clubs } from "react-icons/gi";
 
 export default function RandomToolsLayout({
   children,
@@ -82,6 +88,41 @@ export default function RandomToolsLayout({
       name: 'Đồng xu',
       path: '/random/coin',
       icon: <CurrencyDollarIcon className="w-5 h-5" />
+    },
+    {
+      name: 'Tên',
+      path: '/random/name',
+      icon: <UserIcon className="w-5 h-5" />
+    },
+    {
+      name: 'Ngày tháng',
+      path: '/random/date',
+      icon: <CalendarIcon className="w-5 h-5" />
+    },
+    {
+      name: 'Câu nói',
+      path: '/random/quote',
+      icon: <QuoteIcon className="w-5 h-5" />
+    },
+    {
+      name: 'Emoji',
+      path: '/random/emoji',
+      icon: <FaceSmileIcon className="w-5 h-5" />
+    },
+    {
+      name: 'Món ăn',
+      path: '/random/food',
+      icon: <MdOutlineFastfood className="w-5 h-5" />
+    },
+    {
+      name: 'Lá bài',
+      path: '/random/card',
+      icon: <GiCard10Clubs className="w-5 h-5" />
+    },
+    {
+      name: 'Profile',
+      path: '/random/profile',
+      icon: <UserIcon className="w-5 h-5" />
     }
   ]
 
