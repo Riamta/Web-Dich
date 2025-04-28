@@ -19,7 +19,7 @@ interface Message {
 }
 
 export default function ConversationTranslator() {
-    const [myLanguage, setMyLanguage] = useTabState('conversationMyLanguage', 'auto')
+    const [myLanguage, setMyLanguage] = useTabState('conversationMyLanguage', 'en')
     const [theirLanguage, setTheirLanguage] = useTabState('conversationTheirLanguage', 'en')
     const [myText, setMyText] = useState('')
     const [theirText, setTheirText] = useState('')
@@ -31,6 +31,19 @@ export default function ConversationTranslator() {
     
     // Add ref for chat container
     const chatContainerRef = useRef<HTMLDivElement>(null)
+
+    // Prevent same language selection
+    useEffect(() => {
+        if (myLanguage === theirLanguage) {
+            // If they become the same, pick a different language for theirLanguage
+            const availableLanguages = SUPPORTED_LANGUAGES.filter(
+                lang => lang.code !== 'auto' && lang.code !== myLanguage
+            );
+            if (availableLanguages.length > 0) {
+                setTheirLanguage(availableLanguages[0].code);
+            }
+        }
+    }, [myLanguage, theirLanguage, setTheirLanguage]);
 
     // Auto scroll to bottom when messages change
     useEffect(() => {
@@ -220,7 +233,9 @@ export default function ConversationTranslator() {
                                     onChange={(e) => setMyLanguage(e.target.value)}
                                     className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
                                 >
-                                    {SUPPORTED_LANGUAGES.map((lang) => (
+                                    {SUPPORTED_LANGUAGES.filter(lang => 
+                                        lang.code !== 'auto' && lang.code !== theirLanguage
+                                    ).map((lang) => (
                                         <option key={lang.code} value={lang.code}>
                                             {lang.name}
                                         </option>
@@ -238,7 +253,9 @@ export default function ConversationTranslator() {
                                     onChange={(e) => setTheirLanguage(e.target.value)}
                                     className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none bg-gray-50/50"
                                 >
-                                    {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
+                                    {SUPPORTED_LANGUAGES.filter(lang => 
+                                        lang.code !== 'auto' && lang.code !== myLanguage
+                                    ).map((lang) => (
                                         <option key={lang.code} value={lang.code}>
                                             {lang.name}
                                         </option>

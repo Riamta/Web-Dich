@@ -1,7 +1,24 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ArrowsRightLeftIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ArrowsRightLeftIcon } from '@heroicons/react/24/outline'
+import { Check, ChevronsUpDown } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Input } from "@/components/ui/input"
 
 interface Currency {
     code: string
@@ -50,6 +67,10 @@ export default function CurrencyConverter() {
     const [error, setError] = useState<string | null>(null)
     const [exchangeRates, setExchangeRates] = useState<{[key: string]: number} | null>(null)
     const [quickResults, setQuickResults] = useState<{[key: string]: number}>({})
+    
+    // Combobox state
+    const [fromOpen, setFromOpen] = useState(false)
+    const [toOpen, setToOpen] = useState(false)
 
     const fetchExchangeRates = useCallback(async () => {
         if (!amount || isNaN(Number(amount))) {
@@ -131,67 +152,134 @@ export default function CurrencyConverter() {
     }
 
     return (
-        <div className="mx-auto px-2 py-8 max-w-7xl">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-2">
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                        <h2 className="text-2xl font-bold mb-6">Chuyển đổi tiền tệ</h2>
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Chuyển đổi tiền tệ</h2>
                         
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Số tiền
                                 </label>
-                                <input
+                                <Input
                                     type="number"
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
                                     placeholder="Nhập số tiền"
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
                                 />
                             </div>
 
-                            <div className="flex items-center gap-4">
-                                <div className="flex-1">
+                            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-center">
+                                <div className="sm:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Từ tiền tệ
                                     </label>
-                                    <select
-                                        value={fromCurrency}
-                                        onChange={(e) => setFromCurrency(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
-                                    >
-                                        {commonCurrencies.map((currency) => (
-                                            <option key={currency.code} value={currency.code}>
-                                                {currency.code} - {currency.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <Popover open={fromOpen} onOpenChange={setFromOpen}>
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          role="combobox"
+                                          aria-expanded={fromOpen}
+                                          className="w-full justify-between"
+                                        >
+                                          {fromCurrency
+                                            ? commonCurrencies.find((currency) => currency.code === fromCurrency)?.code + " - " + 
+                                              commonCurrencies.find((currency) => currency.code === fromCurrency)?.name
+                                            : "Chọn tiền tệ..."}
+                                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-[180px] p-0 sm:w-[220px]">
+                                        <Command>
+                                          <CommandInput placeholder="Tìm kiếm" />
+                                          <CommandList className="max-h-[200px]">
+                                            <CommandEmpty>Không tìm thấy</CommandEmpty>
+                                            <CommandGroup>
+                                              {commonCurrencies.map((currency) => (
+                                                <CommandItem
+                                                  key={currency.code}
+                                                  value={currency.code}
+                                                  onSelect={(currentValue) => {
+                                                    setFromCurrency(currentValue)
+                                                    setFromOpen(false)
+                                                  }}
+                                                >
+                                                  <Check
+                                                    className={cn(
+                                                      "mr-2 h-4 w-4",
+                                                      fromCurrency === currency.code ? "opacity-100" : "opacity-0"
+                                                    )}
+                                                  />
+                                                  {currency.code} - {currency.name}
+                                                </CommandItem>
+                                              ))}
+                                            </CommandGroup>
+                                          </CommandList>
+                                        </Command>
+                                      </PopoverContent>
+                                    </Popover>
                                 </div>
 
-                                <button
-                                    onClick={handleSwapCurrencies}
-                                    className="mt-6 p-2 rounded-full hover:bg-gray-100"
-                                    title="Đảo ngược tiền tệ"
-                                >
-                                    <ArrowsRightLeftIcon className="w-5 h-5" />
-                                </button>
+                                <div className="flex justify-center">
+                                    <button
+                                        onClick={handleSwapCurrencies}
+                                        className="p-2 rounded-full hover:bg-gray-100"
+                                        title="Đảo ngược tiền tệ"
+                                    >
+                                        <ArrowsRightLeftIcon className="w-5 h-5" />
+                                    </button>
+                                </div>
 
-                                <div className="flex-1">
+                                <div className="sm:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Sang tiền tệ
                                     </label>
-                                    <select
-                                        value={toCurrency}
-                                        onChange={(e) => setToCurrency(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
-                                    >
-                                        {commonCurrencies.map((currency) => (
-                                            <option key={currency.code} value={currency.code}>
-                                                {currency.code} - {currency.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <Popover open={toOpen} onOpenChange={setToOpen}>
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          role="combobox"
+                                          aria-expanded={toOpen}
+                                          className="w-full justify-between"
+                                        >
+                                          {toCurrency
+                                            ? commonCurrencies.find((currency) => currency.code === toCurrency)?.code + " - " + 
+                                              commonCurrencies.find((currency) => currency.code === toCurrency)?.name
+                                            : "Chọn tiền tệ..."}
+                                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-[180px] p-0 sm:w-[220px]">
+                                        <Command>
+                                          <CommandInput placeholder="Tìm kiếm" />
+                                          <CommandList className="max-h-[200px]">
+                                            <CommandEmpty>Không tìm thấy</CommandEmpty>
+                                            <CommandGroup>
+                                              {commonCurrencies.map((currency) => (
+                                                <CommandItem
+                                                  key={currency.code}
+                                                  value={currency.code}
+                                                  onSelect={(currentValue) => {
+                                                    setToCurrency(currentValue)
+                                                    setToOpen(false)
+                                                  }}
+                                                >
+                                                  <Check
+                                                    className={cn(
+                                                      "mr-2 h-4 w-4",
+                                                      toCurrency === currency.code ? "opacity-100" : "opacity-0"
+                                                    )}
+                                                  />
+                                                  {currency.code} - {currency.name}
+                                                </CommandItem>
+                                              ))}
+                                            </CommandGroup>
+                                          </CommandList>
+                                        </Command>
+                                      </PopoverContent>
+                                    </Popover>
                                 </div>
                             </div>
 
@@ -204,7 +292,7 @@ export default function CurrencyConverter() {
                             {result !== null && (
                                 <div className="mt-4 p-4 bg-gray-50 rounded-md">
                                     <div className="text-sm text-gray-600">Kết quả:</div>
-                                    <div className="text-2xl font-bold">
+                                    <div className="text-xl sm:text-2xl font-bold break-words">
                                         {formatCurrencyValue(Number(amount), fromCurrency)} = {formatCurrencyValue(result, toCurrency)}
                                     </div>
                                     <div className="text-sm text-gray-500 mt-2">
@@ -216,9 +304,9 @@ export default function CurrencyConverter() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
                     <h3 className="text-lg font-semibold mb-4">Chuyển đổi nhanh</h3>
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
                         {quickConversions.map((conv) => {
                             const key = `${conv.from}-${conv.to}`
                             const fromCurrency = commonCurrencies.find(c => c.code === conv.from)
@@ -227,7 +315,7 @@ export default function CurrencyConverter() {
                                 <button
                                     key={key}
                                     onClick={() => handleQuickConvert(conv.from, conv.to, conv.amount)}
-                                    className="w-full p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+                                    className="p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
                                 >
                                     <div className="flex justify-between items-center">
                                         <div className="text-sm text-gray-600">

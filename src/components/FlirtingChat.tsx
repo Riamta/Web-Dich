@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { ClipboardDocumentIcon, SparklesIcon, HandRaisedIcon } from '@heroicons/react/24/outline'
 import { aiService } from '@/lib/ai-service'
-import { useToast, ToastContainer } from '@/utils/toast'
+import { useToast } from '@/hooks/use-toast'
 
 interface Message {
     id: number;
@@ -28,7 +28,7 @@ export default function FlirtingChat() {
     
     // Add ref for chat container
     const chatContainerRef = useRef<HTMLDivElement>(null)
-    const { success, error: toastError } = useToast()
+    const { toast } = useToast()
 
     // Auto scroll to bottom when messages change
     useEffect(() => {
@@ -47,10 +47,18 @@ export default function FlirtingChat() {
             await navigator.clipboard.writeText(text)
             setCopySuccess({ id: messageId, type })
             setTimeout(() => setCopySuccess(null), 2000)
-            success('Đã sao chép vào clipboard!')
+            toast({
+                title: "Thành công",
+                description: "Đã sao chép vào clipboard!",
+                variant: "default",
+            })
         } catch (err) {
             console.error('Failed to copy text:', err)
-            toastError('Không thể sao chép văn bản')
+            toast({
+                title: "Lỗi",
+                description: "Không thể sao chép văn bản",
+                variant: "destructive",
+            })
         }
     }
 
@@ -81,7 +89,11 @@ Chỉ trả lời ${responseCount} tin nhắn, mỗi tin nhắn một dòng, kh�
             })
         } catch (error) {
             console.error('AI response error:', error)
-            toastError('Có lỗi xảy ra khi tạo phản hồi. Vui lòng thử lại.')
+            toast({
+                title: "Lỗi",
+                description: "Có lỗi xảy ra khi tạo phản hồi. Vui lòng thử lại.",
+                variant: "destructive",
+            })
         } finally {
             setIsTranslating(false)
         }
@@ -102,7 +114,11 @@ Chỉ trả lời ${responseCount} tin nhắn, mỗi tin nhắn một dòng, kh�
             setSuggestions(responses)
         } catch (error) {
             console.error('AI response error:', error)
-            toastError('Có lỗi xảy ra khi tạo gợi ý. Vui lòng thử lại.')
+            toast({
+                title: "Lỗi",
+                description: "Có lỗi xảy ra khi tạo gợi ý. Vui lòng thử lại.",
+                variant: "destructive",
+            })
         } finally {
             setIsTranslating(false)
         }
@@ -125,7 +141,11 @@ Chỉ trả lời ${responseCount} tin nhắn, mỗi tin nhắn một dòng, kh�
             setSuggestions(responses)
         } catch (error) {
             console.error('AI response error:', error)
-            toastError('Có lỗi xảy ra khi tạo gợi ý. Vui lòng thử lại.')
+            toast({
+                title: "Lỗi",
+                description: "Có lỗi xảy ra khi tạo gợi ý. Vui lòng thử lại.",
+                variant: "destructive",
+            })
         } finally {
             setIsTranslating(false)
         }
@@ -511,7 +531,6 @@ Chỉ trả lời ${responseCount} tin nhắn, mỗi tin nhắn một dòng, kh�
                     </div>
                 </div>
             </div>
-            <ToastContainer />
         </div>
     )
 } 

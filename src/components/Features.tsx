@@ -15,7 +15,8 @@ import {
     FaChevronDown,
     FaMagic,
     FaSearch,
-    FaEye
+    FaEye,
+    FaRobot
 } from "react-icons/fa";
 import {
     FaMoneyBillTransfer,
@@ -135,6 +136,16 @@ const categoryDefinitions: CategoryProps[] = [
         title: "Health",
         description: "Các công cụ sức khỏe",
         icon: <FaHeart className="w-6 h-6 text-black" />
+    },
+    {
+        title: "Quiz",
+        description: "Các công cụ quiz",
+        icon: <MdOutlineQuestionMark className="w-6 h-6 text-black" />
+    },
+    {
+        title: "Image",
+        description: "Các công cụ xử lý ảnh",
+        icon: <MdOutlinePhoto className="w-6 h-6 text-black" />
     }
 ];
 
@@ -387,7 +398,7 @@ export default function Features() {
             path: "/recipe-generator",
             categories: ["Health", "AI"],
             multiCategory: true
-         },
+        },
         {
             title: "Công cụ cắt ảnh",
             description: "Cắt, xoay, thay đổi kích thước ảnh của bạn",
@@ -395,8 +406,26 @@ export default function Features() {
             views: 0,
             path: "/image-cropper",
             badge: "New",
-            categories: ["Utilities"]
-        }
+            categories: ["Utilities", "Image"]
+        },
+        {
+            title: "Gay Test",
+            description: "Gay Test",
+            icon: <FaHeart className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/ai/gay-test",
+            categories: ["AI", "Quiz"],
+            multiCategory: true
+        },
+        {
+            title: "Ai Detector",
+            description: "Ai Detector",
+            icon: <FaRobot className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/ai/detect",
+            categories: ["AI", "Utilities"],
+            multiCategory: true
+        },
         // ,
         // {
         //     title: t('image_remover.title'),

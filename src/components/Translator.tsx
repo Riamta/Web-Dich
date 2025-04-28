@@ -5,6 +5,9 @@ import { useTabState } from '@/hooks/useTabState'
 import { translatorService } from '@/lib/translator-service'
 import { TRANSLATION_TONES } from '@/lib/ai-service'
 import { dictionaryService } from '@/lib/dictionary-service'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+
 import {
   ArrowsRightLeftIcon,
   ClipboardDocumentIcon,
@@ -25,6 +28,7 @@ import { SUPPORTED_LANGUAGES } from '@/constants/languages'
 import JSZip from 'jszip'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Dialog, Transition } from '@headlessui/react'
+import { FaSearch } from 'react-icons/fa'
 
 export default function Translator() {
   const [mounted, setMounted] = useState(false)
@@ -802,7 +806,7 @@ export default function Translator() {
                           <label htmlFor="customToneStyle" className="block text-sm font-medium text-gray-700 mb-2">
                             Phong cách dịch <span className="text-red-500">*</span>
                           </label>
-                          <textarea
+                          <Textarea
                             ref={customToneStyleRef}
                             id="customToneStyle"
                             value={customToneStyle}
@@ -821,7 +825,7 @@ export default function Translator() {
                           <label htmlFor="customToneInstructions" className="block text-sm font-medium text-gray-700 mb-2">
                             Hướng dẫn đặc biệt (tùy chọn)
                           </label>
-                          <textarea
+                          <Textarea
                             id="customToneInstructions"
                             value={customToneInstructions}
                             onChange={(e) => {
@@ -1048,7 +1052,7 @@ export default function Translator() {
               </div>
             ) : (
               <div className={`relative h-full ${isDragging ? 'bg-gray-100/80 border-2 border-dashed border-primary/50' : ''}`}>
-                <textarea
+                <Textarea
                   ref={sourceTextRef}
                   value={sourceText}
                   onChange={handleTextAreaResize}

@@ -9,7 +9,7 @@ import {
   DocumentTextIcon
 } from '@heroicons/react/24/outline'
 import { aiService } from '@/lib/ai-service'
-import { useToast, ToastContainer } from '@/utils/toast'
+import { useToast } from '@/hooks/use-toast'
 import ReactMarkdown from 'react-markdown'
 import { useDebounce } from '@/hooks/useDebounce'
 import { SparklesIcon, ClipboardIcon } from '@heroicons/react/24/outline'
@@ -26,7 +26,7 @@ export default function TextEnhancement() {
     const [isDragging, setIsDragging] = useState(false)
     const textRef = useRef<HTMLTextAreaElement>(null)
     const enhancedTextRef = useRef<HTMLDivElement>(null)
-    const { loading, success, error: toastError, removeToast } = useToast()
+    const { toast } = useToast()
     const debouncedText = useDebounce(text, 500)
 
     useEffect(() => {
@@ -55,16 +55,27 @@ export default function TextEnhancement() {
         if (!text.trim()) return
 
         setIsEnhancing(true)
-        const loadingId = loading('Đang cải thiện văn bản...')
+        toast({
+            title: "Đang cải thiện văn bản...",
+            description: "Vui lòng đợi trong giây lát",
+            variant: "default",
+        })
+        
         try {
             const result = await aiService.enhanceText(text)
             setEnhancedText(result)
-            removeToast(loadingId)
-            success('Cải thiện văn bản thành công!')
+            toast({
+                title: "Thành công",
+                description: "Cải thiện văn bản thành công!",
+                variant: "default",
+            })
         } catch (err) {
             console.error('Text enhancement error:', err)
-            removeToast(loadingId)
-            toastError('Có lỗi xảy ra khi cải thiện văn bản. Vui lòng thử lại.')
+            toast({
+                title: "Lỗi",
+                description: "Có lỗi xảy ra khi cải thiện văn bản. Vui lòng thử lại.",
+                variant: "destructive",
+            })
         } finally {
             setIsEnhancing(false)
         }
@@ -73,10 +84,18 @@ export default function TextEnhancement() {
     const handleCopy = async (text: string) => {
         try {
             await navigator.clipboard.writeText(text)
-            success('Đã sao chép vào clipboard!')
+            toast({
+                title: "Thành công",
+                description: "Đã sao chép vào clipboard!",
+                variant: "default",
+            })
         } catch (err) {
             console.error('Copy error:', err)
-            toastError('Không thể sao chép văn bản')
+            toast({
+                title: "Lỗi",
+                description: "Không thể sao chép văn bản",
+                variant: "destructive",
+            })
         }
     }
 
@@ -371,8 +390,6 @@ export default function TextEnhancement() {
                     <span className="text-sm sm:text-base font-medium">{error}</span>
                 </div>
             )}
-
-            <ToastContainer />
         </div>
     )
 } 

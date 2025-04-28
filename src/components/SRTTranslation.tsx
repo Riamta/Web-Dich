@@ -6,7 +6,7 @@ import { Dialog } from '@headlessui/react';
 import Dictionary from '@/components/Dictionary';
 import { dictionaryService } from '@/lib/dictionary-service';
 import { aiService } from '@/lib/ai-service';
-import { useToast, ToastContainer } from '@/utils/toast';
+import { useToast } from '@/hooks/use-toast';
 import { SUPPORTED_LANGUAGES } from '@/constants/languages';
 import { youtubeService } from '@/lib/youtube-service';
 
@@ -32,7 +32,7 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
   const [entries, setEntries] = useState<Array<SRTEntry>>([]);
   const [translatedEntries, setTranslatedEntries] = useState<Array<SRTEntry>>([]);
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
-  const toast = useToast();
+  const { toast } = useToast();
 
   // Parse SRT content into entries when modal is opened
   useEffect(() => {
@@ -110,9 +110,17 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
   const handleCopy = () => {
     try {
       navigator.clipboard.writeText(editedText);
-      toast.success("Content copied to clipboard");
+      toast({
+        title: "Thành công",
+        description: "Content copied to clipboard",
+        variant: "default",
+      });
     } catch (err) {
-      toast.error("Failed to copy content");
+      toast({
+        title: "Lỗi",
+        description: "Failed to copy content",
+        variant: "destructive",
+      });
     }
   };
 
@@ -127,7 +135,11 @@ const ComparisonModal = ({ isOpen, onClose, originalText, translatedText, onSave
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    toast.success("Subtitles downloaded successfully");
+    toast({
+      title: "Thành công",
+      description: "Subtitles downloaded successfully",
+      variant: "default",
+    });
   };
 
   return (
@@ -258,10 +270,9 @@ export default function SRTTranslation() {
   const [entries, setEntries] = useState<Array<SRTEntry>>([]);
   const [targetLanguage, setTargetLanguage] = useState('vi');
   const [isLoading, setIsLoading] = useState(false);
-  const { loading, success, error: showError, removeToast } = useToast();
-  const [progressToastId, setProgressToastId] = useState<number | null>(null);
+  const { toast } = useToast();
+  const [progressToastId, setProgressToastId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const toast = useToast();
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -331,12 +342,20 @@ export default function SRTTranslation() {
 
   const handleYoutubeSubtitles = async () => {
     if (!youtubeUrl.trim()) {
-      showError('Please enter a YouTube URL');
+      toast({
+        title: "Lỗi",
+        description: "Please enter a YouTube URL",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsLoadingYoutube(true);
-    const toastId = loading('Đang tải phụ đề từ YouTube...');
+    const toastId = toast({
+      title: "Đang tải",
+      description: "Đang tải phụ đề từ YouTube...",
+      variant: "default",
+    });
 
     try {
       const data = await youtubeService.fetchSubtitles(youtubeUrl);
@@ -374,11 +393,18 @@ export default function SRTTranslation() {
       setShowYoutubeInput(false);
       setYoutubeUrl('');
       
-      removeToast(toastId);
-      success('Đã tải phụ đề thành công!');
+      toast({
+        title: "Thành công",
+        description: "Đã tải phụ đề thành công!",
+        variant: "default",
+      });
     } catch (error: any) {
       console.error('Error fetching YouTube subtitles:', error);
-      showError(error.message || 'Failed to fetch subtitles from YouTube');
+      toast({
+        title: "Lỗi",
+        description: error.message || 'Failed to fetch subtitles from YouTube',
+        variant: "destructive",
+      });
     } finally {
       setIsLoadingYoutube(false);
     }
@@ -393,6 +419,13 @@ export default function SRTTranslation() {
     try {
       const totalBatches = Math.ceil(entries.length / batchSize);
       const updatedEntries = [...entries];
+      
+      const toastId = toast({
+        title: "Đang xử lý",
+        description: "Bắt đầu dịch phụ đề...",
+        variant: "default",
+      });
+      setProgressToastId(toastId.id);
       
       for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
         const start = batchIndex * batchSize;
@@ -539,11 +572,19 @@ ${retryText}`;
       
       // Count statistics
       const stats = getTranslationStats(updatedEntries);
-      success(`Dịch hoàn tất! Đã dịch: ${stats.translated}, Lỗi: ${stats.error}, Chưa dịch: ${stats.pending}`);
+      toast({
+        title: "Thành công",
+        description: `Dịch hoàn tất! Đã dịch: ${stats.translated}, Lỗi: ${stats.error}, Chưa dịch: ${stats.pending}`,
+        variant: "default",
+      });
       
     } catch (error: any) {
       console.error('Translation error:', error);
-      showError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch phụ đề. Vui lòng thử lại sau.');
+      toast({
+        title: "Lỗi",
+        description: error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch phụ đề. Vui lòng thử lại sau.',
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -566,7 +607,11 @@ ${retryText}`;
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    toast.success("Đã tải xuống file phụ đề gốc");
+    toast({
+      title: "Thành công",
+      description: "Đã tải xuống file phụ đề gốc",
+      variant: "default",
+    });
   };
 
   const handleDownloadTranslated = () => {
@@ -586,7 +631,11 @@ ${retryText}`;
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    toast.success("Đã tải xuống file phụ đề đã dịch");
+    toast({
+      title: "Thành công",
+      description: "Đã tải xuống file phụ đề đã dịch",
+      variant: "default",
+    });
   };
 
   const handleCopyOriginal = async () => {
@@ -598,9 +647,17 @@ ${retryText}`;
 
     try {
       await navigator.clipboard.writeText(content);
-      toast.success("Đã sao chép phụ đề gốc");
+      toast({
+        title: "Thành công",
+        description: "Đã sao chép phụ đề gốc",
+        variant: "default",
+      });
     } catch (err) {
-      toast.error("Không thể sao chép phụ đề gốc");
+      toast({
+        title: "Lỗi",
+        description: "Không thể sao chép phụ đề gốc",
+        variant: "destructive",
+      });
     }
   };
 
@@ -613,9 +670,17 @@ ${retryText}`;
 
     try {
       await navigator.clipboard.writeText(content);
-      toast.success("Đã sao chép phụ đề đã dịch");
+      toast({
+        title: "Thành công",
+        description: "Đã sao chép phụ đề đã dịch",
+        variant: "default",
+      });
     } catch (err) {
-      toast.error("Không thể sao chép phụ đề đã dịch");
+      toast({
+        title: "Lỗi",
+        description: "Không thể sao chép phụ đề đã dịch",
+        variant: "destructive",
+      });
     }
   };
 
@@ -653,7 +718,11 @@ ${retryText}`;
 
     try {
       const entry = entries[index];
-      const toastId = loading(`Đang dịch dòng ${index + 1}...`);
+      const toastId = toast({
+        title: "Đang xử lý",
+        description: `Đang dịch dòng ${index + 1}...`,
+        variant: "default",
+      });
 
       // Add context to the prompt if available
       const contextInfo = isUsingContext && generatedContext 
@@ -682,8 +751,11 @@ ${entry.text}`;
       setEntries(newEntries);
       setError(null);
 
-      removeToast(toastId);
-      success(`Đã dịch xong dòng ${index + 1}`);
+      toast({
+        title: "Thành công",
+        description: `Đã dịch xong dòng ${index + 1}`,
+        variant: "default",
+      });
     } catch (error: any) {
       console.error('Translation error:', error);
       
@@ -695,7 +767,11 @@ ${entry.text}`;
       };
       setEntries(newEntries);
       
-      showError(`Lỗi khi dịch dòng ${index + 1}`);
+      toast({
+        title: "Lỗi",
+        description: `Lỗi khi dịch dòng ${index + 1}`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -706,7 +782,11 @@ ${entry.text}`;
     // If user has entered custom context, use that
     if (customContext.trim()) {
       setIsGeneratingContext(true);
-      const toastId = loading('Đang tạo ngữ cảnh từ thông tin người dùng...');
+      const toastId = toast({
+        title: "Đang xử lý",
+        description: "Đang tạo ngữ cảnh từ thông tin người dùng...",
+        variant: "default",
+      });
 
       try {
         const prompt = `Dựa trên thông tin sau, hãy tạo một đoạn ngữ cảnh ngắn gọn (tối đa 200 từ) để giúp cho việc dịch phụ đề được chính xác hơn:
@@ -717,12 +797,18 @@ Chỉ trả về đoạn ngữ cảnh, không thêm bất kỳ chú thích nào 
         const result = await aiService.processWithAI(prompt);
         setGeneratedContext(result.trim());
         setIsUsingContext(true);
-        removeToast(toastId);
-        success('Đã tạo ngữ cảnh thành công!');
+        toast({
+          title: "Thành công",
+          description: "Đã tạo ngữ cảnh thành công!",
+          variant: "default",
+        });
       } catch (error: any) {
         console.error('Context generation error:', error);
-        removeToast(toastId);
-        showError('Có lỗi xảy ra khi tạo ngữ cảnh. Vui lòng thử lại sau.');
+        toast({
+          title: "Lỗi",
+          description: "Có lỗi xảy ra khi tạo ngữ cảnh. Vui lòng thử lại sau.",
+          variant: "destructive",
+        });
       } finally {
         setIsGeneratingContext(false);
       }
@@ -730,7 +816,11 @@ Chỉ trả về đoạn ngữ cảnh, không thêm bất kỳ chú thích nào 
     // Otherwise, auto-generate from the first 50-100 entries
     else if (entries.length > 0) {
       setIsAutoGeneratingContext(true);
-      const toastId = loading('Đang tự động tạo ngữ cảnh từ nội dung...');
+      const toastId = toast({
+        title: "Đang xử lý",
+        description: "Đang tự động tạo ngữ cảnh từ nội dung...",
+        variant: "default",
+      });
 
       try {
         // Take first 50-100 entries (or all if less than 50)
@@ -755,17 +845,27 @@ ${sampleText}`;
         const result = await aiService.processWithAI(prompt);
         setGeneratedContext(result.trim());
         setIsUsingContext(true);
-        removeToast(toastId);
-        success('Đã tự động tạo ngữ cảnh thành công!');
+        toast({
+          title: "Thành công",
+          description: "Đã tự động tạo ngữ cảnh thành công!",
+          variant: "default",
+        });
       } catch (error: any) {
         console.error('Auto context generation error:', error);
-        removeToast(toastId);
-        showError('Có lỗi xảy ra khi tự động tạo ngữ cảnh. Vui lòng thử lại sau.');
+        toast({
+          title: "Lỗi",
+          description: "Có lỗi xảy ra khi tự động tạo ngữ cảnh. Vui lòng thử lại sau.",
+          variant: "destructive",
+        });
       } finally {
         setIsAutoGeneratingContext(false);
       }
     } else {
-      showError('Không có nội dung để tạo ngữ cảnh. Vui lòng tải lên file phụ đề hoặc nhập ngữ cảnh thủ công.');
+      toast({
+        title: "Lỗi",
+        description: "Không có nội dung để tạo ngữ cảnh. Vui lòng tải lên file phụ đề hoặc nhập ngữ cảnh thủ công.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -790,12 +890,20 @@ ${sampleText}`;
   const handleImproveTranslations = async () => {
     const translatedEntries = entries.filter(entry => entry.status === 'translated');
     if (translatedEntries.length === 0) {
-      showError('Không có dòng nào đã dịch để cải thiện.');
+      toast({
+        title: "Lỗi",
+        description: "Không có dòng nào đã dịch để cải thiện.",
+        variant: "destructive",
+      });
       return;
     }
     
     setIsImprovingTranslation(true);
-    const toastId = loading('Đang cải thiện bản dịch...');
+    const toastId = toast({
+      title: "Đang xử lý",
+      description: "Đang cải thiện bản dịch...",
+      variant: "default",
+    });
     
     try {
       // Take a batch of translations to improve
@@ -875,12 +983,18 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
         }
       }
       
-      removeToast(toastId);
-      success('Cải thiện bản dịch hoàn tất!');
+      toast({
+        title: "Thành công",
+        description: "Cải thiện bản dịch hoàn tất!",
+        variant: "default",
+      });
     } catch (error: any) {
       console.error('Error improving translations:', error);
-      removeToast(toastId);
-      showError('Có lỗi xảy ra khi cải thiện bản dịch. Vui lòng thử lại sau.');
+      toast({
+        title: "Lỗi",
+        description: "Có lỗi xảy ra khi cải thiện bản dịch. Vui lòng thử lại sau.",
+        variant: "destructive",
+      });
     } finally {
       setIsImprovingTranslation(false);
     }
@@ -1397,7 +1511,6 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
         isOpen={isDictionaryOpen}
         onClose={() => setIsDictionaryOpen(false)}
       />
-      <ToastContainer />
     </div>
   );
 } 

@@ -15,7 +15,7 @@ import {
 } from "@heroicons/react/24/outline"
 import ReactMarkdown from "react-markdown"
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip"
-import { toast } from "react-hot-toast"
+import { useToast } from "@/hooks/use-toast"
 
 // Custom hook for tab state
 const useTabState = (key: string, initialValue: string) => {
@@ -50,6 +50,7 @@ const SUPPORTED_LANGUAGES = [
 ]
 
 export default function TextSummarization() {
+  const { toast } = useToast()
   const [mounted, setMounted] = useState(false)
   const [text, setText] = useState("")
   const [files, setFiles] = useState<File[]>([])
@@ -168,7 +169,10 @@ export default function TextSummarization() {
 
   const handleSummarize = async () => {
     if (!text.trim() && files.length === 0) {
-      toast.error("Vui lòng nhập văn bản hoặc chọn file để tóm tắt")
+      toast({
+        variant: "destructive",
+        title: "Vui lòng nhập văn bản hoặc chọn file để tóm tắt",
+      })
       return
     }
 
@@ -315,7 +319,7 @@ export default function TextSummarization() {
                   onClick={() => setShowFileUpload(true)}
                   className="p-2 hover:bg-gray-50 rounded-full transition-colors duration-200"
                 >
-                  <Tooltip content="Tải lên file">
+                  <Tooltip>
                     <FolderArrowDownIcon className="h-5 w-5 text-gray-500" />
                   </Tooltip>
                 </button>
@@ -324,7 +328,7 @@ export default function TextSummarization() {
                     onClick={handleClearText}
                     className="p-2 hover:bg-red-50 rounded-full transition-colors duration-200"
                   >
-                    <Tooltip content="Xóa nội dung">
+                    <Tooltip>
                       <TrashIcon className="h-5 w-5 text-red-500" />
                     </Tooltip>
                   </button>
@@ -505,7 +509,7 @@ export default function TextSummarization() {
                   onClick={handleOpenEditModal}
                   className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors duration-200"
                 >
-                  <Tooltip content="Chỉnh sửa kết quả">
+                  <Tooltip>
                     <PencilIcon className="h-5 w-5" />
                   </Tooltip>
                   <span className="hidden sm:inline">Chỉnh sửa</span>
@@ -514,7 +518,7 @@ export default function TextSummarization() {
                   onClick={() => copyToClipboard(summary)}
                   className="flex items-center gap-2 text-primary hover:text-primary/90 transition-colors duration-200"
                 >
-                  <Tooltip content="Sao chép vào clipboard">
+                  <Tooltip>
                     <ClipboardIcon className="h-5 w-5" />
                   </Tooltip>
                   <span className="hidden sm:inline">Sao chép</span>
@@ -536,7 +540,7 @@ export default function TextSummarization() {
                         onClick={() => copyToClipboard(fileSummary.content)}
                         className="flex items-center gap-2 text-primary hover:text-primary/90 transition-colors duration-200"
                       >
-                        <Tooltip content="Sao chép vào clipboard">
+                        <Tooltip>
                           <ClipboardIcon className="h-5 w-5" />
                         </Tooltip>
                         <span className="hidden sm:inline">Sao chép</span>
