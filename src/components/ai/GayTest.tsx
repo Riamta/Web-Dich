@@ -41,10 +41,9 @@ export default function GayTest() {
     setCurrentQuestionIndex(0)
 
     try {
-      const prompt = `Tạo ra 10 câu hỏi trắc nghiệm vui nhộn và hài hước để "kiểm tra độ Gay/LGBT" của một người.
+      const prompt = `Tạo ra 10 câu hỏi trắc nghiệm chuyên nghiệp dùng để kiểm tra độ gay của một người.
 
 Yêu cầu:
-- Tạo những câu hỏi không xúc phạm và có tính chất giải trí
 - Mỗi câu hỏi đều là trắc nghiệm với 4 lựa chọn
 - Mỗi lựa chọn đi kèm với điểm số từ 0-10 (0: hoàn toàn không gay, 10: rất gay)
 - Nội dung câu hỏi nên đa dạng về sở thích, quan điểm và thói quen
