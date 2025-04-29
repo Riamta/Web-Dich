@@ -271,175 +271,218 @@ Trả lời ngắn gọn, súc tích bằng định dạng markdown, khoảng 15
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-center gap-2 mb-6">
-                    <BoltIcon className="w-6 h-6" />
-                    <h2 className="text-2xl font-bold">Tính chỉ số BMI</h2>
-                </div>
+        <div className="min-h-screen py-8 px-4">
+            <div className="max-w-4xl mx-auto">
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                    {/* Header */}
+                    <div className="p-8 border-b border-gray-100">
+                        <div className="text-center mb-8">
+                            <h1 className="text-3xl font-bold text-gray-800 mb-2">⚖️ BMI Calculator</h1>
+                            <p className="text-gray-600">
+                                Tính chỉ số BMI và nhận tư vấn sức khỏe từ AI.
+                            </p>
+                        </div>
 
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Chiều cao (cm)
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="number"
-                                    value={height}
-                                    onChange={(e) => handleInputChange('height', e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="Nhập chiều cao"
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
-                                />
-                                <ScaleIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        {/* Input Form */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Chiều cao (cm)
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        value={height}
+                                        onChange={(e) => handleInputChange('height', e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        placeholder="Nhập chiều cao"
+                                        className="w-full p-3 pl-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 transition-all"
+                                    />
+                                    <ScaleIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Cân nặng (kg)
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        value={weight}
+                                        onChange={(e) => handleInputChange('weight', e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        placeholder="Nhập cân nặng"
+                                        className="w-full p-3 pl-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 transition-all"
+                                    />
+                                    <ScaleIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Tuổi (tùy chọn)
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        value={age}
+                                        onChange={(e) => handleInputChange('age', e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        placeholder="Nhập tuổi"
+                                        className="w-full p-3 pl-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 transition-all"
+                                    />
+                                    <BoltIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Giới tính
+                                </label>
+                                <div className="relative">
+                                    <select
+                                        value={gender}
+                                        onChange={(e) => handleInputChange('gender', e.target.value)}
+                                        className="w-full p-3 pl-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 transition-all appearance-none"
+                                    >
+                                        <option value="male">Nam</option>
+                                        <option value="female">Nữ</option>
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                                        <ArrowsUpDownIcon className="w-5 h-5 text-gray-400" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Cân nặng (kg)
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="number"
-                                    value={weight}
-                                    onChange={(e) => handleInputChange('weight', e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="Nhập cân nặng"
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
-                                />
-                                <ScaleIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Tuổi (tùy chọn)
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="number"
-                                    value={age}
-                                    onChange={(e) => handleInputChange('age', e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="Nhập tuổi"
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
-                                />
-                                <BoltIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Giới tính
-                            </label>
-                            <div className="relative">
-                                <select
-                                    value={gender}
-                                    onChange={(e) => handleInputChange('gender', e.target.value)}
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
-                                >
-                                    <option value="male">Nam</option>
-                                    <option value="female">Nữ</option>
-                                </select>
-                            </div>
+                        <div className="flex justify-center mt-6">
+                            <button
+                                onClick={calculateBMI}
+                                disabled={!height || !weight || isLoading}
+                                className="flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] disabled:hover:scale-100"
+                            >
+                                <CalculatorIcon className="w-5 h-5" />
+                                Tính BMI
+                            </button>
                         </div>
                     </div>
 
-                    <div className="flex justify-center">
-                        <button
-                            onClick={calculateBMI}
-                            disabled={!height || !weight || isLoading}
-                            className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                        >
-                            <CalculatorIcon className="w-5 h-5" />
-                            Tính BMI
-                        </button>
-                    </div>
-
+                    {/* Results */}
                     {bmiResult && (
-                        <div className="space-y-6">
-                            <div className="p-4 bg-gray-50 rounded-md">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <BoltIcon className="w-5 h-5" />
-                                        <span className="font-medium">Kết quả BMI</span>
+                        <div className="p-8 space-y-8">
+                            {/* BMI Score */}
+                            <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border-2 border-gray-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <BoltIcon className="w-6 h-6 text-gray-600" />
+                                        <span className="text-lg font-medium text-gray-800">Kết quả BMI</span>
                                     </div>
-                                    <div className={`${getHealthScoreColor(bmiResult.healthScore)} w-16 h-16 rounded-full flex flex-col items-center justify-center`}>
+                                    <div className={`${getHealthScoreColor(bmiResult.healthScore)} px-4 py-2 rounded-lg`}>
                                         <div className="text-xl font-bold">{bmiResult.healthScore}</div>
-                                        <div className="text-xs">điểm</div>
+                                        <div className="text-xs">điểm sức khỏe</div>
                                     </div>
                                 </div>
-                                <div className="text-3xl font-bold">
-                                    {bmiResult.bmi}
+                                <div className="flex items-baseline gap-2">
+                                    <div className="text-4xl font-bold text-gray-800">{bmiResult.bmi}</div>
+                                    <div className="text-lg font-medium text-gray-600">{bmiResult.category}</div>
                                 </div>
-                                <div className="text-lg font-medium">
-                                    {bmiResult.category}
-                                </div>
-                                <div className="mt-2 space-y-1">
-                                    <div className="text-sm text-gray-600">
-                                        Tuổi cơ thể: {bmiResult.bodyAge} tuổi
-                                        {age && ` (Tuổi thực: ${age} tuổi)`}
+                                <div className="mt-4 grid grid-cols-2 gap-4">
+                                    <div className="bg-white p-3 rounded-lg border border-gray-200">
+                                        <div className="text-sm text-gray-600">Tuổi cơ thể</div>
+                                        <div className="text-lg font-medium text-gray-800">
+                                            {bmiResult.bodyAge} tuổi
+                                            {age && <span className="text-sm text-gray-500 ml-2">(Thực tế: {age})</span>}
+                                        </div>
                                     </div>
-                                    <div className="text-sm text-gray-600">
-                                        Tuổi thọ dự đoán: {bmiResult.predictedLifeExpectancy} tuổi
+                                    <div className="bg-white p-3 rounded-lg border border-gray-200">
+                                        <div className="text-sm text-gray-600">Tuổi thọ dự đoán</div>
+                                        <div className="text-lg font-medium text-gray-800">{bmiResult.predictedLifeExpectancy} tuổi</div>
                                     </div>
                                 </div>
                             </div>
 
+                            {/* Health Info Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <div className="p-4 bg-gray-50 rounded-md">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <HeartIcon className="w-5 h-5" />
-                                            <span className="font-medium">Cân nặng lý tưởng</span>
+                                {/* Left Column */}
+                                <div className="space-y-6">
+                                    <div className="bg-white p-6 rounded-xl border-2 border-gray-200">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <HeartIcon className="w-5 h-5 text-gray-600" />
+                                            <span className="text-lg font-medium text-gray-800">Cân nặng lý tưởng</span>
                                         </div>
-                                        <div className="space-y-1">
-                                            <div>Từ {bmiResult.healthyWeightRange.min} kg</div>
-                                            <div>Đến {bmiResult.healthyWeightRange.max} kg</div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-gray-50 p-3 rounded-lg">
+                                                <div className="text-sm text-gray-600">Tối thiểu</div>
+                                                <div className="text-lg font-medium text-gray-800">{bmiResult.healthyWeightRange.min} kg</div>
+                                            </div>
+                                            <div className="bg-gray-50 p-3 rounded-lg">
+                                                <div className="text-sm text-gray-600">Tối đa</div>
+                                                <div className="text-lg font-medium text-gray-800">{bmiResult.healthyWeightRange.max} kg</div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="p-4 bg-gray-50 rounded-md">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <InformationCircleIcon className="w-5 h-5" />
-                                            <span className="font-medium">Nguy cơ sức khỏe</span>
+                                    <div className="bg-white p-6 rounded-xl border-2 border-gray-200">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <InformationCircleIcon className="w-5 h-5 text-gray-600" />
+                                            <span className="text-lg font-medium text-gray-800">Nguy cơ sức khỏe</span>
                                             {isLoading && (
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 ml-2"></div>
+                                                <div className="relative">
+                                                    <div className="w-5 h-5 rounded-full border-2 border-gray-300 border-t-transparent animate-spin" />
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <div className="w-3 h-3 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
+                                                    </div>
+                                                </div>
                                             )}
                                         </div>
-                                        <ul className="list-disc list-inside space-y-1">
+                                        <ul className="space-y-2">
                                             {bmiResult.risks.map((risk, index) => (
-                                                <li key={index}>{risk}</li>
+                                                <li key={index} className="flex items-start gap-2">
+                                                    <span className="text-gray-600">•</span>
+                                                    <span className="text-gray-800">{risk}</span>
+                                                </li>
                                             ))}
                                         </ul>
                                     </div>
                                 </div>
 
-                                <div className="space-y-4">
-                                    <div className="p-4 bg-gray-50 rounded-md">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <InformationCircleIcon className="w-5 h-5" />
-                                            <span className="font-medium">Khuyến nghị</span>
+                                {/* Right Column */}
+                                <div className="space-y-6">
+                                    <div className="bg-white p-6 rounded-xl border-2 border-gray-200">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <InformationCircleIcon className="w-5 h-5 text-gray-600" />
+                                            <span className="text-lg font-medium text-gray-800">Khuyến nghị</span>
                                             {isLoading && (
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 ml-2"></div>
+                                                <div className="relative">
+                                                    <div className="w-5 h-5 rounded-full border-2 border-gray-300 border-t-transparent animate-spin" />
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <div className="w-3 h-3 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
+                                                    </div>
+                                                </div>
                                             )}
                                         </div>
-                                        <ul className="list-disc list-inside space-y-1">
+                                        <ul className="space-y-2">
                                             {bmiResult.recommendations.map((rec, index) => (
-                                                <li key={index}>{rec}</li>
+                                                <li key={index} className="flex items-start gap-2">
+                                                    <span className="text-gray-600">•</span>
+                                                    <span className="text-gray-800">{rec}</span>
+                                                </li>
                                             ))}
                                         </ul>
                                     </div>
 
-                                    <div className="p-4 bg-gray-50 rounded-md">
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <CommandLineIcon className="w-5 h-5" />
-                                            <span className="font-medium">Tư vấn AI</span>
+                                    <div className="bg-white p-6 rounded-xl border-2 border-gray-200">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <CommandLineIcon className="w-5 h-5 text-gray-600" />
+                                            <span className="text-lg font-medium text-gray-800">Tư vấn AI</span>
                                             {isLoading && (
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 ml-2"></div>
+                                                <div className="relative">
+                                                    <div className="w-5 h-5 rounded-full border-2 border-gray-300 border-t-transparent animate-spin" />
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <div className="w-3 h-3 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
+                                                    </div>
+                                                </div>
                                             )}
                                         </div>
                                         <div className="prose max-w-none">
@@ -449,13 +492,18 @@ Trả lời ngắn gọn, súc tích bằng định dạng markdown, khoảng 15
                                 </div>
                             </div>
 
-                            {/* Workout Advice Section */}
-                            <div className="p-4 bg-gray-50 rounded-md">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <ClipboardDocumentCheckIcon className="w-5 h-5" />
-                                    <span className="font-medium">Lời khuyên tập luyện</span>
+                            {/* Workout Advice */}
+                            <div className="bg-white p-6 rounded-xl border-2 border-gray-200">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <ClipboardDocumentCheckIcon className="w-5 h-5 text-gray-600" />
+                                    <span className="text-lg font-medium text-gray-800">Lời khuyên tập luyện</span>
                                     {isLoadingWorkoutAdvice && (
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 ml-2"></div>
+                                        <div className="relative">
+                                            <div className="w-5 h-5 rounded-full border-2 border-gray-300 border-t-transparent animate-spin" />
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <div className="w-3 h-3 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                                 <div className="prose max-w-none">
@@ -468,10 +516,10 @@ Trả lời ngắn gọn, súc tích bằng định dạng markdown, khoảng 15
                             </div>
 
                             {/* Workout Scheduler Button */}
-                            <div className="mt-6 flex justify-center">
+                            <div className="flex justify-center">
                                 <Link
                                     href={`/workout-scheduler?bmi=${bmiResult.bmi}&category=${encodeURIComponent(bmiResult.category)}`}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-900 transition-all transform hover:scale-[1.02]"
                                 >
                                     <ClipboardDocumentCheckIcon className="w-5 h-5" />
                                     Lên lịch tập luyện phù hợp
