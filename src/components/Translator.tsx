@@ -92,6 +92,8 @@ export default function Translator() {
 
   // Add effect for auto-translation
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout | undefined;
+    
     const checkAndTranslate = () => {
       const now = Date.now();
       if (now - lastTypedTime >= 200 && sourceText.trim() && activeTab === 'text' && !textTranslated) {
@@ -99,8 +101,19 @@ export default function Translator() {
       }
     };
 
-    const interval = setInterval(checkAndTranslate, 1000);
-    return () => clearInterval(interval);
+    // Clear any existing timeout
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    // Set new timeout
+    timeoutId = setTimeout(checkAndTranslate, 200);
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [lastTypedTime, sourceText, activeTab, textTranslated]);
 
   // Supported file types
@@ -273,6 +286,7 @@ export default function Translator() {
       const text = await navigator.clipboard.readText();
       setSourceText(text);
       setTextTranslated(false); // Reset when pasting new text
+      setLastTypedTime(Date.now()); // Update last typed time
     } catch (err) {
       console.error('Failed to paste text:', err);
     }
