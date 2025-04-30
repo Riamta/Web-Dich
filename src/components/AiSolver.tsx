@@ -15,6 +15,7 @@ import { InlineMath, BlockMath } from 'react-katex'
 import { Components } from 'react-markdown'
 import { SUPPORTED_LANGUAGES } from '@/constants/languages'
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { aiService } from '@/lib/ai-service'
 
 // Custom renderer components for ReactMarkdown
 const renderers: Partial<Components> = {
@@ -243,54 +244,21 @@ Do not use any other language in your response.`
         setError(null)
 
         try {
-            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
-            if (!geminiKey) {
-                throw new Error('Gemini API key is not configured')
-            }
-
-            const ai = new GoogleGenAI({ apiKey: geminiKey })
-            const model = ai.models
             const prompt = createSolverPrompt()
             const selectedLanguage = SUPPORTED_LANGUAGES.find(l => l.code === language)?.name || 'Vietnamese'
+            const fullPrompt = `${prompt}\n\nIMPORTANT: You MUST respond ONLY in ${selectedLanguage}. Do not use any other language in your response.`
 
             let result;
             // Ưu tiên xử lý text nếu có
             if (exerciseText.trim()) {
-                result = await model.generateContent({
-                    model: selectedModel,
-                    contents: createUserContent([
-                        `${prompt}\n\nIMPORTANT: You MUST respond ONLY in ${selectedLanguage}. Do not use any other language in your response.`,
-                        `Bài tập:\n${exerciseText}`
-                    ])
-                })
+                result = await aiService.processWithAI(`${fullPrompt}\n\nBài tập:\n${exerciseText}`)
             } else if (selectedImage) {
-                // Upload file to Gemini
-                const uploadedFile = await ai.files.upload({
-                    file: selectedImage,
-                    config: { mimeType: selectedImage.type }
-                })
-
-                if (!uploadedFile.uri || !uploadedFile.mimeType) {
-                    throw new Error('Failed to upload image')
-                }
-
-                // Generate content with image
-                result = await model.generateContent({
-                    model: selectedModel,
-                    contents: createUserContent([
-                        createPartFromUri(uploadedFile.uri, uploadedFile.mimeType),
-                        `${prompt}\n\nIMPORTANT: You MUST respond ONLY in ${selectedLanguage}. Do not use any other language in your response.`
-                    ])
-                })
+                result = await aiService.processImageWithAI(selectedImage, fullPrompt, selectedModel)
             } else {
                 throw new Error('No input provided')
             }
 
-            if (!result) {
-                throw new Error('No solution generated')
-            }
-
-            setSolution(result.text || 'No solution generated')
+            setSolution(result || 'No solution generated')
         } catch (error) {
             console.error('Solving error:', error)
             setError(error instanceof Error ? error.message : 'Failed to solve the exercise')

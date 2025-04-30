@@ -1,6 +1,8 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, createUserContent, createPartFromUri } from "@google/genai";
 import { createOpenRouterClient, isOpenRouterModel } from './api-config';
 import { OpenAI } from 'openai';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { apiKeyManager } from './utils';
 
 interface AIServiceConfig {
     model: string;
@@ -215,16 +217,16 @@ class AIService {
 
     async processWithGoogleSearch(prompt: string): Promise<GroundedResponse> {
         console.log(`📤 Sending request to ${this.config.model} with Google Search...`);
-        
+
         if (!this.config.model.startsWith('gemini')) {
             throw new Error('Google Search is only available with Gemini models');
         }
-        
+
         const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
         if (!geminiKey) {
             throw new Error('Gemini API key is not configured');
         }
-        
+
         try {
             const ai = new GoogleGenAI({ apiKey: geminiKey });
             const response = await ai.models.generateContent({
@@ -234,16 +236,16 @@ class AIService {
                     tools: [{ googleSearch: {} }],
                 },
             });
-            
+
             let sources = '';
-            if (response.candidates && 
-                response.candidates[0] && 
-                response.candidates[0].groundingMetadata && 
-                response.candidates[0].groundingMetadata.searchEntryPoint && 
+            if (response.candidates &&
+                response.candidates[0] &&
+                response.candidates[0].groundingMetadata &&
+                response.candidates[0].groundingMetadata.searchEntryPoint &&
                 response.candidates[0].groundingMetadata.searchEntryPoint.renderedContent) {
                 sources = response.candidates[0].groundingMetadata.searchEntryPoint.renderedContent;
             }
-            
+
             return {
                 text: response.text || '',
                 sources: sources
@@ -261,12 +263,8 @@ class AIService {
     private async processWithLocalModel(prompt: string): Promise<string> {
         console.log(`📤 Sending request to ${this.config.model}...`);
         if (this.config.model.startsWith('gemini')) {
-            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-            if (!geminiKey) {
-                throw new Error('Gemini API key is not configured');
-            }
             try {
-                const ai = new GoogleGenAI({ apiKey: geminiKey });
+                const ai = new GoogleGenAI({ apiKey: apiKeyManager.getNextKey('gemini') });
                 const response = await ai.models.generateContent({
                     model: this.config.model,
                     contents: prompt,
@@ -288,7 +286,7 @@ class AIService {
 
             try {
                 const client = new OpenAI({
-                    apiKey: gptKey,
+                    apiKey: apiKeyManager.getNextKey('openai'),
                     dangerouslyAllowBrowser: true
                 });
 
@@ -311,8 +309,70 @@ class AIService {
                 });
                 throw new Error('Failed to process with GPT');
             }
+        } else if (isOpenRouterModel(this.config.model)) {
+            try {
+                const client = createOpenRouterClient(apiKeyManager.getNextKey('openrouter'));
+                const completion = await client.chat.completions.create({
+                    model: this.config.model,
+                    messages: [
+                        { role: 'user', content: prompt }
+                    ]
+                });
+                return completion.choices[0].message.content || '';
+            } catch (error) {
+                console.error('❌ OpenRouter error:', {
+                    model: this.config.model,
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                    timestamp: new Date().toISOString()
+                });
+                throw new Error('Failed to process with OpenRouter');
+            }
         } else {
             throw new Error('Unsupported model');
+        }
+    }
+
+    async processImageWithAI(
+        image: File,
+        prompt: string,
+        model: string = 'gemini-2.0-flash'
+    ): Promise<string> {
+        console.log(`📤 Processing image with ${model}...`);
+
+        if (!model.startsWith('gemini')) {
+            throw new Error('Image processing is only available with Gemini models');
+        }
+
+        try {
+            const ai = new GoogleGenAI({ apiKey: apiKeyManager.getNextKey('gemini') });
+            
+            // Upload file to Gemini
+            const uploadedFile = await ai.files.upload({
+                file: image,
+                config: { mimeType: image.type }
+            });
+
+            if (!uploadedFile.uri || !uploadedFile.mimeType) {
+                throw new Error('Failed to upload image');
+            }
+
+            // Generate content with image
+            const result = await ai.models.generateContent({
+                model: model,
+                contents: createUserContent([
+                    createPartFromUri(uploadedFile.uri, uploadedFile.mimeType),
+                    prompt
+                ])
+            });
+
+            return result.text || '';
+        } catch (error) {
+            console.error('❌ Image processing error:', {
+                model: model,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                timestamp: new Date().toISOString()
+            });
+            throw new Error('Failed to process image');
         }
     }
 

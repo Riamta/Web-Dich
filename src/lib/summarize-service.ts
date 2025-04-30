@@ -1,5 +1,6 @@
 import { aiService } from './ai-service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { base64ToFile } from './utils';
 
 interface SRTEntry {
     id: number;
@@ -299,15 +300,8 @@ Requirements:
         options: ImageSummarizeOptions
     ): Promise<string> {
         try {
-            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-            if (!geminiKey) {
-                throw new Error('Gemini API key is not configured');
-            }
-
             console.log('📤 Sending image summarization request to Gemini...');
-            const genAI = new GoogleGenerativeAI(geminiKey);
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
+            
             const prompt = this.createImageSummaryPrompt(
                 options.language,
                 options.type,
@@ -315,15 +309,10 @@ Requirements:
                 options.useFormat || false
             );
 
-            const imagePart = {
-                inlineData: {
-                    data: options.imageData,
-                    mimeType: options.mimeType
-                }
-            };
+            // Convert base64 to File object using utility function
+            const file = base64ToFile(options.imageData, options.mimeType, 'image');
 
-            const result = await model.generateContent([prompt, imagePart]);
-            return result.response.text();
+            return await aiService.processImageWithAI(file, prompt);
         } catch (error) {
             console.error('Image summarization error:', error);
             throw new Error('Failed to summarize image');

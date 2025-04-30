@@ -3,6 +3,7 @@ import { dictionaryService } from './dictionary-service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getLanguageName } from '@/constants/languages';
 import { TRANSLATION_TONES } from './ai-service';
+import { base64ToFile } from './utils';
 
 interface TranslationOptions {
     targetLanguage: string;
@@ -425,14 +426,8 @@ CRITICAL REQUIREMENTS:
         options: ImageTranslationOptions
     ): Promise<string> {
         try {
-            const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-            if (!geminiKey) {
-                throw new Error('Gemini API key is not configured');
-            }
-
             console.log('📤 Sending image translation request to Gemini...');
-            const genAI = new GoogleGenerativeAI(geminiKey);
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+            
             const prompt = this.createImageTranslationPrompt(
                 options.targetLanguage,
                 options.preserveContext,
@@ -441,16 +436,11 @@ CRITICAL REQUIREMENTS:
                 options.useFormat || false
             );
 
-            const imagePart = {
-                inlineData: {
-                    data: options.imageData,
-                    mimeType: options.mimeType
-                }
-            };
+            // Convert base64 to File object using utility function
+            const file = base64ToFile(options.imageData, options.mimeType, 'image');
 
-            const result = await model.generateContent([prompt, imagePart]);
-            const translatedText = result.response.text();
-
+            const translatedText = await aiService.processImageWithAI(file, prompt);
+            
             // Apply dictionary if needed
             return await dictionaryService.applyDictionary(translatedText);
         } catch (error) {

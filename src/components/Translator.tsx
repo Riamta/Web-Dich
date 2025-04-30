@@ -79,7 +79,7 @@ export default function Translator() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [fileContent, setFileContent] = useState<string>('')
   const [fileName, setFileName] = useState<string>('')
-  const debouncedSourceText = useDebounce(sourceText, 500); // 0.5 second delay
+  const [lastTypedTime, setLastTypedTime] = useState<number>(0)
   const [isPasteEnabled, setIsPasteEnabled] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
@@ -89,6 +89,19 @@ export default function Translator() {
       handleImageTranslation(useMarkdownFormat, useFormat);
     }
   }, [selectedImage, activeTab, imageTranslated]);
+
+  // Add effect for auto-translation
+  useEffect(() => {
+    const checkAndTranslate = () => {
+      const now = Date.now();
+      if (now - lastTypedTime >= 200 && sourceText.trim() && activeTab === 'text' && !textTranslated) {
+        handleTranslation();
+      }
+    };
+
+    const interval = setInterval(checkAndTranslate, 1000);
+    return () => clearInterval(interval);
+  }, [lastTypedTime, sourceText, activeTab, textTranslated]);
 
   // Supported file types
   const SUPPORTED_FILE_TYPES = {
@@ -133,16 +146,6 @@ export default function Translator() {
 
     return () => resizeObserver.disconnect()
   }, [sourceText, translatedText])
-
-  // Add effect for auto-translation
-  useEffect(() => {
-    if (debouncedSourceText.trim() && activeTab === 'text' && !textTranslated) {
-      handleTranslation();
-    } else if (debouncedSourceText !== sourceText) {
-      // Text is being edited, reset translated flag
-      setTextTranslated(false);
-    }
-  }, [debouncedSourceText, activeTab, textTranslated, sourceText]);
 
   // Add effect to handle paste events globally
   useEffect(() => {
@@ -209,7 +212,7 @@ export default function Translator() {
     }
 
     // Don't show loading state for auto-translation
-    if (debouncedSourceText === sourceText) {
+    if (sourceText === sourceText) {
       setIsLoading(true);
     }
     setError(null);
@@ -249,7 +252,7 @@ export default function Translator() {
       console.error('Translation error:', error);
       setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch văn bản');
     } finally {
-      if (debouncedSourceText === sourceText) {
+      if (sourceText === sourceText) {
         setIsLoading(false);
       }
     }
@@ -430,7 +433,7 @@ export default function Translator() {
       throw error; // Re-throw to be caught by the caller
     } finally {
       // Always reset loading state
-      if (activeTab !== 'text' || debouncedSourceText === sourceText) {
+      if (activeTab !== 'text' || sourceText === sourceText) {
         setIsLoading(false);
       }
     }
@@ -618,6 +621,7 @@ export default function Translator() {
     const text = e.target.value;
     setSourceText(text);
     setTextTranslated(false); // Reset translated flag when text changes
+    setLastTypedTime(Date.now()); // Update last typed time
 
     if (!text.trim()) {
       // Reset height when no text
