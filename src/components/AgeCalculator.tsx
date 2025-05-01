@@ -163,84 +163,88 @@ export default function AgeCalculator() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-center gap-2 mb-6">
-                    <CakeIcon className="w-6 h-6" />
-                    <h2 className="text-2xl font-bold">Tính tuổi</h2>
-                </div>
-
-                <div className="space-y-6">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Ngày sinh (dd/mm/yyyy)
-                        </label>
-                        <input
-                            type="text"
-                            value={birthDate}
-                            onChange={handleDateChange}
-                            placeholder="dd/mm/yyyy"
-                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
-                        />
-                    </div>
-
-                    {ageResult && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-4">
-                                <div className="p-4 bg-gray-50 rounded-md">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <CalendarIcon className="w-5 h-5" />
-                                        <span className="font-medium">Tuổi chính xác</span>
-                                    </div>
-                                    <div className="text-2xl font-bold">
-                                        {ageResult.years} năm, {ageResult.months} tháng, {ageResult.days} ngày
-                                    </div>
-                                </div>
-
-                                <div className="p-4 bg-gray-50 rounded-md">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <ClockIcon className="w-5 h-5" />
-                                        <span className="font-medium">Thời gian sống</span>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <div>{ageResult.totalYears.toLocaleString()} năm</div>
-                                        <div>{ageResult.totalMonths.toLocaleString()} tháng</div>
-                                        <div>{ageResult.totalDays.toLocaleString()} ngày</div>
-                                        <div>{ageResult.hours.toLocaleString()} giờ</div>
-                                        <div>{ageResult.minutes.toLocaleString()} phút</div>
-                                        <div>{ageResult.seconds.toLocaleString()} giây</div>
-                                    </div>
-                                </div>
+        <div className="min-h-screen bg-gray-50 py-8 px-4">
+            <div className="max-w-2xl mx-auto">
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                    <div className="p-8">
+                        <div className="space-y-8">
+                            <div className="text-center mb-8">
+                                <h1 className="text-3xl font-bold text-gray-800 mb-2">🎂 Tính tuổi</h1>
+                                <p className="text-gray-600">
+                                    Tính toán tuổi chính xác và thông tin liên quan
+                                </p>
                             </div>
 
-                            <div className="space-y-4">
-                                <div className="p-4 bg-gray-50 rounded-md">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <HeartIcon className="w-5 h-5" />
-                                        <span className="font-medium">Sinh nhật tiếp theo</span>
+                            <div className="space-y-6">
+                                <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-xl border-2 border-gray-200">
+                                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Nhập ngày sinh</h2>
+                                    <div className="space-y-4">
+                                        <input
+                                            type="text"
+                                            value={birthDate}
+                                            onChange={handleDateChange}
+                                            placeholder="dd/mm/yyyy"
+                                            className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:border-gray-400 focus:ring-2 focus:ring-gray-200 transition-all"
+                                        />
                                     </div>
-                                    <div className="space-y-1">
-                                        <div>Còn {ageResult.nextBirthday.days} ngày</div>
-                                        <div>Khoảng {ageResult.nextBirthday.months} tháng</div>
-                                        <div className="text-sm text-gray-600">
-                                            Ngày {ageResult.nextBirthday.date}
+                                </div>
+
+                                {ageResult && (
+                                    <div className="space-y-6">
+                                        <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-xl border-2 border-gray-200">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <CalendarIcon className="w-5 h-5 text-gray-800" />
+                                                <h2 className="text-lg font-semibold text-gray-800">Tuổi chính xác</h2>
+                                            </div>
+                                            <div className="text-2xl font-bold text-gray-800">
+                                                {ageResult.years} năm, {ageResult.months} tháng, {ageResult.days} ngày
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-xl border-2 border-gray-200">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <ClockIcon className="w-5 h-5 text-gray-800" />
+                                                <h2 className="text-lg font-semibold text-gray-800">Thời gian sống</h2>
+                                            </div>
+                                            <div className="space-y-2 text-gray-700">
+                                                <div>{ageResult.totalYears.toLocaleString()} năm</div>
+                                                <div>{ageResult.totalMonths.toLocaleString()} tháng</div>
+                                                <div>{ageResult.totalDays.toLocaleString()} ngày</div>
+                                                <div>{ageResult.hours.toLocaleString()} giờ</div>
+                                                <div>{ageResult.minutes.toLocaleString()} phút</div>
+                                                <div>{ageResult.seconds.toLocaleString()} giây</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-xl border-2 border-gray-200">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <HeartIcon className="w-5 h-5 text-gray-800" />
+                                                <h2 className="text-lg font-semibold text-gray-800">Sinh nhật tiếp theo</h2>
+                                            </div>
+                                            <div className="space-y-2 text-gray-700">
+                                                <div>Còn {ageResult.nextBirthday.days} ngày</div>
+                                                <div>Khoảng {ageResult.nextBirthday.months} tháng</div>
+                                                <div className="text-sm text-gray-600">
+                                                    Ngày {ageResult.nextBirthday.date}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-xl border-2 border-gray-200">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <StarIcon className="w-5 h-5 text-gray-800" />
+                                                <h2 className="text-lg font-semibold text-gray-800">Thông tin thêm</h2>
+                                            </div>
+                                            <div className="space-y-2 text-gray-700">
+                                                <div>Cung hoàng đạo: {ageResult.zodiac}</div>
+                                                <div>Thế hệ: {ageResult.generation}</div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="p-4 bg-gray-50 rounded-md">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <StarIcon className="w-5 h-5" />
-                                        <span className="font-medium">Thông tin thêm</span>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <div>Cung hoàng đạo: {ageResult.zodiac}</div>
-                                        <div>Thế hệ: {ageResult.generation}</div>
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>
