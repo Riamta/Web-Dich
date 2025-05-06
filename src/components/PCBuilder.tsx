@@ -87,18 +87,35 @@ const componentNames = {
 
 export default function PCBuilder() {
     const [budget, setBudget] = useState('')
+    const [currency, setCurrency] = useState<'vnd' | 'usd' | 'jpy' | 'cny'>('vnd')
+    const [formattedBudget, setFormattedBudget] = useState('')
     const [purpose, setPurpose] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [config, setConfig] = useState<PCConfig | null>(null)
     const [configHistory, setConfigHistory] = useState<PCConfig[]>([])
     const [showVNDConversion, setShowVNDConversion] = useState(false)
+    const [convertedPrices, setConvertedPrices] = useState<{[key: string]: string}>({})
     const [gpuBrand, setGpuBrand] = useState<'any' | 'nvidia' | 'amd'>('any')
     const [includePeripherals, setIncludePeripherals] = useState({
         monitor: false,
         keyboard: false,
         mouse: false
     })
+
+    const formatNumber = (value: string) => {
+        // Remove all non-digit characters
+        const numericValue = value.replace(/\D/g, '')
+        // Format with dots as thousand separators
+        return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+    }
+
+    const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value
+        const formatted = formatNumber(value)
+        setBudget(value.replace(/\D/g, ''))
+        setFormattedBudget(formatted)
+    }
 
     const handleGenerateConfig = async () => {
         if (!budget.trim()) {
@@ -117,8 +134,9 @@ export default function PCBuilder() {
                 .map(([peripheral]) => `- Bao gồm ${peripheral === 'monitor' ? 'màn hình' : peripheral === 'keyboard' ? 'bàn phím' : 'chuột'}`)
                 .join('\n')
 
+            const budgetWithCurrency = `${budget} ${currency.toUpperCase()}`
             const prompt = `Hãy đề xuất cấu hình PC với các thông tin sau:
-- Ngân sách: ${budget}
+- Ngân sách: ${budgetWithCurrency}
 - Mục đích sử dụng: ${purpose || 'Đa năng'}
 ${gpuBrandPreference}
 ${peripheralRequirements}
@@ -153,6 +171,7 @@ Yêu cầu:
 - Tổng giá (totalPrice) PHẢI bằng tổng của tất cả các thành phần trong components
 - Ưu tiên hiệu năng/giá tiền tốt nhất
 - Các thành phần phải tương thích với nhau
+- Ưu tiên sát với ngân sách đầu vào nhất có thể
 - Nếu ngân sách quá thấp, đề xuất cấu hình tối thiểu có thể
 - Nếu ngân sách cao, đề xuất cấu hình cao cấp phù hợp
 - Sử dụng đơn vị tiền tệ phù hợp với ngân sách đầu vào:
@@ -161,51 +180,24 @@ Yêu cầu:
   + Nếu ngân sách là EUR: sử dụng "EUR"
   + Nếu ngân sách là JPY: sử dụng "JPY"
   + Nếu ngân sách là GBP: sử dụng "GBP"
-  + Nếu ngân sách là CNY: sử dụng "CNY"
+  + Nếu ngân sách là CNY: sử dụng "CNY"`
 
-Ví dụ định dạng JSON mong muốn:
-{
-  "budget": "15 triệu VNĐ",
-  "purpose": "Gaming",
-  "components": [
-    {
-      "name": "CPU",
-      "model": "Intel Core i5-12400F",
-      "price": "3.5 triệu VNĐ",
-      "note": "6 cores, 12 threads, phù hợp gaming"
-    },
-    {
-      "name": "GPU",
-      "model": "RTX 3060 12GB",
-      "price": "5.5 triệu VNĐ",
-      "note": "Đủ sức chơi game 1080p"
-    }
-  ],
-  "totalPrice": "14.5 triệu VNĐ",
-  "notes": [
-    "Cấu hình cân bằng cho gaming 1080p",
-    "Có thể nâng cấp GPU sau này"
-  ],
-  "evaluation": {
-    "gaming": {
-      "rating": 8,
-      "description": "Cấu hình mạnh, có thể chơi hầu hết các tựa game hiện tại ở mức 1080p với cấu hình cao",
-      "games": [
-        "Valorant (200+ FPS)",
-        "CS2 (150+ FPS)",
-        "GTA V (60+ FPS)",
-        "Cyberpunk 2077 (40-50 FPS)",
-        "Red Dead Redemption 2 (50-60 FPS)"
-      ]
-    }
-  }
-}`
+            // Sử dụng Google Search để tìm thông tin về giá và đánh giá
+            const searchResult = await aiService.processWithGoogleSearch(prompt)
+            console.log(searchResult)
+            const result = searchResult.text
 
-            const result = await aiService.processWithAI(prompt)
-            console.log(result)
             // Clean up the response to ensure it's valid JSON
             const cleanResult = result.replace(/```json\n?|\n?```/g, '').trim()
             const parsedConfig = JSON.parse(cleanResult) as PCConfig
+
+            // Filter out peripheral components based on includePeripherals state
+            parsedConfig.components = parsedConfig.components.filter(comp => {
+                if (comp.name === 'Monitor' && !includePeripherals.monitor) return false;
+                if (comp.name === 'Keyboard' && !includePeripherals.keyboard) return false;
+                if (comp.name === 'Mouse' && !includePeripherals.mouse) return false;
+                return true;
+            });
 
             // Validate total price matches sum of components
             const totalComponentPrice = parsedConfig.components.reduce((sum, comp) => {
@@ -289,6 +281,41 @@ Ví dụ định dạng JSON mong muốn:
         setError(null)
     }
 
+    const convertToVND = async (amount: string, fromCurrency: string) => {
+        try {
+            const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${fromCurrency.toUpperCase()}`)
+            const data = await response.json()
+            const rate = data.rates.VND
+            const numericAmount = parseFloat(amount.replace(/[^\d]/g, ''))
+            const convertedAmount = Math.round(numericAmount * rate)
+            return convertedAmount.toLocaleString('vi-VN') + ' VNĐ'
+        } catch (error) {
+            console.error('Error converting currency:', error)
+            return 'Không thể quy đổi'
+        }
+    }
+
+    const handleShowVNDChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = e.target.checked
+        setShowVNDConversion(checked)
+        
+        if (checked && config && currency !== 'vnd') {
+            const newConvertedPrices: {[key: string]: string} = {}
+            
+            // Convert total price
+            newConvertedPrices.total = await convertToVND(config.totalPrice, currency)
+            
+            // Convert component prices
+            for (const comp of config.components) {
+                newConvertedPrices[comp.name] = await convertToVND(comp.price, currency)
+            }
+            
+            setConvertedPrices(newConvertedPrices)
+        } else {
+            setConvertedPrices({})
+        }
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-8 px-4">
             <div className="max-w-6xl mx-auto">
@@ -309,14 +336,26 @@ Ví dụ định dạng JSON mong muốn:
                                             <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
                                             Ngân sách
                                         </label>
-                                        <div className="flex rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50/50 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-200 transition-all">
-                                            <input
-                                                type="text"
-                                                value={budget}
-                                                onChange={(e) => setBudget(e.target.value)}
-                                                placeholder="Ví dụ: 15 triệu, 1000 USD..."
-                                                className="flex-1 p-3 border-0 bg-transparent focus:ring-0"
-                                            />
+                                        <div className="flex gap-2">
+                                            <div className="flex-1 rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50/50 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-200 transition-all">
+                                                <input
+                                                    type="text"
+                                                    value={formattedBudget}
+                                                    onChange={handleBudgetChange}
+                                                    placeholder="Nhập số tiền"
+                                                    className="w-full p-3 border-0 bg-transparent focus:ring-0"
+                                                />
+                                            </div>
+                                            <select
+                                                value={currency}
+                                                onChange={(e) => setCurrency(e.target.value as 'vnd' | 'usd' | 'jpy' | 'cny')}
+                                                className="rounded-xl border-2 border-gray-200 bg-gray-50/50 px-4 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 transition-all"
+                                            >
+                                                <option value="vnd">VNĐ</option>
+                                                <option value="usd">USD</option>
+                                                <option value="jpy">JPY</option>
+                                                <option value="cny">CNY</option>
+                                            </select>
                                         </div>
                                     </div>
 
@@ -407,15 +446,38 @@ Ví dụ định dạng JSON mong muốn:
 
                             {(config !== null || isLoading) && (
                                 <div className="mt-8">
-                                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-xl border-2 border-gray-200 text-center transform transition-all hover:scale-[1.02]">
+                                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-xl border-2 border-gray-200 text-center">
                                         <p className="text-sm text-gray-600 mb-3">Cấu hình PC được đề xuất</p>
                                         <div className="space-y-4">
                                             <div>
                                                 <p className="text-3xl font-bold text-gray-800">
                                                     {isLoading ? '...' : `${config?.purpose} - ${config?.budget}`}
                                                 </p>
+                                                {!isLoading && config && !config.budget.toLowerCase().includes('vnd') && (
+                                                    <div className="flex items-center gap-2 justify-center mt-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="showVND"
+                                                            checked={showVNDConversion}
+                                                            onChange={handleShowVNDChange}
+                                                            className="rounded border-gray-300 text-gray-800 focus:ring-gray-500"
+                                                        />
+                                                        <label htmlFor="showVND" className="text-sm text-gray-600">
+                                                            Hiển thị giá quy đổi VNĐ
+                                                        </label>
+                                                    </div>
+                                                )}
                                                 <p className="text-sm text-gray-600">
-                                                    {isLoading ? '' : `Tổng giá: ${config?.totalPrice}`}
+                                                    {isLoading ? '' : (
+                                                        <>
+                                                            Tổng giá: {config?.totalPrice}
+                                                            {showVNDConversion && convertedPrices.total && (
+                                                                <span className="ml-2 text-gray-500">
+                                                                    ({convertedPrices.total})
+                                                                </span>
+                                                            )}
+                                                        </>
+                                                    )}
                                                 </p>
                                             </div>
 
@@ -423,24 +485,14 @@ Ví dụ định dạng JSON mong muốn:
                                                 <div className="text-left space-y-4">
                                                     <div className="flex items-center justify-between mb-4">
                                                         <div className="flex items-center gap-2">
-                                                            <input
-                                                                type="checkbox"
-                                                                id="showVND"
-                                                                checked={showVNDConversion}
-                                                                onChange={(e) => setShowVNDConversion(e.target.checked)}
-                                                                className="rounded border-gray-300 text-gray-800 focus:ring-gray-500"
-                                                            />
-                                                            <label htmlFor="showVND" className="text-sm text-gray-600">
-                                                                Hiển thị giá quy đổi VNĐ
-                                                            </label>
+                                                            <button
+                                                                onClick={copyToClipboard}
+                                                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                                                            >
+                                                                <ClipboardIcon className="w-5 h-5" />
+                                                                <span className="text-sm font-medium">Copy cấu hình</span>
+                                                            </button>
                                                         </div>
-                                                        <button
-                                                            onClick={copyToClipboard}
-                                                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
-                                                        >
-                                                            <ClipboardIcon className="w-5 h-5" />
-                                                            <span className="text-sm font-medium">Copy cấu hình</span>
-                                                        </button>
                                                     </div>
 
                                                     <div className="bg-white rounded-xl p-4 border border-gray-200">
@@ -466,6 +518,11 @@ Ví dụ định dạng JSON mong muốn:
                                                                         <div className="flex items-center justify-between mt-2">
                                                                             <span className="text-gray-600">
                                                                                 {component.price}
+                                                                                {showVNDConversion && convertedPrices[component.name] && (
+                                                                                    <span className="ml-2 text-gray-500">
+                                                                                        ({convertedPrices[component.name]})
+                                                                                    </span>
+                                                                                )}
                                                                             </span>
                                                                         </div>
                                                                     </div>

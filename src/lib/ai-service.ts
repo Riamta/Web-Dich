@@ -222,13 +222,8 @@ class AIService {
             throw new Error('Google Search is only available with Gemini models');
         }
 
-        const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-        if (!geminiKey) {
-            throw new Error('Gemini API key is not configured');
-        }
-
         try {
-            const ai = new GoogleGenAI({ apiKey: geminiKey });
+            const ai = new GoogleGenAI({ apiKey: apiKeyManager.getNextKey('gemini') });
             const response = await ai.models.generateContent({
                 model: this.config.model,
                 contents: prompt,

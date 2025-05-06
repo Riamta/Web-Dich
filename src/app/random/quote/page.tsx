@@ -207,7 +207,7 @@ Use this JSON schema:
                 <div className="mt-8">
                   <div 
                     onClick={() => !isGenerating && quoteResult && copyQuote(quoteResult)}
-                    className={`bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-xl border-2 border-purple-200 text-center transform transition-all hover:scale-[1.02] ${!isGenerating && quoteResult ? 'cursor-pointer hover:border-purple-300' : ''}`}
+                    className={`bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-xl border-2 border-purple-200 text-center ${!isGenerating && quoteResult ? 'cursor-pointer hover:border-purple-300' : ''}`}
                   >
                     <div className="space-y-4">
                       <div>

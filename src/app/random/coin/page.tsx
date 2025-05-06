@@ -92,7 +92,7 @@ export default function RandomCoinPage() {
 
               {(coinResult !== null || isFlipping) && (
                 <div className="mt-8">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-xl border-2 border-blue-200 text-center transform transition-all hover:scale-[1.02]">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-xl border-2 border-blue-200 text-center">
                     <p className="text-sm text-blue-600 mb-3">Kết quả</p>
                     <div className={`w-32 h-32 mx-auto bg-white rounded-full border-2 border-blue-200 shadow-sm flex items-center justify-center mb-4 ${isFlipping ? 'animate-[flip_0.7s_ease-in-out]' : ''}`}>
                       <span className="text-5xl">

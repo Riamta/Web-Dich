@@ -118,7 +118,7 @@ export default function RandomNumberPage() {
 
               {(randomNumbers.length > 0 || error) && (
                 <div className="mt-8">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-xl border-2 border-blue-200 text-center transform transition-all hover:scale-[1.02]">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-xl border-2 border-blue-200 text-center">
                     <p className="text-sm text-blue-600 mb-3">Số được chọn</p>
                     <div className="flex flex-wrap justify-center gap-4">
                       {randomNumbers.map((number, index) => (

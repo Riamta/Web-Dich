@@ -137,7 +137,7 @@ export default function RandomDicePage() {
 
               {(diceResults.length > 0 || isRolling) && (
                 <div className="mt-8">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-xl border-2 border-blue-200 text-center transform transition-all hover:scale-[1.02]">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-xl border-2 border-blue-200 text-center">
                     <p className="text-sm text-blue-600 mb-3">Kết quả</p>
                     <div className="flex flex-wrap gap-3 mb-4">
                       {isRolling ? (
