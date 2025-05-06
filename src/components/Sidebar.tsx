@@ -17,7 +17,8 @@ import {
   FaRegClipboard,
   FaCalculator,
   FaChevronDown,
-  FaMagic
+  FaMagic,
+  FaDesktop
 } from "react-icons/fa";
 import {
   FaMoneyBillTransfer,
@@ -139,6 +140,11 @@ const menuGroups: MenuGroup[] = [
     name: 'Tiện ích',
     icon: <MdGrid3X3 className="w-5 h-5" />,
     items: [
+      {
+        name: 'Tạo cấu hình PC',
+        path: '/pc-builder',
+        icon: <FaDesktop className="w-5 h-5" />
+      },
       {
         name: 'Kiểm tra tốc độ gõ',
         path: '/typing-speed',

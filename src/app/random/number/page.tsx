@@ -6,11 +6,12 @@ import { ArrowPathIcon } from '@heroicons/react/24/outline'
 export default function RandomNumberPage() {
   const [minNumber, setMinNumber] = useState<number>(1)
   const [maxNumber, setMaxNumber] = useState<number>(100)
-  const [randomNumber, setRandomNumber] = useState<number | null>(null)
+  const [randomNumbers, setRandomNumbers] = useState<number[]>([])
   const [numberHistory, setNumberHistory] = useState<number[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [numberOfNumbers, setNumberOfNumbers] = useState<number>(1)
 
-  // Generate a random number within the specified range
+  // Generate random numbers within the specified range
   const generateRandomNumber = () => {
     setError(null)
     
@@ -24,16 +25,19 @@ export default function RandomNumberPage() {
       
       const min = Math.ceil(minNumber)
       const max = Math.floor(maxNumber)
-      const result = Math.floor(Math.random() * (max - min + 1)) + min
-      setRandomNumber(result)
+      const results = Array.from({ length: numberOfNumbers }, () => 
+        Math.floor(Math.random() * (max - min + 1)) + min
+      )
       
-      // Add to history (max 10 entries)
+      setRandomNumbers(results)
+      
+      // Add to history (max 50 entries)
       setNumberHistory(prev => {
-        const updatedHistory = [result, ...prev]
-        return updatedHistory.slice(0, 10)
+        const updatedHistory = [...results, ...prev]
+        return updatedHistory.slice(0, 50)
       })
     } catch (error) {
-      console.error('Error generating number:', error)
+      console.error('Error generating numbers:', error)
       setError('Có lỗi xảy ra khi tạo số. Vui lòng thử lại.')
     }
   }
@@ -41,7 +45,7 @@ export default function RandomNumberPage() {
   // Reset history
   const resetHistory = () => {
     setNumberHistory([])
-    setRandomNumber(null)
+    setRandomNumbers([])
     setError(null)
   }
 
@@ -59,7 +63,7 @@ export default function RandomNumberPage() {
               </div>
 
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-blue-800 mb-2">
                       Giá trị nhỏ nhất
@@ -82,6 +86,19 @@ export default function RandomNumberPage() {
                       className="w-full rounded-xl border-2 border-blue-200 px-4 py-3 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-200 transition-all"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-blue-800 mb-2">
+                      Số lượng số cần tạo (1-50)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="50"
+                      value={numberOfNumbers}
+                      onChange={(e) => setNumberOfNumbers(Math.min(50, Math.max(1, parseInt(e.target.value) || 1)))}
+                      className="w-full rounded-xl border-2 border-blue-200 px-4 py-3 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-200 transition-all"
+                    />
+                  </div>
                 </div>
                 
                 <button
@@ -99,11 +116,17 @@ export default function RandomNumberPage() {
                 </div>
               )}
 
-              {(randomNumber !== null || error) && (
+              {(randomNumbers.length > 0 || error) && (
                 <div className="mt-8">
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-xl border-2 border-blue-200 text-center transform transition-all hover:scale-[1.02]">
                     <p className="text-sm text-blue-600 mb-3">Số được chọn</p>
-                    <p className="text-4xl font-bold text-blue-800">{randomNumber}</p>
+                    <div className="flex flex-wrap justify-center gap-4">
+                      {randomNumbers.map((number, index) => (
+                        <div key={index} className="bg-white px-6 py-3 rounded-lg border border-blue-200">
+                          <p className="text-2xl font-bold text-blue-800">{number}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -121,11 +144,11 @@ export default function RandomNumberPage() {
                   </div>
                   
                   <div className="bg-blue-50 rounded-xl border-2 border-blue-200 overflow-hidden">
-                    <div className="divide-y divide-blue-200">
+                    <div className="flex flex-wrap gap-2 p-4">
                       {numberHistory.map((number, index) => (
                         <div 
                           key={index} 
-                          className="p-4 text-sm hover:bg-blue-100 transition-colors"
+                          className="px-4 py-2 bg-white rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors"
                         >
                           <p className="font-medium text-blue-800">{number}</p>
                         </div>

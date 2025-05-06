@@ -382,9 +382,9 @@ export default function ConversationTranslator() {
 
                 {/* Input Area */}
                 <div className="p-3 sm:p-4 border-t border-gray-100 space-y-3">
-                    <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="flex flex-row gap-3 sm:gap-4">
                         {/* My Message Input */}
-                        <div className="space-y-2">
+                        <div className="flex-1 space-y-2">
                             <div className="relative">
                                 <textarea
                                     value={myText}
@@ -431,7 +431,7 @@ export default function ConversationTranslator() {
                         </div>
 
                         {/* Their Message Input */}
-                        <div className="space-y-2">
+                        <div className="flex-1 space-y-2">
                             <div className="relative">
                                 <textarea
                                     value={theirText}

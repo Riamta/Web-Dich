@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DocumentArrowUpIcon, LanguageIcon, BookOpenIcon, ClipboardIcon, ArrowDownTrayIcon, PencilIcon, XMarkIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
+import { DocumentArrowUpIcon, LanguageIcon, BookOpenIcon, ClipboardIcon, ArrowDownTrayIcon, PencilIcon, XMarkIcon, VideoCameraIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Dialog } from '@headlessui/react';
 import Dictionary from '@/components/Dictionary';
 import { dictionaryService } from '@/lib/dictionary-service';
@@ -417,7 +417,18 @@ export default function SRTTranslation() {
     setError(null);
 
     try {
-      const totalBatches = Math.ceil(entries.length / batchSize);
+      // Filter only pending entries
+      const pendingEntries = entries.filter(entry => entry.status === 'pending');
+      if (pendingEntries.length === 0) {
+        toast({
+          title: "Thông báo",
+          description: "Không có câu nào cần dịch.",
+          variant: "default",
+        });
+        return;
+      }
+
+      const totalBatches = Math.ceil(pendingEntries.length / batchSize);
       const updatedEntries = [...entries];
       
       const toastId = toast({
@@ -429,8 +440,8 @@ export default function SRTTranslation() {
       
       for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
         const start = batchIndex * batchSize;
-        const end = Math.min(start + batchSize, entries.length);
-        const batchEntries = entries.slice(start, end);
+        const end = Math.min(start + batchSize, pendingEntries.length);
+        const batchEntries = pendingEntries.slice(start, end);
         
         const textsToTranslate = batchEntries.map(entry => entry.text);
         const batchText = textsToTranslate.join('\n');
@@ -467,18 +478,26 @@ ${batchText}`;
 
         // Update translations for current batch
         for (let i = 0; i < batchEntries.length; i++) {
-          if (processedLines[i]) {
-            updatedEntries[start + i] = {
-              ...updatedEntries[start + i],
-              translation: processedLines[i],
-              status: 'translated'
-            };
-          } else {
-            // Mark as error if no translation was returned
-            updatedEntries[start + i] = {
-              ...updatedEntries[start + i],
-              status: 'error'
-            };
+          const entryIndex = entries.findIndex(e => 
+            e.id === batchEntries[i].id && 
+            e.from === batchEntries[i].from && 
+            e.to === batchEntries[i].to
+          );
+          
+          if (entryIndex !== -1) {
+            if (processedLines[i]) {
+              updatedEntries[entryIndex] = {
+                ...updatedEntries[entryIndex],
+                translation: processedLines[i],
+                status: 'translated'
+              };
+            } else {
+              // Mark as error if no translation was returned
+              updatedEntries[entryIndex] = {
+                ...updatedEntries[entryIndex],
+                status: 'error'
+              };
+            }
           }
         }
 
@@ -488,85 +507,6 @@ ${batchText}`;
         // Add delay between batches
         if (batchIndex < totalBatches - 1) {
           await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-      
-      // Automatically retry failed translations
-      const failedEntries = updatedEntries.filter(entry => entry.status === 'error');
-      if (failedEntries.length > 0) {
-        // Process failed entries in smaller batches
-        const retryBatchSize = 10;
-        const totalRetryBatches = Math.ceil(failedEntries.length / retryBatchSize);
-        
-        for (let retryBatchIndex = 0; retryBatchIndex < totalRetryBatches; retryBatchIndex++) {
-          const start = retryBatchIndex * retryBatchSize;
-          const end = Math.min(start + retryBatchSize, failedEntries.length);
-          const retryBatch = failedEntries.slice(start, end);
-          
-          const textsToRetry = retryBatch.map(entry => entry.text);
-          const retryText = textsToRetry.join('\n---ENTRY_SEPARATOR---\n');
-          
-          // Add context to the prompt if available
-          const retryContextInfo = isUsingContext && generatedContext 
-            ? `Ngữ cảnh: ${generatedContext}\n\n` 
-            : '';
-
-          const retryPrompt = `Dịch các câu sau sang ${targetLanguage}. Đây là phần ${retryBatchIndex + 1}/${totalRetryBatches}.
-${retryContextInfo}Yêu cầu:
-- Chỉ trả về các câu đã dịch
-- Mỗi câu một dòng
-- Không thêm số thứ tự
-- Không thêm bất kỳ chú thích nào khác
-- Không thêm dấu gạch đầu dòng
-- Giữ nguyên format và ký tự đặc biệt
-- Dịch theo ngữ cảnh tự nhiên
-- Mỗi câu được phân tách bằng ---ENTRY_SEPARATOR---
-
-Nội dung cần dịch:
-${retryText}`;
-
-          try {
-            const retryResult = await aiService.processWithAI(retryPrompt);
-            
-            const retryLines = retryResult
-              .split('---ENTRY_SEPARATOR---')
-              .map(line => line.trim())
-              .filter(line => line);
-            
-            const processedRetryLines = await Promise.all(
-              retryLines.map(line => dictionaryService.applyDictionary(line))
-            );
-            
-            // Update translations for retry batch
-            for (let i = 0; i < retryBatch.length; i++) {
-              const failedEntry = retryBatch[i];
-              const entryIndex = updatedEntries.findIndex(e => 
-                e.id === failedEntry.id && 
-                e.from === failedEntry.from && 
-                e.to === failedEntry.to
-              );
-              
-              if (entryIndex !== -1 && processedRetryLines[i]) {
-                updatedEntries[entryIndex] = {
-                  ...updatedEntries[entryIndex],
-                  translation: processedRetryLines[i],
-                  status: 'translated'
-                };
-              }
-            }
-            
-            // Update UI after each retry batch
-            setEntries([...updatedEntries]);
-            
-            // Add delay between retry batches
-            if (retryBatchIndex < totalRetryBatches - 1) {
-              await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-          } catch (error) {
-            console.error(`Error retrying batch ${retryBatchIndex + 1}:`, error);
-            // Continue with next batch instead of stopping completely
-            continue;
-          }
         }
       }
       
@@ -583,6 +523,127 @@ ${retryText}`;
       toast({
         title: "Lỗi",
         description: error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch phụ đề. Vui lòng thử lại sau.',
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Add new function to retry failed translations
+  const handleRetryFailedTranslations = async () => {
+    if (!entries.length) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Filter only error entries
+      const failedEntries = entries.filter(entry => entry.status === 'error');
+      if (failedEntries.length === 0) {
+        toast({
+          title: "Thông báo",
+          description: "Không có câu nào bị lỗi cần dịch lại.",
+          variant: "default",
+        });
+        return;
+      }
+
+      const totalBatches = Math.ceil(failedEntries.length / batchSize);
+      const updatedEntries = [...entries];
+      
+      const toastId = toast({
+        title: "Đang xử lý",
+        description: "Đang dịch lại các câu bị lỗi...",
+        variant: "default",
+      });
+      setProgressToastId(toastId.id);
+      
+      for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+        const start = batchIndex * batchSize;
+        const end = Math.min(start + batchSize, failedEntries.length);
+        const batchEntries = failedEntries.slice(start, end);
+        
+        const textsToTranslate = batchEntries.map(entry => entry.text);
+        const batchText = textsToTranslate.join('\n');
+
+        // Add context to the prompt if available
+        const contextInfo = isUsingContext && generatedContext 
+          ? `Ngữ cảnh: ${generatedContext}\n\n` 
+          : '';
+
+        const prompt = `Dịch lại các câu sau sang ${targetLanguage}. Đây là phần ${batchIndex + 1}/${totalBatches}. 
+${contextInfo}Yêu cầu:
+- Chỉ trả về các câu đã dịch
+- Mỗi câu một dòng
+- Không thêm số thứ tự
+- Không thêm bất kỳ chú thích nào khác
+- Không thêm dấu gạch đầu dòng
+- Giữ nguyên format và ký tự đặc biệt
+- Dịch theo ngữ cảnh tự nhiên
+
+Nội dung cần dịch:
+${batchText}`;
+
+        const result = await aiService.processWithAI(prompt);
+        
+        // Split result into lines and apply dictionary
+        const translatedLines = result
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line && !line.startsWith('-') && !line.startsWith('['));
+
+        const processedLines = await Promise.all(
+          translatedLines.map(line => dictionaryService.applyDictionary(line))
+        );
+
+        // Update translations for current batch
+        for (let i = 0; i < batchEntries.length; i++) {
+          const entryIndex = entries.findIndex(e => 
+            e.id === batchEntries[i].id && 
+            e.from === batchEntries[i].from && 
+            e.to === batchEntries[i].to
+          );
+          
+          if (entryIndex !== -1) {
+            if (processedLines[i]) {
+              updatedEntries[entryIndex] = {
+                ...updatedEntries[entryIndex],
+                translation: processedLines[i],
+                status: 'translated'
+              };
+            } else {
+              // Keep as error if no translation was returned
+              updatedEntries[entryIndex] = {
+                ...updatedEntries[entryIndex],
+                status: 'error'
+              };
+            }
+          }
+        }
+
+        // Update UI after each batch is processed
+        setEntries([...updatedEntries]);
+        
+        // Add delay between batches
+        if (batchIndex < totalBatches - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+      
+      // Count statistics
+      const stats = getTranslationStats(updatedEntries);
+      toast({
+        title: "Thành công",
+        description: `Dịch lại hoàn tất! Đã dịch: ${stats.translated}, Lỗi: ${stats.error}, Chưa dịch: ${stats.pending}`,
+        variant: "default",
+      });
+      
+    } catch (error: any) {
+      console.error('Retry translation error:', error);
+      toast({
+        title: "Lỗi",
+        description: error instanceof Error ? error.message : 'Có lỗi xảy ra khi dịch lại phụ đề. Vui lòng thử lại sau.',
         variant: "destructive",
       });
     } finally {
@@ -1147,12 +1208,52 @@ Chỉ trả về các bản dịch đã cải thiện, mỗi dòng một câu, t
                     </>
                   )}
                 </button>
+                <button
+                  onClick={handleRetryFailedTranslations}
+                  disabled={isLoading || stats.error === 0}
+                  className={`py-2 px-4 rounded-lg text-white font-medium transition-all duration-200 flex items-center gap-2 ${
+                    isLoading || stats.error === 0
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-yellow-500 hover:bg-yellow-600'
+                  }`}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Đang xử lý...
+                    </span>
+                  ) : (
+                    <>
+                      <ArrowPathIcon className="h-5 w-5" />
+                      Dịch lại các câu lỗi
+                    </>
+                  )}
+                </button>
               </div>
               
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full bg-green-500"></span>
                   <span className="text-sm text-gray-600">Đã dịch: {stats.translated}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
+                  <span className="text-sm text-gray-600">Lỗi: {stats.error}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full bg-gray-300"></span>
