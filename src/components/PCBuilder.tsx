@@ -20,6 +20,14 @@ import {
     CommandLineIcon,
     CursorArrowRaysIcon
 } from '@heroicons/react/24/outline'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Input } from '@/components/ui/input'
 
 interface PCComponent {
     name: string
@@ -95,8 +103,11 @@ export default function PCBuilder() {
     const [config, setConfig] = useState<PCConfig | null>(null)
     const [configHistory, setConfigHistory] = useState<PCConfig[]>([])
     const [showVNDConversion, setShowVNDConversion] = useState(false)
-    const [convertedPrices, setConvertedPrices] = useState<{[key: string]: string}>({})
+    const [convertedPrices, setConvertedPrices] = useState<{ [key: string]: string }>({})
     const [gpuBrand, setGpuBrand] = useState<'any' | 'nvidia' | 'amd'>('any')
+    const [ramSize, setRamSize] = useState<'any' | '8' | '16' | '32' | '64'>('any')
+    const [ssdSize, setSsdSize] = useState<'any' | '256' | '512' | '1000' | '2000'>('any')
+    const [hddSize, setHddSize] = useState<'any' | '1000' | '2000' | '4000' | '8000'>('any')
     const [includePeripherals, setIncludePeripherals] = useState({
         monitor: false,
         keyboard: false,
@@ -129,6 +140,9 @@ export default function PCBuilder() {
 
         try {
             const gpuBrandPreference = gpuBrand !== 'any' ? `- Ưu tiên GPU hãng: ${gpuBrand.toUpperCase()}` : ''
+            const ramSizePreference = ramSize !== 'any' ? `- Dung lượng RAM: ${ramSize}GB` : ''
+            const ssdSizePreference = ssdSize !== 'any' ? `- Dung lượng SSD: ${ssdSize}GB` : ''
+            const hddSizePreference = hddSize !== 'any' ? `- Dung lượng HDD: ${hddSize}GB` : ''
             const peripheralRequirements = Object.entries(includePeripherals)
                 .filter(([_, included]) => included)
                 .map(([peripheral]) => `- Bao gồm ${peripheral === 'monitor' ? 'màn hình' : peripheral === 'keyboard' ? 'bàn phím' : 'chuột'}`)
@@ -139,6 +153,9 @@ export default function PCBuilder() {
 - Ngân sách: ${budgetWithCurrency}
 - Mục đích sử dụng: ${purpose || 'Đa năng'}
 ${gpuBrandPreference}
+${ramSizePreference}
+${ssdSizePreference}
+${hddSizePreference}
 ${peripheralRequirements}
 
 Yêu cầu:
@@ -298,18 +315,18 @@ Yêu cầu:
     const handleShowVNDChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const checked = e.target.checked
         setShowVNDConversion(checked)
-        
+
         if (checked && config && currency !== 'vnd') {
-            const newConvertedPrices: {[key: string]: string} = {}
-            
+            const newConvertedPrices: { [key: string]: string } = {}
+
             // Convert total price
             newConvertedPrices.total = await convertToVND(config.totalPrice, currency)
-            
+
             // Convert component prices
             for (const comp of config.components) {
                 newConvertedPrices[comp.name] = await convertToVND(comp.price, currency)
             }
-            
+
             setConvertedPrices(newConvertedPrices)
         } else {
             setConvertedPrices({})
@@ -337,25 +354,27 @@ Yêu cầu:
                                             Ngân sách
                                         </label>
                                         <div className="flex gap-2">
-                                            <div className="flex-1 rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50/50 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-200 transition-all">
-                                                <input
-                                                    type="text"
-                                                    value={formattedBudget}
-                                                    onChange={handleBudgetChange}
-                                                    placeholder="Nhập số tiền"
-                                                    className="w-full p-3 border-0 bg-transparent focus:ring-0"
-                                                />
-                                            </div>
-                                            <select
+                                            <Input
+                                                type="text"
+                                                value={formattedBudget}
+                                                onChange={handleBudgetChange}
+                                                placeholder="Nhập số tiền"
+                                                className="w-[450px]"
+                                            />
+                                            <Select
                                                 value={currency}
-                                                onChange={(e) => setCurrency(e.target.value as 'vnd' | 'usd' | 'jpy' | 'cny')}
-                                                className="rounded-xl border-2 border-gray-200 bg-gray-50/50 px-4 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 transition-all"
+                                                onValueChange={(value) => setCurrency(value as 'vnd' | 'usd' | 'jpy' | 'cny')}
                                             >
-                                                <option value="vnd">VNĐ</option>
-                                                <option value="usd">USD</option>
-                                                <option value="jpy">JPY</option>
-                                                <option value="cny">CNY</option>
-                                            </select>
+                                                <SelectTrigger className="w-[80px]">
+                                                    <SelectValue placeholder="Chọn đơn vị tiền tệ" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="vnd">VNĐ</SelectItem>
+                                                    <SelectItem value="usd">USD</SelectItem>
+                                                    <SelectItem value="jpy">JPY</SelectItem>
+                                                    <SelectItem value="cny">CNY</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                     </div>
 
@@ -364,12 +383,12 @@ Yêu cầu:
                                             <ComputerDesktopIcon className="h-5 w-5 text-gray-400" />
                                             Mục đích sử dụng
                                         </label>
-                                        <input
+                                        <Input
                                             type="text"
                                             value={purpose}
                                             onChange={(e) => setPurpose(e.target.value)}
                                             placeholder="Ví dụ: Gaming, Đồ họa, Văn phòng..."
-                                            className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-gray-400 focus:ring-2 focus:ring-gray-200 transition-all bg-gray-50/50"
+                                            className="w-[450px]"
                                         />
                                     </div>
                                 </div>
@@ -380,17 +399,91 @@ Yêu cầu:
                                             <SwatchIcon className="h-5 w-5 text-gray-400" />
                                             Ưu tiên GPU
                                         </label>
-                                        <select
+                                        <Select
                                             value={gpuBrand}
-                                            onChange={(e) => setGpuBrand(e.target.value as 'any' | 'nvidia' | 'amd')}
-                                            className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-gray-400 focus:ring-2 focus:ring-gray-200 transition-all bg-gray-50/50"
+                                            onValueChange={(value) => setGpuBrand(value as 'any' | 'nvidia' | 'amd')}
                                         >
-                                            <option value="any">Không ưu tiên</option>
-                                            <option value="nvidia">NVIDIA</option>
-                                            <option value="amd">AMD</option>
-                                        </select>
+                                            <SelectTrigger className="w-[450px]">
+                                                <SelectValue placeholder="Chọn GPU" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="any">Không ưu tiên</SelectItem>
+                                                <SelectItem value="nvidia">NVIDIA</SelectItem>
+                                                <SelectItem value="amd">AMD</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
 
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                                            <CircleStackIcon className="h-5 w-5 text-gray-400" />
+                                            Dung lượng RAM
+                                        </label>
+                                        <Select
+                                            value={ramSize}
+                                            onValueChange={(value) => setRamSize(value as 'any' | '8' | '16' | '32' | '64')}
+                                        >
+                                            <SelectTrigger className="w-[450px]">
+                                                <SelectValue placeholder="Chọn dung lượng RAM" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="any">Không yêu cầu</SelectItem>
+                                                <SelectItem value="8">8GB</SelectItem>
+                                                <SelectItem value="16">16GB</SelectItem>
+                                                <SelectItem value="32">32GB</SelectItem>
+                                                <SelectItem value="64">64GB</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                                            <StorageIcon className="h-5 w-5 text-gray-400" />
+                                            Dung lượng SSD
+                                        </label>
+                                        <Select
+                                            value={ssdSize}
+                                            onValueChange={(value) => setSsdSize(value as 'any' | '256' | '512' | '1000' | '2000')}
+                                        >
+                                            <SelectTrigger className="w-[450px]">
+                                                <SelectValue placeholder="Chọn dung lượng SSD" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="any">Không yêu cầu</SelectItem>
+                                                <SelectItem value="256">256GB</SelectItem>
+                                                <SelectItem value="512">512GB</SelectItem>
+                                                <SelectItem value="1000">1TB</SelectItem>
+                                                <SelectItem value="2000">2TB</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                                            <StorageIcon className="h-5 w-5 text-gray-400" />
+                                            Dung lượng HDD
+                                        </label>
+                                        <Select
+                                            value={hddSize}
+                                            onValueChange={(value) => setHddSize(value as 'any' | '1000' | '2000' | '4000' | '8000')}
+                                        >
+                                            <SelectTrigger className="w-[450px]">
+                                                <SelectValue placeholder="Chọn dung lượng HDD" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="any">Không yêu cầu</SelectItem>
+                                                <SelectItem value="1000">1TB</SelectItem>
+                                                <SelectItem value="2000">2TB</SelectItem>
+                                                <SelectItem value="4000">4TB</SelectItem>
+                                                <SelectItem value="8000">8TB</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
                                             <ComputerDesktopIcon className="h-5 w-5 text-gray-400" />
