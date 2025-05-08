@@ -1,6 +1,89 @@
 # Active Context
 
 ## Current Focus
+
+### UI Component Development
+
+1. **Component Library Status**
+   - Comprehensive set of UI components available in `src/components/ui/`
+   - Components follow modern React patterns and best practices
+   - All components are built with accessibility in mind
+
+2. **Recent Component Updates**
+   - Added new components:
+     - `command.tsx` - Command palette for quick actions
+     - `sheet.tsx` - Sliding panel component
+     - `skeleton.tsx` - Loading skeleton component
+   - Enhanced existing components with better accessibility
+   - Improved TypeScript types and documentation
+
+3. **Active Development Areas**
+   - Component documentation and examples
+   - Performance optimization
+   - Accessibility improvements
+   - Testing coverage
+
+## Next Steps
+
+1. **Component Enhancements**
+   - Add more interactive examples
+   - Improve component documentation
+   - Add visual regression tests
+   - Enhance keyboard navigation
+
+2. **Documentation**
+   - Create component usage guides
+   - Document accessibility features
+   - Add performance best practices
+   - Include testing guidelines
+
+3. **Quality Assurance**
+   - Increase test coverage
+   - Add accessibility testing
+   - Implement visual regression testing
+   - Performance benchmarking
+
+## Important Patterns
+
+1. **Component Usage**
+   - Import from `@/components/ui/`
+   - Use TypeScript for type safety
+   - Follow accessibility guidelines
+   - Implement proper error handling
+
+2. **Styling Conventions**
+   - Use Tailwind CSS classes
+   - Follow consistent spacing
+   - Implement responsive design
+   - Maintain dark mode support
+
+3. **State Management**
+   - Use controlled components
+   - Implement proper loading states
+   - Handle errors gracefully
+   - Manage form state effectively
+
+## Learnings & Insights
+
+1. **Component Design**
+   - Composition over inheritance
+   - Clear prop interfaces
+   - Consistent styling patterns
+   - Accessibility first approach
+
+2. **Performance**
+   - Memoization for expensive computations
+   - Proper use of React hooks
+   - Optimized re-renders
+   - Efficient event handling
+
+3. **Testing**
+   - Unit testing component logic
+   - Accessibility testing
+   - Visual regression testing
+   - Integration testing
+
+## Current Focus
 The application is currently focused on the Features component, which acts as the main dashboard for displaying all available tools and utilities to users. This component organizes features into categories, provides search functionality, and highlights popular features based on page views. The application also implements a multilanguage system supporting English and Vietnamese. Recently, new image utility features have been added: background removal and image cropping functionality to expand the utility offerings.
 
 ## Recent Changes
@@ -43,18 +126,6 @@ The application is currently focused on the Features component, which acts as th
 - Icons should be gray-500 unless in active state (then gray-600)
 - Card-based components with subtle shadows and rounded corners (xl)
 - Typography should follow a clear hierarchy with gray-700/800 for headings
-
-## Next Steps
-1. Implement or optimize page view tracking with suggested caching strategies (SWR)
-2. Consider server-side component approach for better performance
-3. Continue development of individual feature pages
-4. Implement user authentication for personalized experiences
-5. Add more AI-powered tools to the collection
-6. Expand translation coverage to all components
-7. Consider adding more language options
-8. Integrate with professional background removal API service
-9. Add more image editing features like filters, adjustments, etc.
-10. Ensure consistent gray-based color scheme across all new components
 
 ## Active Decisions
 - Currently using a basic fetch approach for page views with suggested alternatives

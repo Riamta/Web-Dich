@@ -240,8 +240,6 @@ class AIService {
                 response.candidates[0].groundingMetadata.searchEntryPoint.renderedContent) {
                 sources = response.candidates[0].groundingMetadata.searchEntryPoint.renderedContent;
             }
-            console.log(response.text)
-            console.log(sources)
             return {
                 text: response.text || '',
                 sources: sources

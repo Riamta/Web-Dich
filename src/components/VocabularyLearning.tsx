@@ -7,6 +7,14 @@ import { db } from '@/lib/firebase'
 import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore'
 import { VocabularyService } from '@/lib/vocabulary-service'
 import { SUPPORTED_LANGUAGES, getLanguageName } from '@/constants/languages'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Separator } from '@/components/ui/separator'
 
 interface VocabularyItem {
   id?: string; // Add ID field for Firestore documents
@@ -43,7 +51,7 @@ const MODES = [
 ]
 
 export default function VocabularyLearning() {
-  const { user } = useAuth() // Get current user from auth context
+  const { user } = useAuth()
   const [mode, setMode] = useState('learn')
   const [targetLanguage, setTargetLanguage] = useState('en')
   const [nativeLanguage, setNativeLanguage] = useState('vi')
@@ -147,16 +155,16 @@ export default function VocabularyLearning() {
       }
 
       // Normal vocabulary generation for learn mode
-      const topicToSend = selectedTopic === 'custom' ? customTopic : selectedTopic
+      const topicToSend = selectedTopic === 'custom' ? customTopic : (selectedTopic === 'random' ? '' : selectedTopic)
 
       if (selectedTopic === 'custom' && !customTopic.trim()) {
-        throw new Error('Vui lòng nhập chủ đề tùy chỉnh')
+        throw new Error('Vui lòng nhập chủ đề bạn muốn học')
       }
 
       const data = await VocabularyService.generateVocabulary({
         targetLanguage,
         nativeLanguage,
-        topic: topicToSend || 'random',
+        topic: topicToSend,
         wordCount: wordCount
       })
 
@@ -252,369 +260,349 @@ export default function VocabularyLearning() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        {/* Header Section */}
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="grid grid-cols-2 gap-2 bg-gray-50/50 p-1 rounded-lg">
-              {MODES.map((m) => (
-                <button
-                  key={m.id}
-                  onClick={() => {
-                    setMode(m.id)
-                    setVocabularyList([])
-                    setError(null)
-                  }}
-                  className={`px-4 py-2 rounded-lg transition-all ${
-                    mode === m.id 
-                    ? 'bg-gray-800 text-white' 
-                    : 'hover:bg-gray-100'
-                  }`}
-                >
-                  {m.name}
-                </button>
-              ))}
+    <div className="space-y-6 max-w-4xl mx-auto px-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BookOpenIcon className="h-5 w-5 text-gray-600" />
+              <span>Học từ vựng</span>
             </div>
-            <button
+            <Button
+              variant="outline"
               onClick={() => setShowBookmarkModal(true)}
-              className="group flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-50/80 transition-colors"
+              className="flex items-center gap-2"
             >
-              <BookmarkIcon className="h-5 w-5 text-gray-600 group-hover:text-gray-800" />
-              <span className="font-medium">Từ vựng đã lưu</span>
-            </button>
-          </div>
-
-          {/* Settings Form */}
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <LanguageIcon className="h-5 w-5 text-gray-400" />
-                  {mode === 'learn' ? 'Ngôn ngữ cần học' : 'Chọn ngôn ngữ ôn tập'}
-                </label>
-                <select
-                  value={targetLanguage}
-                  onChange={(e) => setTargetLanguage(e.target.value)}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-800/20 focus:border-gray-800 transition-all bg-gray-50/50"
-                >
-                  {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto' && lang.code !== nativeLanguage).map((lang) => (
-                    <option key={lang.code} value={lang.code}>
-                      {lang.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <LanguageIcon className="h-5 w-5 text-gray-400" />
-                  Ngôn ngữ mẹ đẻ
-                </label>
-                <select
-                  value={nativeLanguage}
-                  onChange={(e) => setNativeLanguage(e.target.value)}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-800/20 focus:border-gray-800 transition-all bg-gray-50/50"
-                >
-                  {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto' && lang.code !== targetLanguage).map((lang) => (
-                    <option key={lang.code} value={lang.code}>
-                      {lang.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {mode === 'learn' && (
+              <BookmarkIcon className="h-5 w-5" />
+              <span>Từ vựng đã lưu</span>
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={mode} onValueChange={setMode} className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              {MODES.map((m) => (
+                <TabsTrigger key={m.id} value={m.id}>
+                  {m.name}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <TabsContent value="learn" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Label className="flex items-center gap-2">
+                    <LanguageIcon className="h-5 w-5 text-gray-400" />
+                    Ngôn ngữ cần học
+                  </Label>
+                  <Select value={targetLanguage} onValueChange={setTargetLanguage}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn ngôn ngữ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto' && lang.code !== nativeLanguage).map((lang) => (
+                        <SelectItem key={lang.code} value={lang.code}>
+                          {lang.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <LanguageIcon className="h-5 w-5 text-gray-400" />
+                    Ngôn ngữ mẹ đẻ
+                  </Label>
+                  <Select value={nativeLanguage} onValueChange={setNativeLanguage}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn ngôn ngữ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto' && lang.code !== targetLanguage).map((lang) => (
+                        <SelectItem key={lang.code} value={lang.code}>
+                          {lang.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
                     <DocumentTextIcon className="h-5 w-5 text-gray-400" />
                     Chủ đề
-                  </label>
-                  <select
-                    value={selectedTopic}
-                    onChange={(e) => {
-                      setSelectedTopic(e.target.value)
-                      if (e.target.value !== 'custom') {
+                  </Label>
+                  <Select 
+                    value={selectedTopic} 
+                    onValueChange={(value) => {
+                      setSelectedTopic(value)
+                      if (value !== 'custom') {
                         setCustomTopic('')
                       } else {
                         setCustomTopic('Hãy cho tôi chủ đề bất kỳ mà bạn nghĩ sẽ thú vị')
                       }
                     }}
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-800/20 focus:border-gray-800 transition-all bg-gray-50/50"
                   >
-                    <option value="custom">Chủ đề khác...</option>
-                    <option value="">Để AI chọn chủ đề ngẫu nhiên</option>
-                    {COMMON_TOPICS.map((topic) => (
-                      <option key={topic.id} value={topic.id}>
-                        {topic.name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn chủ đề" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="custom">Chủ đề khác...</SelectItem>
+                      <SelectItem value="random">Để AI chọn chủ đề ngẫu nhiên</SelectItem>
+                      {COMMON_TOPICS.map((topic) => (
+                        <SelectItem key={topic.id} value={topic.id}>
+                          {topic.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
 
-              {mode === 'learn' && selectedTopic === 'custom' && (
+                {selectedTopic === 'custom' && (
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <PencilIcon className="h-5 w-5 text-gray-400" />
+                      Nhập chủ đề của bạn
+                    </Label>
+                    <Input
+                      type="text"
+                      value={customTopic}
+                      onChange={(e) => setCustomTopic(e.target.value)}
+                      placeholder="Ví dụ: Thể thao, Âm nhạc, ..."
+                      required={selectedTopic === 'custom'}
+                    />
+                    {selectedTopic === 'custom' && !customTopic.trim() && (
+                      <p className="text-sm text-red-500 flex items-center gap-1 mt-1">
+                        <XMarkIcon className="h-4 w-4" />
+                        Vui lòng nhập chủ đề bạn muốn học
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <PencilIcon className="h-5 w-5 text-gray-400" />
-                    Nhập chủ đề của bạn
-                  </label>
-                  <input
-                    type="text"
-                    value={customTopic}
-                    onChange={(e) => setCustomTopic(e.target.value)}
-                    placeholder="Ví dụ: Thể thao, Âm nhạc, ..."
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-800/20 focus:border-gray-800 transition-all bg-gray-50/50"
-                    required={selectedTopic === 'custom'}
-                  />
-                  {selectedTopic === 'custom' && !customTopic.trim() && (
-                    <p className="text-sm text-red-500 flex items-center gap-1 mt-1">
-                      <XMarkIcon className="h-4 w-4" />
-                      Vui lòng nhập chủ đề bạn muốn học
-                    </p>
-                  )}
+                  <Label className="flex items-center gap-2">
+                    <HashtagIcon className="h-5 w-5 text-gray-400" />
+                    Số từ vựng
+                  </Label>
+                  <div className="flex rounded-lg overflow-hidden border border-gray-200 bg-gray-50/50">
+                    <Input
+                      type="number"
+                      value={wordCount}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value) || 5
+                        if (e.target.value === '') {
+                          setWordCount(5)
+                        } else if (value < 1) {
+                          setWordCount(1)
+                        } else if (value > 20) {
+                          setWordCount(20)
+                        } else {
+                          setWordCount(value)
+                        }
+                      }}
+                      min="1"
+                      max="20"
+                      className="flex-1 border-0 bg-transparent focus-visible:ring-0"
+                    />
+                    <span className="px-4 py-3 bg-gray-100 text-gray-500 border-l border-gray-200">từ</span>
+                  </div>
+                  <p className="text-sm text-gray-500">(1-20 từ)</p>
                 </div>
-              )}
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <HashtagIcon className="h-5 w-5 text-gray-400" />
-                  {mode === 'learn' ? 'Số từ vựng' : 'Số từ ôn tập'}
-                </label>
-                <div className="flex rounded-lg overflow-hidden border border-gray-200 bg-gray-50/50">
-                  <input
-                    type="number"
-                    value={wordCount}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value) || 5
-                      if (e.target.value === '') {
-                        setWordCount(5)
-                      } else if (value < 1) {
-                        setWordCount(1)
-                      } else if (value > 20) {
-                        setWordCount(20)
-                      } else {
-                        setWordCount(value)
-                      }
-                    }}
-                    min="1"
-                    max="20"
-                    className="flex-1 p-3 border-0 bg-transparent focus:ring-0"
-                  />
-                  <span className="px-4 py-3 bg-gray-100 text-gray-500 border-l border-gray-200">từ</span>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <AcademicCapIcon className="h-5 w-5 text-gray-400" />
+                    Chế độ học
+                  </Label>
+                  <Tabs value={learningMode} onValueChange={setLearningMode} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      {LEARNING_MODES.map((m) => (
+                        <TabsTrigger key={m.id} value={m.id}>
+                          {m.name}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
                 </div>
-                <p className="text-sm text-gray-500">(1-20 từ)</p>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <AcademicCapIcon className="h-5 w-5 text-gray-400" />
-                  Chế độ học
-                </label>
-                <div className="grid grid-cols-2 gap-2 bg-gray-50/50 p-1 rounded-lg">
-                  {LEARNING_MODES.map((m) => (
-                    <button
-                      key={m.id}
-                      onClick={() => setLearningMode(m.id)}
-                      className={`px-4 py-2 rounded-lg transition-all ${
-                        learningMode === m.id 
-                        ? 'bg-gray-800 text-white' 
-                        : 'hover:bg-gray-100'
-                      }`}
-                    >
-                      {m.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <Button
+                onClick={handleGenerateVocabulary}
+                disabled={isLoading}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Đang tạo từ vựng...
+                  </span>
+                ) : (
+                  <>
+                    Tạo danh sách từ vựng
+                    <ArrowPathIcon className="h-5 w-5" />
+                  </>
+                )}
+              </Button>
+            </TabsContent>
+            <TabsContent value="review" className="space-y-4">
+              {/* Review mode content will be added here */}
+            </TabsContent>
+          </Tabs>
+
+          {error && (
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+              <XMarkIcon className="h-5 w-5" />
+              <span>{error}</span>
             </div>
-
-            <button
-              onClick={handleGenerateVocabulary}
-              disabled={isLoading}
-              className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all flex items-center justify-center gap-2 ${
-                isLoading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gray-800 hover:bg-gray-900 shadow-sm hover:shadow-md'
-              }`}
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Đang tạo từ vựng...
-                </span>
-              ) : (
-                <>
-                  {mode === 'learn' ? 'Tạo danh sách từ vựng' : 'Ôn tập từ vựng đã lưu'}
-                  <ArrowPathIcon className="h-5 w-5" />
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
-            <XMarkIcon className="h-5 w-5" />
-            <span>{error}</span>
-          </div>
-        )}
-      </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Vocabulary List */}
       {vocabularyList.length > 0 && (
         <div className="space-y-4">
           {vocabularyList.map((item, index) => (
-            <div
-              key={index}
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-medium">{item.word}</h3>
-                    <button
-                      onClick={() => toggleBookmark(item)}
-                      className="text-gray-400 hover:text-gray-800 transition-colors"
-                    >
-                      {isBookmarked(item.word) ? (
-                        <BookmarkSolidIcon className="h-5 w-5" />
-                      ) : (
-                        <BookmarkIcon className="h-5 w-5" />
-                      )}
-                    </button>
+            <Card key={index}>
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-lg font-medium">{item.word}</h3>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => toggleBookmark(item)}
+                      >
+                        {isBookmarked(item.word) ? (
+                          <BookmarkSolidIcon className="h-5 w-5 text-gray-600" />
+                        ) : (
+                          <BookmarkIcon className="h-5 w-5 text-gray-400" />
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">{item.pronunciation}</p>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">{item.pronunciation}</p>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      const utterance = new SpeechSynthesisUtterance(item.word);
+                      utterance.lang = targetLanguage;
+                      window.speechSynthesis.speak(utterance);
+                    }}
+                  >
+                    <SpeakerWaveIcon className="h-5 w-5 text-gray-600" />
+                  </Button>
                 </div>
-                <button
-                  onClick={() => {
-                    const utterance = new SpeechSynthesisUtterance(item.word);
-                    utterance.lang = targetLanguage;
-                    window.speechSynthesis.speak(utterance);
-                  }}
-                  className="p-2 hover:bg-gray-50/80 rounded-lg transition-colors"
-                >
-                  <SpeakerWaveIcon className="h-5 w-5 text-gray-600" />
-                </button>
-              </div>
 
-              {learningMode === 'quiz' ? (
-                <div className="mt-6 space-y-4">
-                  <div className="flex rounded-lg overflow-hidden border border-gray-200">
-                    <input
-                      type="text"
-                      placeholder="Nhập nghĩa của từ..."
-                      value={userAnswers[index] || ''}
-                      onChange={(e) => handleAnswerSubmit(index, e.target.value)}
-                      disabled={showAnswers[index]}
-                      className="flex-1 p-3 border-0 focus:ring-0 bg-gray-50/50"
-                    />
-                    <button
-                      onClick={() => checkAnswer(index)}
-                      disabled={!userAnswers[index] || showAnswers[index]}
-                      className="px-6 bg-gray-800 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <CheckIcon className="h-5 w-5" />
-                    </button>
-                  </div>
+                {learningMode === 'quiz' ? (
+                  <div className="mt-6 space-y-4">
+                    <div className="flex gap-2">
+                      <Input
+                        type="text"
+                        placeholder="Nhập nghĩa của từ..."
+                        value={userAnswers[index] || ''}
+                        onChange={(e) => handleAnswerSubmit(index, e.target.value)}
+                        disabled={showAnswers[index]}
+                      />
+                      <Button
+                        onClick={() => checkAnswer(index)}
+                        disabled={!userAnswers[index] || showAnswers[index]}
+                      >
+                        <CheckIcon className="h-5 w-5" />
+                      </Button>
+                    </div>
 
-                  {showAnswers[index] && (
-                    <>
-                      {/* Result Banner */}
-                      <div className={`p-3 rounded-lg flex items-center gap-3 font-medium ${
-                        isAnswerCorrect(index)
-                          ? 'bg-green-600 text-white'
-                          : 'bg-red-600 text-white'
-                      }`}>
-                        <div className="shrink-0">
-                          {isAnswerCorrect(index) ? (
-                            <CheckIcon className="h-5 w-5" />
-                          ) : (
-                            <XMarkIcon className="h-5 w-5" />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          {isAnswerCorrect(index)
-                            ? 'Chính xác! Bạn đã chọn đúng nghĩa.'
-                            : 'Chưa chính xác. Hãy xem giải thích bên dưới.'}
-                        </div>
-                      </div>
-                      {/* Explanation Box */}
-                      <div className={`p-4 rounded-lg ${
-                        isAnswerCorrect(index)
-                          ? 'bg-green-50 border-2 border-green-200 text-green-800'
-                          : 'bg-red-50 border-2 border-red-200 text-red-800'
-                      }`}>
-                        <div className="space-y-2">
-                          <p className="font-medium">Nghĩa đúng: {item.meaning}</p>
-                          <div className="mt-2">
-                            <p className="font-medium">Ví dụ:</p>
-                            <p className="mt-1">{item.example}</p>
-                            <p className="text-gray-600 mt-1">{item.translation}</p>
+                    {showAnswers[index] && (
+                      <>
+                        <div className={`p-3 rounded-lg flex items-center gap-3 font-medium ${
+                          isAnswerCorrect(index)
+                            ? 'bg-green-600 text-white'
+                            : 'bg-red-600 text-white'
+                        }`}>
+                          <div className="shrink-0">
+                            {isAnswerCorrect(index) ? (
+                              <CheckIcon className="h-5 w-5" />
+                            ) : (
+                              <XMarkIcon className="h-5 w-5" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            {isAnswerCorrect(index)
+                              ? 'Chính xác! Bạn đã chọn đúng nghĩa.'
+                              : 'Chưa chính xác. Hãy xem giải thích bên dưới.'}
                           </div>
                         </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <p className="text-lg mt-4">{item.meaning}</p>
-                  <div className="mt-4 bg-gray-50/50 p-4 rounded-lg space-y-2">
-                    <p>{item.example}</p>
-                    <p className="text-gray-600">{item.translation}</p>
+                        <div className={`p-4 rounded-lg ${
+                          isAnswerCorrect(index)
+                            ? 'bg-green-50 border-2 border-green-200 text-green-800'
+                            : 'bg-red-50 border-2 border-red-200 text-red-800'
+                        }`}>
+                          <div className="space-y-2">
+                            <p className="font-medium">Nghĩa đúng: {item.meaning}</p>
+                            <div className="mt-2">
+                              <p className="font-medium">Ví dụ:</p>
+                              <p className="mt-1">{item.example}</p>
+                              <p className="text-gray-600 mt-1">{item.translation}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
-                </>
-              )}
-            </div>
+                ) : (
+                  <>
+                    <p className="text-lg mt-4">{item.meaning}</p>
+                    <div className="mt-4 bg-gray-50/50 p-4 rounded-lg space-y-2">
+                      <p>{item.example}</p>
+                      <p className="text-gray-600">{item.translation}</p>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
 
-      {/* Bookmarked Words Modal */}
-      {showBookmarkModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-              <h2 className="text-2xl font-semibold flex items-center gap-2">
-                <BookmarkIcon className="h-6 w-6 text-gray-800" />
-                Từ vựng đã lưu
-              </h2>
-              <button
-                onClick={() => setShowBookmarkModal(false)}
-                className="p-2 hover:bg-gray-50/80 rounded-lg transition-colors"
-              >
-                <XMarkIcon className="h-6 w-6 text-gray-400" />
-              </button>
-            </div>
-
-            <div className="p-6 max-h-[60vh] overflow-y-auto">
-              {bookmarkedWords.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-gray-50/80 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <BookmarkIcon className="h-8 w-8 text-gray-400" />
-                  </div>
-                  <p className="text-gray-500">Chưa có từ vựng nào được lưu</p>
+      {/* Bookmarked Words Dialog */}
+      <Dialog open={showBookmarkModal} onOpenChange={setShowBookmarkModal}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookmarkIcon className="h-6 w-6 text-gray-800" />
+              Từ vựng đã lưu
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto">
+            {bookmarkedWords.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-50/80 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BookmarkIcon className="h-8 w-8 text-gray-400" />
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {bookmarkedWords.map((word, index) => (
-                    <div key={index} className="bg-gray-50/50 rounded-lg p-6">
+                <p className="text-gray-500">Chưa có từ vựng nào được lưu</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {bookmarkedWords.map((word, index) => (
+                  <Card key={index}>
+                    <CardContent className="pt-6">
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="flex items-center gap-3">
@@ -626,22 +614,25 @@ export default function VocabularyLearning() {
                           <p className="text-sm text-gray-500 mt-1">{word.pronunciation}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => {
                               const utterance = new SpeechSynthesisUtterance(word.word);
                               utterance.lang = word.language || 'en';
                               window.speechSynthesis.speak(utterance);
                             }}
-                            className="p-2 hover:bg-white rounded-lg transition-colors"
                           >
                             <SpeakerWaveIcon className="h-5 w-5 text-gray-600" />
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => removeBookmark(word)}
-                            className="p-2 hover:bg-white rounded-lg transition-colors text-gray-400 hover:text-red-500"
+                            className="text-gray-400 hover:text-red-500"
                           >
                             <TrashIcon className="h-5 w-5" />
-                          </button>
+                          </Button>
                         </div>
                       </div>
                       <p className="mt-4">{word.meaning}</p>
@@ -651,27 +642,18 @@ export default function VocabularyLearning() {
                           {getTopicName(word.topic)}
                         </p>
                       )}
-                      <div className="mt-4 bg-white p-4 rounded-lg space-y-2">
+                      <div className="mt-4 bg-gray-50/50 p-4 rounded-lg space-y-2">
                         <p>{word.example}</p>
                         <p className="text-gray-600">{word.translation}</p>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="p-6 border-t border-gray-100">
-              <button
-                onClick={() => setShowBookmarkModal(false)}
-                className="w-full py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-medium"
-              >
-                Đóng
-              </button>
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 

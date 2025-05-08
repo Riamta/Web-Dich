@@ -56,3 +56,91 @@ The project has numerous dependencies including:
 - Animated language switcher component with dropdown
 - Translation function with nested key support
 - Fallback to English when translations are missing
+
+## UI Components Library
+
+The project uses a comprehensive set of UI components located in `src/components/ui/`. These components are built using modern React patterns and provide a consistent design system.
+
+### Available Components
+
+1. **Basic Input Components**
+   - `input.tsx` - Standard text input field
+   - `textarea.tsx` - Multi-line text input
+   - `select.tsx` - Dropdown selection component
+   - `radio-group.tsx` - Radio button group
+   - `switch.tsx` - Toggle switch component
+   - `slider.tsx` - Range slider component
+
+2. **Button Components**
+   - `button.tsx` - Standard button component
+   - `button-group.tsx` - Group of buttons
+
+3. **Layout Components**
+   - `card.tsx` - Card container component
+   - `separator.tsx` - Visual separator
+   - `sidebar.tsx` - Side navigation component
+   - `sheet.tsx` - Sliding panel component
+
+4. **Overlay Components**
+   - `dialog.tsx` - Modal dialog component
+   - `modal.tsx` - Modal window component
+   - `popover.tsx` - Popover component
+   - `tooltip.tsx` - Tooltip component
+
+5. **Feedback Components**
+   - `toast.tsx` - Toast notification component
+   - `toaster.tsx` - Toast container
+   - `progress.tsx` - Progress indicator
+   - `skeleton.tsx` - Loading skeleton component
+
+6. **Navigation Components**
+   - `tabs.tsx` - Tab navigation component
+   - `command.tsx` - Command palette component
+
+### Usage Guidelines
+
+1. **Import Pattern**
+   ```typescript
+   import { ComponentName } from '@/components/ui/component-name'
+   ```
+
+2. **Component Props**
+   - All components follow a consistent props interface
+   - Common props include:
+     - `className` for custom styling
+     - `disabled` for disabling interaction
+     - `onChange` for input handling
+     - `value` for controlled components
+
+3. **Styling**
+   - Components use Tailwind CSS for styling
+   - Custom styles can be added via className prop
+   - Follow the design system's color scheme and spacing
+
+4. **Accessibility**
+   - All components are built with accessibility in mind
+   - Include proper ARIA attributes
+   - Support keyboard navigation
+   - Maintain proper focus management
+
+### Best Practices
+
+1. **Component Selection**
+   - Use the most appropriate component for the use case
+   - Consider accessibility requirements
+   - Follow the design system guidelines
+
+2. **State Management**
+   - Use controlled components when possible
+   - Implement proper error handling
+   - Consider loading states
+
+3. **Performance**
+   - Avoid unnecessary re-renders
+   - Use proper memoization when needed
+   - Follow React best practices
+
+4. **Testing**
+   - Components should be unit tested
+   - Include accessibility testing
+   - Test different states and edge cases

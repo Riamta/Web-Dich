@@ -28,6 +28,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Input } from '@/components/ui/input'
+import { Button } from "@/components/ui/button"
 
 interface PCComponent {
     name: string
@@ -105,7 +106,7 @@ export default function PCBuilder() {
     const [showVNDConversion, setShowVNDConversion] = useState(false)
     const [convertedPrices, setConvertedPrices] = useState<{ [key: string]: string }>({})
     const [gpuBrand, setGpuBrand] = useState<'any' | 'nvidia' | 'amd'>('any')
-    const [ramSize, setRamSize] = useState<'any' | '8' | '16' | '32' | '64'>('any')
+    const [ramSize, setRamSize] = useState<'any' | '8' | '16' | '32' | '64' | '128'>('any')
     const [ssdSize, setSsdSize] = useState<'any' | '256' | '512' | '1000' | '2000'>('any')
     const [hddSize, setHddSize] = useState<'any' | '1000' | '2000' | '4000' | '8000'>('any')
     const [includePeripherals, setIncludePeripherals] = useState({
@@ -145,8 +146,8 @@ export default function PCBuilder() {
             const hddSizePreference = hddSize !== 'any' ? `- Dung lượng HDD: ${hddSize}GB` : ''
             const peripheralRequirements = Object.entries(includePeripherals)
                 .filter(([_, included]) => included)
-                .map(([peripheral]) => `- Bao gồm ${peripheral === 'monitor' ? 'màn hình' : peripheral === 'keyboard' ? 'bàn phím' : 'chuột'}`)
-                .join('\n')
+                .map(([peripheral]) => `${peripheral === 'monitor' ? 'Monitor' : peripheral === 'keyboard' ? 'Keyboard' : 'Mouse'}`)
+                .join(', ')
 
             const budgetWithCurrency = `${budget} ${currency.toUpperCase()}`
             const prompt = `Hãy đề xuất cấu hình PC với các thông tin sau:
@@ -156,14 +157,13 @@ ${gpuBrandPreference}
 ${ramSizePreference}
 ${ssdSizePreference}
 ${hddSizePreference}
-${peripheralRequirements}
 
 Yêu cầu:
 - Trả về kết quả theo định dạng JSON với các trường:
   + budget: ngân sách (bao gồm đơn vị tiền tệ, ví dụ: "15.000.000 VNĐ", "500 USD")
   + purpose: mục đích sử dụng
   + components: mảng các thành phần, mỗi thành phần gồm:
-    * name: tên loại (CPU, GPU, RAM, Mainboard, Storage, PSU, Case, Cooling, Monitor, Keyboard, Mouse)
+    * name: tên loại bao gồm (CPU, GPU, RAM, Mainboard, Storage, PSU, Case, Cooling, ${peripheralRequirements}
     * model: model cụ thể
     * price: giá tiền (bao gồm đơn vị tiền tệ, ví dụ: "3.500.000 VNĐ", "150 USD") không ghi kèm chú thích của mệnh giá khác
     * note: ghi chú (nếu có)
@@ -191,17 +191,11 @@ Yêu cầu:
 - Ưu tiên sát với ngân sách đầu vào nhất có thể
 - Nếu ngân sách quá thấp, đề xuất cấu hình tối thiểu có thể
 - Nếu ngân sách cao, đề xuất cấu hình cao cấp phù hợp
-- Sử dụng đơn vị tiền tệ phù hợp với ngân sách đầu vào:
-  + Nếu ngân sách là VNĐ: sử dụng "VNĐ" hoặc "triệu VNĐ"
-  + Nếu ngân sách là USD: sử dụng "USD"
-  + Nếu ngân sách là EUR: sử dụng "EUR"
-  + Nếu ngân sách là JPY: sử dụng "JPY"
-  + Nếu ngân sách là GBP: sử dụng "GBP"
-  + Nếu ngân sách là CNY: sử dụng "CNY"`
-
+- Sử dụng đơn vị tiền tệ phù hợp với ngân sách đầu vào là ${currency.toUpperCase()}
+  `
+            console.log(prompt)
             // Sử dụng Google Search để tìm thông tin về giá và đánh giá
             const searchResult = await aiService.processWithGoogleSearch(prompt)
-            console.log(searchResult)
             const result = searchResult.text
 
             // Clean up the response to ensure it's valid JSON
@@ -287,7 +281,7 @@ Yêu cầu:
         const configText = config.components.map(comp => {
             const categoryName = componentNames[comp.name as keyof typeof componentNames] || comp.name
             return `${categoryName}:\n- ${comp.model}`
-        }).join('\n\n')
+        }).join('\n')
 
         navigator.clipboard.writeText(configText)
     }
@@ -309,27 +303,6 @@ Yêu cầu:
         } catch (error) {
             console.error('Error converting currency:', error)
             return 'Không thể quy đổi'
-        }
-    }
-
-    const handleShowVNDChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const checked = e.target.checked
-        setShowVNDConversion(checked)
-
-        if (checked && config && currency !== 'vnd') {
-            const newConvertedPrices: { [key: string]: string } = {}
-
-            // Convert total price
-            newConvertedPrices.total = await convertToVND(config.totalPrice, currency)
-
-            // Convert component prices
-            for (const comp of config.components) {
-                newConvertedPrices[comp.name] = await convertToVND(comp.price, currency)
-            }
-
-            setConvertedPrices(newConvertedPrices)
-        } else {
-            setConvertedPrices({})
         }
     }
 
@@ -421,7 +394,7 @@ Yêu cầu:
                                         </label>
                                         <Select
                                             value={ramSize}
-                                            onValueChange={(value) => setRamSize(value as 'any' | '8' | '16' | '32' | '64')}
+                                            onValueChange={(value) => setRamSize(value as 'any' | '8' | '16' | '32' | '64' | '128')}
                                         >
                                             <SelectTrigger className="w-[450px]">
                                                 <SelectValue placeholder="Chọn dung lượng RAM" />
@@ -432,6 +405,7 @@ Yêu cầu:
                                                 <SelectItem value="16">16GB</SelectItem>
                                                 <SelectItem value="32">32GB</SelectItem>
                                                 <SelectItem value="64">64GB</SelectItem>
+                                                <SelectItem value="128">128GB</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -546,20 +520,6 @@ Yêu cầu:
                                                 <p className="text-3xl font-bold text-gray-800">
                                                     {isLoading ? '...' : `${config?.purpose} - ${config?.budget}`}
                                                 </p>
-                                                {!isLoading && config && !config.budget.toLowerCase().includes('vnd') && (
-                                                    <div className="flex items-center gap-2 justify-center mt-2">
-                                                        <input
-                                                            type="checkbox"
-                                                            id="showVND"
-                                                            checked={showVNDConversion}
-                                                            onChange={handleShowVNDChange}
-                                                            className="rounded border-gray-300 text-gray-800 focus:ring-gray-500"
-                                                        />
-                                                        <label htmlFor="showVND" className="text-sm text-gray-600">
-                                                            Hiển thị giá quy đổi VNĐ
-                                                        </label>
-                                                    </div>
-                                                )}
                                                 <p className="text-sm text-gray-600">
                                                     {isLoading ? '' : (
                                                         <>
@@ -578,13 +538,10 @@ Yêu cầu:
                                                 <div className="text-left space-y-4">
                                                     <div className="flex items-center justify-between mb-4">
                                                         <div className="flex items-center gap-2">
-                                                            <button
-                                                                onClick={copyToClipboard}
-                                                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
-                                                            >
+                                                            <Button variant="outline" onClick={copyToClipboard}>
                                                                 <ClipboardIcon className="w-5 h-5" />
                                                                 <span className="text-sm font-medium">Copy cấu hình</span>
-                                                            </button>
+                                                            </Button>
                                                         </div>
                                                     </div>
 
@@ -595,12 +552,12 @@ Yêu cầu:
                                                                 const ComponentIcon = componentIcons[component.name as keyof typeof componentIcons] || ComputerDesktopIcon;
                                                                 const categoryName = componentNames[component.name as keyof typeof componentNames] || 'Phụ kiện khác';
                                                                 return (
-                                                                    <div key={index} className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:border-gray-300 transition-colors">
+                                                                    <div key={index} className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:border-gray-300 transition-colors flex flex-col h-full">
                                                                         <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-200">
                                                                             <ComponentIcon className="w-5 h-5 text-gray-600" />
                                                                             <h4 className="text-sm font-medium text-gray-700">{categoryName}</h4>
                                                                         </div>
-                                                                        <div className="space-y-2">
+                                                                        <div className="flex-grow space-y-2">
                                                                             <div className="flex items-center justify-between">
                                                                                 <span className="font-medium text-gray-800">{component.model}</span>
                                                                             </div>
@@ -608,7 +565,7 @@ Yêu cầu:
                                                                                 <p className="text-sm text-gray-500">{component.note}</p>
                                                                             )}
                                                                         </div>
-                                                                        <div className="flex items-center justify-between mt-2">
+                                                                        <div className="mt-auto pt-2">
                                                                             <span className="text-gray-600">
                                                                                 {component.price}
                                                                                 {showVNDConversion && convertedPrices[component.name] && (

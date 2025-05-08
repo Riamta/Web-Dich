@@ -66,3 +66,92 @@ The application follows the Next.js App Router architecture pattern, with:
    - Rounded corners (rounded-lg to rounded-xl)
    - Consistent transition effects (transition-colors, duration-150)
    - Gray-based color palette for all UI elements
+
+## UI Component Architecture
+
+### Component Organization
+
+1. **Directory Structure**
+   ```
+   src/
+   └── components/
+       ├── ui/           # Reusable UI components
+       │   ├── input.tsx
+       │   ├── button.tsx
+       │   └── ...
+       └── features/     # Feature-specific components
+   ```
+
+2. **Component Categories**
+   - **Primitive Components**: Basic building blocks (input, button)
+   - **Composite Components**: Combine primitives (form, card)
+   - **Layout Components**: Structure and positioning (sidebar, sheet)
+   - **Feedback Components**: User interaction feedback (toast, progress)
+
+### Component Patterns
+
+1. **Props Pattern**
+   ```typescript
+   interface ComponentProps {
+     className?: string;
+     disabled?: boolean;
+     // Component-specific props
+   }
+   ```
+
+2. **Composition Pattern**
+   - Use compound components for complex UI
+   - Example: Dialog with Header, Content, Footer
+
+3. **State Management**
+   - Use controlled components for form elements
+   - Implement proper error states
+   - Handle loading states consistently
+
+4. **Styling Pattern**
+   - Use Tailwind CSS for styling
+   - Follow consistent spacing and color system
+   - Implement responsive design patterns
+
+### Component Relationships
+
+1. **Parent-Child Communication**
+   - Props for data flow
+   - Callbacks for events
+   - Context for shared state
+
+2. **Component Dependencies**
+   - Minimal dependencies between components
+   - Clear interface definitions
+   - Proper prop typing
+
+3. **Reusability Patterns**
+   - Extract common patterns into hooks
+   - Create higher-order components when needed
+   - Use composition over inheritance
+
+### Implementation Guidelines
+
+1. **Component Creation**
+   - Start with TypeScript interfaces
+   - Implement accessibility features
+   - Add proper error handling
+   - Include loading states
+
+2. **Testing Strategy**
+   - Unit tests for component logic
+   - Integration tests for component interactions
+   - Accessibility testing
+   - Visual regression testing
+
+3. **Documentation**
+   - JSDoc comments for props
+   - Usage examples
+   - Accessibility notes
+   - Performance considerations
+
+4. **Performance Optimization**
+   - Memoize expensive computations
+   - Use proper React hooks
+   - Implement virtual scrolling for large lists
+   - Optimize re-renders
