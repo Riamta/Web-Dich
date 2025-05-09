@@ -1,9 +1,9 @@
 'use client';
 
-import { useAuth } from '../../contexts/AuthContext';
-import { ExpenseManager } from '../../components/ExpenseManager';
+import { useAuth } from '../contexts/AuthContext';
+import { ExpenseManager } from '../components/ExpenseManager';
 import { useEffect } from 'react';
-import GoogleLoginButton from '../../components/GoogleLoginButton';
+import GoogleLoginButton from '../components/GoogleLoginButton';
 
 export default function MoneyLovePage() {
     const { user, loading } = useAuth();

@@ -474,34 +474,12 @@ export default function Weather() {
     }, [refreshing])
 
     return (
-        <div ref={pageRef} className="mx-auto px-2 py-8 max-w-7xl">
-            {/* Pull-to-refresh indicator */}
-            <div className="pull-to-refresh-indicator">
-                <div className="pull-to-refresh-spinner"></div>
-                <span>Kéo để làm mới</span>
-            </div>
-            
-            {/* Sticky Header for Mobile */}
-            <div className="sticky top-0 z-10 px-2 pb-2 shadow-sm sm:shadow-none mb-2 sm:mb-0 w-full">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-xl sm:text-3xl font-bold mb-0 sm:mb-4">Dự báo thời tiết</h1>
-                    
-                    <button 
-                        onClick={refreshWeather} 
-                        disabled={refreshing || loading || gettingLocation}
-                        className="sm:hidden p-2 rounded-full hover:bg-gray-100 active:bg-gray-200"
-                        aria-label="Làm mới dữ liệu thời tiết"
-                    >
-                        <ArrowsRightLeftIcon className={`${refreshing ? 'animate-spin' : ''} w-5 h-5`} />
-                    </button>
-                </div>
-            </div>
-            
-            {/* Search Bar - Tối ưu cho mobile */}
-            <div className="mb-4 px-2 w-full">
-                <div className="relative w-full mx-auto">
-                    <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
-                        <MagnifyingGlassIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+        <div ref={pageRef} className="mx-auto px-2 sm:px-4 py-6 sm:py-8 max-w-7xl bg-slate-50 min-h-screen">
+            {/* Search Bar - Tối ưu cho mobile & desktop */}
+            <div className="mb-4 sm:mb-6 px-2 w-full max-w-3xl mx-auto">
+                <div className="relative w-full">
+                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                        <MagnifyingGlassIcon className="h-5 w-5 text-slate-400" />
                     </div>
                     <input
                         type="text"
@@ -509,66 +487,72 @@ export default function Weather() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                        className="block w-full rounded-lg border border-gray-200 pl-8 sm:pl-10 pr-20 sm:pr-24 py-2 sm:py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        className="block w-full rounded-lg border border-slate-300 bg-white pl-10 sm:pl-12 pr-28 sm:pr-32 py-2.5 sm:py-3 text-sm sm:text-base text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 shadow-sm"
                     />
                     <div className="absolute inset-y-0 right-0 flex">
                         <button
                             onClick={getCurrentLocation}
                             disabled={gettingLocation}
-                            className="px-2 sm:px-3 flex items-center text-gray-600 hover:text-black border-l border-gray-200"
+                            className="px-3 sm:px-4 flex items-center text-slate-500 hover:text-sky-600 border-l border-slate-300 transition-colors"
                             title="Lấy vị trí hiện tại"
                         >
                             {gettingLocation ? (
-                                <ArrowsRightLeftIcon className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                                <ArrowsRightLeftIcon className="h-5 w-5 animate-spin" />
                             ) : (
-                                <MapPinIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                                <MapPinIcon className="h-5 w-5" />
                             )}
                         </button>
                         <button
                             onClick={handleSearch}
                             disabled={loading || gettingLocation}
-                            className="px-3 sm:px-4 flex items-center bg-black text-white text-sm rounded-r-lg hover:bg-gray-800 disabled:bg-gray-400"
+                            className="px-3 sm:px-4 flex items-center bg-sky-600 text-white text-sm sm:text-base font-medium rounded-r-lg hover:bg-sky-700 disabled:bg-slate-400 transition-colors"
                         >
-                            {loading ? 'Đang tìm...' : 'Tìm kiếm'}
+                            {loading ? (
+                                <div className="flex items-center">
+                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Tìm...
+                                </div>
+                            ) : 'Tìm kiếm'}
                         </button>
                     </div>
                 </div>
                 {error && (
-                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
-                        <p className="text-red-600 text-xs sm:text-sm text-center">{error}</p>
+                    <div className="mt-2.5 p-3 bg-red-50 border border-red-300 rounded-lg shadow-sm">
+                        <p className="text-red-700 text-sm text-center">{error}</p>
                     </div>
                 )}
             </div>
 
             {/* Loading State */}
             {(loading || gettingLocation) && !weatherData && (
-                <div className="flex flex-col items-center justify-center py-10 space-y-4">
-                    <div className="relative">
-                        <ArrowsRightLeftIcon className="h-10 w-10 text-gray-400 animate-spin" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="h-6 w-6 bg-white rounded-full"></div>
-                        </div>
-                    </div>
-                    <p className="text-sm text-gray-500">{gettingLocation ? 'Đang lấy vị trí...' : 'Đang tải dữ liệu thời tiết...'}</p>
+                <div className="flex flex-col items-center justify-center py-12 space-y-3">
+                    <svg className="animate-spin h-8 w-8 text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p className="text-sm text-slate-500">{gettingLocation ? 'Đang lấy vị trí...' : 'Đang tải dữ liệu thời tiết...'}</p>
                 </div>
             )}
 
             {weatherData && (
-                <div className="px-2 w-full">
+                <div className="px-2 w-full max-w-3xl mx-auto">
                     {/* Current Weather Card */}
-                    <div className="mb-4 bg-white rounded-lg shadow p-3 sm:p-6 w-full box-border">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2 sm:gap-0">
+                    <div className="mb-4 sm:mb-6 bg-white rounded-xl shadow-lg p-4 sm:p-6 w-full">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-5 gap-2 sm:gap-0">
                             <div className="flex items-center">
-                                <MapPinIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-500 mr-2 flex-shrink-0" />
-                                <h2 className="text-lg sm:text-xl font-semibold truncate max-w-[calc(100vw-120px)] sm:max-w-none">{weatherData.location}</h2>
+                                <MapPinIcon className="h-5 w-5 sm:h-6 sm:w-6 text-slate-500 mr-2 flex-shrink-0" />
+                                <h2 className="text-lg sm:text-xl font-semibold text-slate-800 truncate max-w-[calc(100vw-150px)] sm:max-w-md">{weatherData.location}</h2>
                             </div>
-                            <div className="flex items-center space-x-4 text-sm">
+                            <div className="flex items-center space-x-3 sm:space-x-4 text-sm text-slate-600">
                                 <div className="flex items-center">
-                                    <SunIcon className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 mr-1" />
+                                    <SunIcon className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400 mr-1.5" />
                                     <span>{formatTime(weatherData.daily.sunrise[0])}</span>
                                 </div>
                                 <div className="flex items-center">
-                                    <SunIcon className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 mr-1" />
+                                    <SunIcon className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-400 mr-1.5" />
                                     <span>{formatTime(weatherData.daily.sunset[0])}</span>
                                 </div>
                             </div>
@@ -576,42 +560,46 @@ export default function Weather() {
 
                         {/* Mobile view */}
                         <div className="sm:hidden w-full">
-                            <div className="flex items-center p-3 bg-gray-50 rounded-lg mb-2 w-full">
-                                <div className="flex-shrink-0 mr-3 text-3xl">
+                            <div className="flex items-center p-3 bg-slate-50 rounded-lg mb-2.5 w-full border border-slate-200">
+                                <div className="flex-shrink-0 mr-3 text-4xl">
                                     {weatherCodes[weatherData.current.weatherCode]?.icon}
                                 </div>
-                                <div>
-                                    <p className="text-lg font-semibold">
+                                <div className="flex-1">
+                                    <p className="text-xl font-semibold text-slate-800">
                                         {weatherData.current.temperature.toFixed(1)}°C
                                     </p>
-                                    <p className="text-xs text-gray-500 capitalize">
+                                    <p className="text-xs text-slate-500 capitalize">
                                         {weatherCodes[weatherData.current.weatherCode]?.description}
                                     </p>
-                                    <p className="text-xs text-gray-500">
-                                        Cảm giác như {weatherData.current.apparentTemperature.toFixed(1)}°C
+                                    <p className="text-xs text-slate-500">
+                                        Cảm giác: {weatherData.current.apparentTemperature.toFixed(1)}°C
                                     </p>
                                 </div>
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-2 w-full">
-                                <div className="p-3 bg-gray-50 rounded-lg">
+                            <div className="grid grid-cols-2 gap-2.5 w-full">
+                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                                     <div className="flex items-center">
-                                        <ArrowDownIcon className="h-4 w-4 text-blue-500 mr-2 flex-shrink-0" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-sky-600 mr-2 flex-shrink-0">
+                                          <path fillRule="evenodd" d="M10 3a.75.75 0 01.75.75v10.562l2.14-2.139a.75.75 0 111.06 1.06l-3.5 3.5a.75.75 0 01-1.06 0l-3.5-3.5a.75.75 0 111.06-1.06l2.14 2.139V3.75A.75.75 0 0110 3zM3.75 15a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H4.5a.75.75 0 01-.75-.75z" clipRule="evenodd" />
+                                        </svg>
                                         <div>
-                                            <p className="text-xs text-gray-500">Gió</p>
-                                            <p className="text-sm font-semibold">
+                                            <p className="text-xs text-slate-500">Gió</p>
+                                            <p className="text-sm font-semibold text-slate-700">
                                                 {weatherData.current.windSpeed.toFixed(1)} km/h
                                             </p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="p-3 bg-gray-50 rounded-lg">
+                                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                                     <div className="flex items-center">
-                                        <CloudIconSolid className="h-4 w-4 text-blue-400 mr-2 flex-shrink-0" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-sky-500 mr-2 flex-shrink-0">
+                                          <path d="M10 3.75a.75.75 0 01.75.75v3.444A3.733 3.733 0 0112.53 7c.174 0 .345.018.512.052A3.755 3.755 0 0116.25 8.5c0 .099.012.197.022.293V10.5a2.5 2.5 0 002.04 2.438A5.25 5.25 0 0113 17.5a5.223 5.223 0 01-4.25-2.315A5.25 5.25 0 013 12.938V10.5A2.5 2.5 0 005.04 8.062 5.188 5.188 0 013.75 7a3.75 3.75 0 013.75-3.75h1.062A3.733 3.733 0 0110 3.75zM5.423 13.699a3.734 3.734 0 001.487 1.012 3.734 3.734 0 004.179 0 3.733 3.733 0 001.487-1.012A3.75 3.75 0 0010 11.25a3.75 3.75 0 00-4.577 2.449z" />
+                                        </svg>
                                         <div>
-                                            <p className="text-xs text-gray-500">Độ ẩm</p>
-                                            <p className="text-sm font-semibold">
+                                            <p className="text-xs text-slate-500">Độ ẩm</p>
+                                            <p className="text-sm font-semibold text-slate-700">
                                                 {weatherData.current.relativeHumidity}%
                                             </p>
                                         </div>
@@ -621,48 +609,52 @@ export default function Weather() {
                         </div>
 
                         {/* Desktop view */}
-                        <div className="hidden sm:grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                            <div className="col-span-2 lg:col-span-1 flex items-center p-3 sm:p-4 bg-gray-50 rounded-lg">
-                                <div className="flex-shrink-0 mr-3 sm:mr-4 text-3xl sm:text-4xl">
+                        <div className="hidden sm:grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                            <div className="md:col-span-1 flex items-center p-3.5 sm:p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                <div className="flex-shrink-0 mr-3 sm:mr-4 text-4xl sm:text-5xl">
                                     {weatherCodes[weatherData.current.weatherCode]?.icon}
                                 </div>
-                                <div>
-                                    <p className="text-lg sm:text-xl font-semibold">
+                                <div className="flex-1">
+                                    <p className="text-xl sm:text-2xl font-semibold text-slate-800">
                                         {weatherData.current.temperature.toFixed(1)}°C
                                     </p>
-                                    <p className="text-xs sm:text-sm text-gray-500 capitalize">
+                                    <p className="text-xs sm:text-sm text-slate-500 capitalize">
                                         {weatherCodes[weatherData.current.weatherCode]?.description}
                                     </p>
-                                    <p className="text-xs sm:text-sm text-gray-500">
-                                        Cảm giác như {weatherData.current.apparentTemperature.toFixed(1)}°C
+                                    <p className="text-xs sm:text-sm text-slate-500">
+                                        Cảm giác: {weatherData.current.apparentTemperature.toFixed(1)}°C
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
-                                <div className="flex items-center">
-                                    <ArrowDownIcon className="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mr-2" />
+                            <div className="p-3.5 sm:p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                <div className="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 sm:h-6 sm:w-6 text-sky-600 mr-2.5 mt-0.5 flex-shrink-0">
+                                      <path fillRule="evenodd" d="M10 3a.75.75 0 01.75.75v10.562l2.14-2.139a.75.75 0 111.06 1.06l-3.5 3.5a.75.75 0 01-1.06 0l-3.5-3.5a.75.75 0 111.06-1.06l2.14 2.139V3.75A.75.75 0 0110 3zM3.75 15a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H4.5a.75.75 0 01-.75-.75z" clipRule="evenodd" />
+                                    </svg>
                                     <div>
-                                        <p className="text-xs sm:text-sm text-gray-500">Gió</p>
-                                        <p className="text-sm sm:text-base font-semibold">
+                                        <p className="text-xs sm:text-sm text-slate-500">Gió</p>
+                                        <p className="text-sm sm:text-base font-semibold text-slate-700">
                                             {weatherData.current.windSpeed.toFixed(1)} km/h
                                         </p>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-xs text-slate-500">
                                             Hướng: {weatherData.current.windDirection}°
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
-                                <div className="flex items-center">
-                                    <CloudIconSolid className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400 mr-2" />
+                            <div className="p-3.5 sm:p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                <div className="flex items-start">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 sm:h-6 sm:w-6 text-sky-500 mr-2.5 mt-0.5 flex-shrink-0">
+                                      <path d="M10 3.75a.75.75 0 01.75.75v3.444A3.733 3.733 0 0112.53 7c.174 0 .345.018.512.052A3.755 3.755 0 0116.25 8.5c0 .099.012.197.022.293V10.5a2.5 2.5 0 002.04 2.438A5.25 5.25 0 0113 17.5a5.223 5.223 0 01-4.25-2.315A5.25 5.25 0 013 12.938V10.5A2.5 2.5 0 005.04 8.062 5.188 5.188 0 013.75 7a3.75 3.75 0 013.75-3.75h1.062A3.733 3.733 0 0110 3.75zM5.423 13.699a3.734 3.734 0 001.487 1.012 3.734 3.734 0 004.179 0 3.733 3.733 0 001.487-1.012A3.75 3.75 0 0010 11.25a3.75 3.75 0 00-4.577 2.449z" />
+                                    </svg>
                                     <div>
-                                        <p className="text-xs sm:text-sm text-gray-500">Độ ẩm</p>
-                                        <p className="text-sm sm:text-base font-semibold">
+                                        <p className="text-xs sm:text-sm text-slate-500">Độ ẩm</p>
+                                        <p className="text-sm sm:text-base font-semibold text-slate-700">
                                             {weatherData.current.relativeHumidity}%
                                         </p>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-xs text-slate-500">
                                             Điểm sương: {weatherData.current.dewPoint.toFixed(1)}°C
                                         </p>
                                     </div>
@@ -672,9 +664,9 @@ export default function Weather() {
                     </div>
 
                     {/* Hourly Forecast */}
-                    <div className="mb-4 bg-white rounded-lg shadow p-3 sm:p-6 w-full box-border">
+                    <div className="mb-4 sm:mb-6 bg-white rounded-xl shadow-lg p-4 sm:p-6 w-full">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 gap-2 sm:gap-0">
-                            <h3 className="text-base sm:text-lg font-semibold">
+                            <h3 className="text-base sm:text-lg font-semibold text-slate-800">
                                 {selectedDate 
                                     ? `Dự báo theo giờ - ${formatDate(selectedDate)}`
                                     : 'Dự báo 24 giờ tới'}
@@ -683,19 +675,19 @@ export default function Weather() {
                                 {!selectedDate && getCurrentHourIndex() !== -1 && (
                                     <button
                                         onClick={scrollToCurrentHour}
-                                        className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
+                                        className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-colors"
                                         title="Cuộn đến giờ hiện tại"
                                     >
-                                        <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                                        <ClockIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                         Hiện tại
                                     </button>
                                 )}
                                 {selectedDate && (
                                     <button
                                         onClick={() => setSelectedDate(null)}
-                                        className="text-xs sm:text-sm text-blue-600 hover:text-blue-800"
+                                        className="text-xs sm:text-sm text-sky-600 hover:text-sky-800 font-medium"
                                     >
-                                        Quay lại 24 giờ tới
+                                        Xem 24 giờ tới
                                     </button>
                                 )}
                             </div>
@@ -703,52 +695,56 @@ export default function Weather() {
                         <div className="relative">
                             <div 
                                 ref={hourlyContainerRef}
-                                className="overflow-x-auto scroll-smooth hide-scrollbar py-[10px] w-full"
+                                className="overflow-x-auto scroll-smooth hide-scrollbar py-2.5 w-full"
                                 style={{ WebkitOverflowScrolling: 'touch' }}
                             >
-                                <div className="flex space-x-2 sm:space-x-4 min-w-max">
+                                <div className="flex space-x-2.5 sm:space-x-3 min-w-max">
                                     {(selectedDate 
                                         ? getHourlyDataForDay(selectedDate)
-                                        : Array.from({ length: 24 }, (_, i) => i)
-                                    ).map((index) => {
-                                        const timeString = weatherData.hourly.time[index];
+                                        : Array.from({ length: Math.min(24, weatherData.hourly.time.length - getCurrentHourIndex()) }, (_, i) => getCurrentHourIndex() + i).filter(idx => idx >=0 && idx < weatherData.hourly.time.length) // Ensure index is valid
+                                    ).map((hourlyIndex) => {
+                                        const timeString = weatherData.hourly.time[hourlyIndex];
                                         const isCurrent = !selectedDate && isCurrentHour(timeString);
                                         
                                         return (
                                             <div 
                                                 key={timeString} 
                                                 ref={isCurrent ? currentHourRef : null}
-                                                className={`flex-none w-[65px] sm:w-32 p-2 sm:p-4 rounded-lg transition-all ${
+                                                className={`flex-none w-[70px] sm:w-24 p-2.5 sm:p-3 rounded-lg transition-all duration-150 ease-in-out border ${
                                                     isCurrent 
-                                                        ? 'bg-blue-50 ring-1 ring-blue-500 shadow-sm' 
-                                                        : 'bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
+                                                        ? 'bg-sky-50 border-sky-400 shadow-md' 
+                                                        : 'bg-slate-50 border-slate-200 hover:bg-slate-100 active:bg-slate-200'
                                                 }`}
                                             >
-                                                <div className="flex items-center justify-between">
-                                                    <p className="text-xs sm:text-sm font-medium">
+                                                <div className="flex items-center justify-between mb-0.5">
+                                                    <p className={`text-xs sm:text-sm font-medium ${isCurrent ? 'text-sky-700' : 'text-slate-700'}`}>
                                                         {new Date(timeString).toLocaleTimeString('vi-VN', { 
                                                             hour: '2-digit', 
-                                                            minute: '2-digit'
+                                                            minute: 'numeric'
                                                         })}
                                                     </p>
                                                     {isCurrent && (
-                                                        <span className="text-[8px] sm:text-xs font-medium text-blue-600 bg-blue-100 px-1 sm:px-2 py-0 sm:py-0.5 rounded-full">
+                                                        <span className="text-[9px] sm:text-xs font-semibold text-sky-700 bg-sky-200 px-1.5 py-0.5 rounded-full">
                                                             Nay
                                                         </span>
                                                     )}
                                                 </div>
-                                                <div className="my-1 sm:my-2 text-xl sm:text-2xl text-center">
-                                                    {weatherCodes[weatherData.hourly.weatherCode[index]]?.icon}
+                                                <div className="my-1.5 sm:my-2 text-2xl sm:text-3xl text-center">
+                                                    {weatherCodes[weatherData.hourly.weatherCode[hourlyIndex]]?.icon}
                                                 </div>
-                                                <p className="text-xs sm:text-sm font-semibold text-center">
-                                                    {weatherData.hourly.temperature[index].toFixed(1)}°C
+                                                <p className={`text-sm sm:text-base font-semibold text-center ${isCurrent ? 'text-sky-800' : 'text-slate-800'}`}>
+                                                    {weatherData.hourly.temperature[hourlyIndex].toFixed(0)}°C
                                                 </p>
-                                                <div className="mt-1 space-y-0.5">
-                                                    <p className="text-[8px] sm:text-xs text-gray-500">
-                                                        💧 {weatherData.hourly.precipitation[index].toFixed(1)}mm
+                                                <div className="mt-1.5 space-y-0.5 text-center">
+                                                    <p className="text-[10px] sm:text-xs text-slate-500">
+                                                        <CloudArrowDownIcon className="inline-block h-3 w-3 mr-0.5 relative -top-px text-sky-600" />
+                                                        {weatherData.hourly.precipitation[hourlyIndex].toFixed(1)}mm
                                                     </p>
-                                                    <p className="text-[8px] sm:text-xs text-gray-500">
-                                                        💨 {weatherData.hourly.windSpeed[index].toFixed(1)} km/h
+                                                    <p className="text-[10px] sm:text-xs text-slate-500">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="inline-block h-3 w-3 mr-0.5 relative -top-px text-slate-400">
+                                                          <path fillRule="evenodd" d="M10 3a.75.75 0 01.75.75v10.562l2.14-2.139a.75.75 0 111.06 1.06l-3.5 3.5a.75.75 0 01-1.06 0l-3.5-3.5a.75.75 0 111.06-1.06l2.14 2.139V3.75A.75.75 0 0110 3zM3.75 15a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H4.5a.75.75 0 01-.75-.75z" clipRule="evenodd" />
+                                                        </svg>
+                                                        {weatherData.hourly.windSpeed[hourlyIndex].toFixed(0)}km/h
                                                     </p>
                                                 </div>
                                             </div>
@@ -757,45 +753,42 @@ export default function Weather() {
                                 </div>
                             </div>
                             
-                            {/* Scroll Indicator for Mobile */}
-                            <div className="mt-2 sm:hidden flex justify-center">
-                                <div className="flex space-x-1">
-                                    <div className="w-8 h-1 bg-blue-400 rounded-full"></div>
-                                    <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-                                    <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-                                </div>
+                            {/* Scroll Indicator for Mobile - more subtle */}
+                            <div className="mt-3 sm:hidden flex justify-center items-center h-2">
+                                <div className="w-10 h-1 bg-slate-300 rounded-full"></div>
                             </div>
                         </div>
                     </div>
 
                     {/* 7-Day Forecast */}
-                    <div className="bg-white rounded-lg shadow p-3 sm:p-6 w-full box-border">
-                        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Dự báo 7 ngày tới</h3>
+                    <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 w-full">
+                        <h3 className="text-base sm:text-lg font-semibold text-slate-800 mb-3 sm:mb-4">Dự báo 7 ngày tới</h3>
                         
                         {/* Mobile Layout */}
-                        <div className="sm:hidden w-full">
+                        <div className="sm:hidden w-full space-y-2.5">
                             {weatherData.daily.time.map((time, index) => (
                                 <div 
                                     key={time} 
-                                    className={`p-2 bg-gray-50 rounded-lg cursor-pointer transition-colors duration-200 mb-2 ${
-                                        isSelectedDay(time) ? 'ring-1 ring-blue-500' : 'hover:bg-gray-100 active:bg-gray-200'
+                                    className={`p-3 bg-slate-50 rounded-lg cursor-pointer transition-all duration-150 ease-in-out border ${
+                                        isSelectedDay(time) ? 'border-sky-400 ring-1 ring-sky-400 shadow-md' : 'border-slate-200 hover:bg-slate-100 active:bg-slate-200'
                                     } touch-manipulation w-full`}
                                     onClick={() => setSelectedDate(time)}
                                 >
                                     <div className="flex items-center w-full">
-                                        <div className="text-xl mr-3">{weatherCodes[weatherData.daily.weatherCode[index]]?.icon}</div>
+                                        <div className="text-2xl mr-3 flex-shrink-0 w-8 text-center">{weatherCodes[weatherData.daily.weatherCode[index]]?.icon}</div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-medium truncate">{formatDate(time).split(', ')[0]}</p>
-                                            <p className="text-[10px] text-gray-500 truncate">
+                                            <p className="text-sm font-medium text-slate-700 truncate">{formatDate(time).split(', ')[0]}</p>
+                                            <p className="text-xs text-slate-500 truncate">
                                                 {weatherCodes[weatherData.daily.weatherCode[index]]?.description}
                                             </p>
                                         </div>
-                                        <div className="text-right ml-2">
-                                            <p className="text-xs font-semibold whitespace-nowrap">
-                                                {weatherData.daily.temperatureMax[index].toFixed(0)}°/{weatherData.daily.temperatureMin[index].toFixed(0)}°
+                                        <div className="text-right ml-2 flex-shrink-0">
+                                            <p className="text-sm font-semibold text-slate-800 whitespace-nowrap">
+                                                {weatherData.daily.temperatureMax[index].toFixed(0)}° / {weatherData.daily.temperatureMin[index].toFixed(0)}°
                                             </p>
-                                            <p className="text-[10px] text-gray-500 whitespace-nowrap">
-                                                Mưa: {weatherData.daily.precipitationProbabilityMax[index]}%
+                                            <p className="text-xs text-slate-500 whitespace-nowrap">
+                                                <CloudArrowDownIcon className="inline-block h-3 w-3 mr-0.5 relative -top-px text-sky-600" />
+                                                {weatherData.daily.precipitationProbabilityMax[index]}%
                                             </p>
                                         </div>
                                     </div>
@@ -804,41 +797,34 @@ export default function Weather() {
                         </div>
                         
                         {/* Desktop Layout */}
-                        <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-7 gap-3 sm:gap-4">
+                        <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-3">
                             {weatherData.daily.time.map((time, index) => (
                                 <div 
                                     key={time} 
-                                    className={`p-3 sm:p-4 bg-gray-50 rounded-lg cursor-pointer transition-colors duration-200 ${
-                                        isSelectedDay(time) ? 'ring-2 ring-blue-500' : 'hover:bg-gray-100 active:bg-gray-200'
+                                    className={`p-3 bg-slate-50 rounded-lg cursor-pointer transition-all duration-150 ease-in-out flex flex-col text-center items-center border ${
+                                        isSelectedDay(time) ? 'border-sky-400 ring-1 ring-sky-400 shadow-md' : 'border-slate-200 hover:bg-slate-100 active:bg-slate-200'
                                     } touch-manipulation`}
                                     onClick={() => setSelectedDate(time)}
                                 >
-                                    <p className="text-xs sm:text-sm font-medium truncate">{formatDate(time)}</p>
-                                    <div className="my-1 sm:my-2 text-xl sm:text-2xl">
+                                    <p className="text-xs font-semibold text-slate-700 w-full truncate">{formatDate(time).split(', ')[0]}</p>
+                                    <p className="text-[10px] text-slate-500 mb-1 w-full truncate">{formatDate(time).split(', ')[1]}</p>
+                                    <div className="my-1.5 text-3xl">
                                         {weatherCodes[weatherData.daily.weatherCode[index]]?.icon}
                                     </div>
-                                    <p className="text-xs sm:text-sm">
-                                        {weatherData.daily.temperatureMax[index].toFixed(1)}°C /{' '}
-                                        {weatherData.daily.temperatureMin[index].toFixed(1)}°C
+                                    <p className="text-sm font-semibold text-slate-800">
+                                        {weatherData.daily.temperatureMax[index].toFixed(0)}°<span className="text-slate-500">/{weatherData.daily.temperatureMin[index].toFixed(0)}°</span>
                                     </p>
-                                    <p className="text-[10px] sm:text-xs text-gray-500 truncate">
+                                    <p className="text-xs text-slate-500 mt-0.5 w-full truncate" title={weatherCodes[weatherData.daily.weatherCode[index]]?.description}>
                                         {weatherCodes[weatherData.daily.weatherCode[index]]?.description}
                                     </p>
-                                    <div className="mt-1 sm:mt-2 space-y-0.5 sm:space-y-1">
-                                        <p className="text-[10px] sm:text-xs text-gray-500">
-                                            UV: {weatherData.daily.uvIndexMax[index].toFixed(1)}
+                                    <div className="mt-2 pt-2 border-t border-slate-200 space-y-1 text-left w-full opacity-90">
+                                        <p className="text-[10px] text-slate-600 flex items-center">
+                                            <SunIcon className="w-3 h-3 mr-1 text-yellow-500 flex-shrink-0" />
+                                            UV: {weatherData.daily.uvIndexMax[index].toFixed(0)}
                                         </p>
-                                        <p className="text-[10px] sm:text-xs text-gray-500">
-                                            Mưa: {weatherData.daily.rainSum[index].toFixed(1)}mm
-                                        </p>
-                                        <p className="text-[10px] sm:text-xs text-gray-500">
-                                            Tuyết: {weatherData.daily.snowfallSum[index].toFixed(1)}cm
-                                        </p>
-                                        <p className="text-[10px] sm:text-xs text-gray-500">
-                                            Số giờ mưa: {weatherData.daily.precipitationHours[index]}h
-                                        </p>
-                                        <p className="text-[10px] sm:text-xs text-gray-500">
-                                            Gió mạnh nhất: {weatherData.daily.windGusts[index].toFixed(1)} km/h
+                                        <p className="text-[10px] text-slate-600 flex items-center">
+                                            <CloudArrowDownIcon className="w-3 h-3 mr-1 text-sky-600 flex-shrink-0" />
+                                            {weatherData.daily.rainSum[index].toFixed(1)}mm ({weatherData.daily.precipitationHours[index]}h)
                                         </p>
                                     </div>
                                 </div>
@@ -848,15 +834,15 @@ export default function Weather() {
                 </div>
             )}
             
-            {/* Add a safe area for mobile devices */}
-            <div className="h-8 sm:h-0"></div>
+            {/* Add a safe area for mobile devices and overall page bottom padding */}
+            <div className="h-12 sm:h-16"></div>
         </div>
     )
 }
 
 // Thêm style cho scrollbar và mobile optimizations
 const styles = `
-@media (max-width: 640px) {
+@media (max-width: 639px) { /* Adjusted breakpoint to sm: 640px */
     .hide-scrollbar {
         scrollbar-width: none;
         -ms-overflow-style: none;
@@ -868,7 +854,7 @@ const styles = `
     body {
         -webkit-tap-highlight-color: transparent;
         overscroll-behavior-y: contain;
-        background-color: #f9fafb;
+        background-color: #f8fafc; /* Softer default bg for body if needed - matches slate-50 */
     }
     
     input, button, a {
@@ -876,9 +862,9 @@ const styles = `
     }
     
     /* Fix cho mobile width */
-    * {
-        box-sizing: border-box;
-    }
+    /* * {
+        box-sizing: border-box; // This can sometimes cause issues if not carefully managed
+    } */
     
     body, html {
         width: 100%;
@@ -886,16 +872,17 @@ const styles = `
         overflow-x: hidden;
     }
     
-    div {
+    /* Ensure divs don't overflow their containers, especially on mobile */
+    div:not(.pull-to-refresh-indicator):not(.pull-to-refresh-spinner) { /* Avoid affecting fixed elements */
         max-width: 100%;
-        width: auto;
+      /* width: auto; // This was causing issues with some layouts, let tailwind handle width */
     }
 }
 
-@media (min-width: 641px) {
+@media (min-width: 640px) { /* Adjusted breakpoint to sm: 640px */
     .hide-scrollbar {
         scrollbar-width: thin;
-        scrollbar-color: #CBD5E1 transparent;
+        scrollbar-color: #cbd5e1 transparent; /* slate-300 */
     }
     .hide-scrollbar::-webkit-scrollbar {
         width: 6px;
@@ -905,43 +892,29 @@ const styles = `
         background: transparent;
     }
     .hide-scrollbar::-webkit-scrollbar-thumb {
-        background-color: #CBD5E1;
+        background-color: #cbd5e1; /* slate-300 */
         border-radius: 3px;
     }
     .hide-scrollbar::-webkit-scrollbar-thumb:hover {
-        background-color: #94A3B8;
+        background-color: #94a3b8; /* slate-400 */
     }
 }
 
 /* Pull to refresh styling */
-.pull-to-refresh-indicator {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: var(--pull-distance, 0px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: var(--pull-indicator-opacity, 0);
-    transition: opacity 0.2s;
-    pointer-events: none;
-    z-index: 50;
-}
-
 .pull-to-refresh-spinner {
     width: 24px;
     height: 24px;
-    border: 2px solid rgba(0,0,0,0.1);
-    border-top-color: #000;
+    border: 3px solid rgba(0,0,0,0.1); /* Slightly thicker border */
+    border-top-color: #0ea5e9; /* sky-500 */
     border-radius: 50%;
-    margin-right: 8px;
-    animation: spinner 0.6s linear infinite;
+    margin-right: 10px; /* More spacing */
+    animation: spinner 0.7s linear infinite;
 }
 
 .pull-to-refresh-indicator span {
     font-size: 14px;
-    color: #333;
+    color: #334155; /* slate-700 */
+    font-weight: 500;
 }
 
 @keyframes spinner {
@@ -951,6 +924,8 @@ const styles = `
 /* Fix for iOS Safari bottom bar */
 @supports (-webkit-touch-callout: none) {
     body {
+        /* Padding for iPhone X notch and bottom bar */
+        padding-top: env(safe-area-inset-top, 0px); 
         padding-bottom: env(safe-area-inset-bottom, 20px);
     }
 }

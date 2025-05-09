@@ -103,7 +103,7 @@ export default function TimeZoneConverter() {
                                     const city = popularCities.find(c => c.name === e.target.value)
                                     if (city) setSelectedCity(city)
                                 }}
-                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent"
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-600 focus:border-transparent"
                             >
                                 {popularCities.map((city) => (
                                     <option key={city.name} value={city.name}>
@@ -115,7 +115,7 @@ export default function TimeZoneConverter() {
 
                         <div className="p-4 bg-gray-50 rounded-md">
                             <div className="flex items-center gap-2 mb-2">
-                                <ClockIcon className="h-6 w-6 text-white" />
+                                <ClockIcon className="h-6 w-6 text-gray-700" />
                                 <span className="font-medium">Thời gian hiện tại</span>
                             </div>
                             <div className="text-3xl font-bold mb-1">
@@ -145,9 +145,9 @@ export default function TimeZoneConverter() {
                         <div className="p-4 bg-gray-50 rounded-md">
                             <div className="flex items-center gap-2 mb-2">
                                 {isDaytime ? (
-                                    <SunIcon className="w-5 h-5 text-yellow-500" />
+                                    <SunIcon className="w-5 h-5 text-gray-600" />
                                 ) : (
-                                    <MoonIcon className="w-5 h-5 text-blue-500" />
+                                    <MoonIcon className="w-5 h-5 text-gray-600" />
                                 )}
                                 <span className="font-medium">
                                     {isDaytime ? 'Ban ngày' : 'Ban đêm'}
