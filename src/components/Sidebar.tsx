@@ -217,6 +217,11 @@ const menuGroups: MenuGroup[] = [
     icon: <MdOutlineCurrencyExchange className="w-5 h-5" />,
     items: [
       {
+        name: 'Quản danh mục đầu tư chứng khoán',
+        path: '/investment-portfolio',
+        icon: <FaMoneyBillTransfer className="w-5 h-5" />
+      },
+      {
         name: 'Chuyển đổi tiền tệ',
         path: '/currency',
         icon: <FaMoneyBillTransfer className="w-5 h-5" />
