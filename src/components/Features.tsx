@@ -342,14 +342,6 @@ export default function Features() {
             categories: ["Utilities"]
         },
         {
-            title: "Quản danh mục đầu tư chứng khoán",
-            description: "Quản lý danh mục đầu tư chứng khoán của bạn",
-            icon: <FaMoneyBillTransfer className="w-6 h-6 text-black" />,
-            views: 0,
-            path: "/investment-portfolio",
-            categories: ["Fiance"]
-        },
-        {
             title: "Chuyển đổi tiền tệ",
             description: "Chuyển đổi giữa các loại tiền tệ khác nhau",
             icon: <FaMoneyBillTransfer className="w-6 h-6 text-black" />,
