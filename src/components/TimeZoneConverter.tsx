@@ -27,19 +27,41 @@ export default function TimeZoneConverter() {
     const [selectedCity, setSelectedCity] = useState<City>(popularCities[0])
     const [currentTime, setCurrentTime] = useState<Date>(new Date())
     const [isDaytime, setIsDaytime] = useState(true)
+    const [customTime, setCustomTime] = useState<string>('')
+    const [customDate, setCustomDate] = useState<string>('')
+    const [useCustomTime, setUseCustomTime] = useState(false)
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            const now = new Date()
-            setCurrentTime(now)
-            
-            // Kiểm tra xem có phải ban ngày không (6h - 18h)
-            const hour = now.getHours()
-            setIsDaytime(hour >= 6 && hour < 18)
-        }, 1000)
+        if (!useCustomTime) {
+            const timer = setInterval(() => {
+                const now = new Date()
+                setCurrentTime(now)
+                
+                // Kiểm tra xem có phải ban ngày không (6h - 18h)
+                const hour = now.getHours()
+                setIsDaytime(hour >= 6 && hour < 18)
+            }, 1000)
 
-        return () => clearInterval(timer)
-    }, [])
+            return () => clearInterval(timer)
+        }
+    }, [useCustomTime])
+
+    const handleCustomTimeChange = () => {
+        if (customDate && customTime) {
+            const customDateTime = new Date(`${customDate}T${customTime}`)
+            if (!isNaN(customDateTime.getTime())) {
+                setCurrentTime(customDateTime)
+                const hour = customDateTime.getHours()
+                setIsDaytime(hour >= 6 && hour < 18)
+            }
+        }
+    }
+
+    useEffect(() => {
+        if (useCustomTime) {
+            handleCustomTimeChange()
+        }
+    }, [customDate, customTime, useCustomTime])
 
     const formatTime = (date: Date, timezone: string) => {
         return date.toLocaleTimeString('vi-VN', {
@@ -113,10 +135,62 @@ export default function TimeZoneConverter() {
                             </select>
                         </div>
 
+                        <div className="p-4 bg-blue-50 rounded-md border border-blue-200">
+                            <div className="flex items-center gap-2 mb-3">
+                                <input
+                                    type="checkbox"
+                                    id="useCustomTime"
+                                    checked={useCustomTime}
+                                    onChange={(e) => {
+                                        setUseCustomTime(e.target.checked)
+                                        if (!e.target.checked) {
+                                            setCurrentTime(new Date())
+                                        }
+                                    }}
+                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <label htmlFor="useCustomTime" className="font-medium text-gray-700">
+                                    Nhập thời gian tùy chỉnh
+                                </label>
+                            </div>
+                            
+                            {useCustomTime && (
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Ngày
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={customDate}
+                                            onChange={(e) => setCustomDate(e.target.value)}
+                                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Giờ
+                                        </label>
+                                        <input
+                                            type="time"
+                                            value={customTime}
+                                            onChange={(e) => setCustomTime(e.target.value)}
+                                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        />
+                                    </div>
+                                    <div className="text-sm text-gray-600">
+                                        Thời gian được nhập theo múi giờ của thành phố đã chọn: {selectedCity.name}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         <div className="p-4 bg-gray-50 rounded-md">
                             <div className="flex items-center gap-2 mb-2">
                                 <ClockIcon className="h-6 w-6 text-gray-700" />
-                                <span className="font-medium">Thời gian hiện tại</span>
+                                <span className="font-medium">
+                                    {useCustomTime ? 'Thời gian đã nhập' : 'Thời gian hiện tại'}
+                                </span>
                             </div>
                             <div className="text-3xl font-bold mb-1">
                                 {formatTime(currentTime, selectedCity.timezone)}
@@ -191,4 +265,4 @@ export default function TimeZoneConverter() {
             </div>
         </div>
     )
-} 
+}

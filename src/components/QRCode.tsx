@@ -217,4 +217,4 @@ export function QRCodeComponent() {
             </div>
         </div>
     )
-} 
+}
