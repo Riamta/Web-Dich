@@ -17,7 +17,8 @@ import {
     FaSearch,
     FaEye,
     FaRobot,
-    FaLanguage
+    FaLanguage,
+    FaWifi
 } from "react-icons/fa";
 import {
     FaMoneyBillTransfer,
@@ -339,6 +340,15 @@ export default function Features() {
             icon: <MdOutlinePassword className="w-6 h-6 text-black" />,
             views: 0,
             path: "/password-tools",
+            categories: ["Utilities"]
+        },
+        {
+            title: "Đo tốc độ mạng",
+            description: "Kiểm tra tốc độ download, upload, ping và thông tin mạng",
+            icon: <FaWifi className="w-6 h-6 text-black" />,
+            views: 0,
+            path: "/network-speed",
+            badge: "New",
             categories: ["Utilities"]
         },
         {

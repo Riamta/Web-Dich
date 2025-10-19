@@ -234,64 +234,96 @@ export default function Weather() {
         await fetchWeatherData(DEFAULT_COORDS.latitude, DEFAULT_COORDS.longitude);
     }
 
+    // Try to load last location first, then try geolocation
+    useEffect(() => {
+        const tryGetCurrentLocation = async () => {
+            setGettingLocation(true);
+            setError(null);
+            if (!navigator.geolocation) {
+                setError('Trình duyệt của bạn không hỗ trợ định vị. Đang hiển thị thời tiết tại Hà Nội.');
+                setGettingLocation(false);
+                await searchDefaultCity();
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    try {
+                        const { latitude, longitude } = position.coords;
+                        // Reverse geocoding to get location name
+                        const geocodeResponse = await fetch(
+                            `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=vi`
+                        );
+                        const geocodeData = await geocodeResponse.json();
+                        let locationName = DEFAULT_CITY;
+                        if (geocodeData.results?.[0]) {
+                            locationName = geocodeData.results[0].name;
+                        }
+                        setSearchQuery(locationName);
+                        await fetchWeatherData(latitude, longitude);
+                    } catch (err) {
+                        console.error('Error getting location:', err);
+                        setError('Có lỗi xảy ra khi lấy thông tin vị trí. Đang hiển thị thời tiết tại Hà Nội.');
+                        await searchDefaultCity();
+                    } finally {
+                        setGettingLocation(false);
+                    }
+                },
+                async (err) => {
+                    console.error('Geolocation error:', err);
+                    setError('Không thể lấy vị trí của bạn. Đang hiển thị thời tiết tại Hà Nội.');
+                    setGettingLocation(false);
+                    await searchDefaultCity();
+                },
+                { timeout: 5000 }
+            );
+        };
+
+        // Ưu tiên lấy vị trí hiện tại trước, nếu không được mới fallback localStorage hoặc Hà Nội
+        tryGetCurrentLocation();
+    }, []);
+
+    // Đảm bảo nút lấy vị trí hiện tại cũng dùng logic mới
     const getCurrentLocation = () => {
-        setGettingLocation(true)
-        setError(null)
-
+        setGettingLocation(true);
+        setError(null);
         if (!navigator.geolocation) {
-            setError('Trình duyệt của bạn không hỗ trợ định vị. Đang hiển thị thời tiết tại Hà Nội.')
-            setGettingLocation(false)
-            searchDefaultCity()
-            return
+            setError('Trình duyệt của bạn không hỗ trợ định vị. Đang hiển thị thời tiết tại Hà Nội.');
+            setGettingLocation(false);
+            searchDefaultCity();
+            return;
         }
-
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 try {
-                    const { latitude, longitude } = position.coords
-                    
+                    const { latitude, longitude } = position.coords;
                     // Reverse geocoding to get location name
                     const geocodeResponse = await fetch(
                         `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=vi`
-                    )
-                    const geocodeData = await geocodeResponse.json()
-                    
+                    );
+                    const geocodeData = await geocodeResponse.json();
+                    let locationName = DEFAULT_CITY;
                     if (geocodeData.results?.[0]) {
-                        setSearchQuery(geocodeData.results[0].name)
-                        await fetchWeatherData(latitude, longitude)
-                    } else {
-                        setError('Không thể xác định tên địa điểm. Đang hiển thị thời tiết tại Hà Nội.')
-                        searchDefaultCity()
+                        locationName = geocodeData.results[0].name;
                     }
+                    setSearchQuery(locationName);
+                    await fetchWeatherData(latitude, longitude);
                 } catch (err) {
-                    console.error('Error getting location:', err)
-                    setError('Có lỗi xảy ra khi lấy thông tin vị trí. Đang hiển thị thời tiết tại Hà Nội.')
-                    searchDefaultCity()
+                    console.error('Error getting location:', err);
+                    setError('Có lỗi xảy ra khi lấy thông tin vị trí. Đang hiển thị thời tiết tại Hà Nội.');
+                    await searchDefaultCity();
                 } finally {
-                    setGettingLocation(false)
+                    setGettingLocation(false);
                 }
             },
-            (err) => {
-                console.error('Geolocation error:', err)
-                setError('Không thể lấy vị trí của bạn. Đang hiển thị thời tiết tại Hà Nội.')
-                setGettingLocation(false)
-                searchDefaultCity()
+            async (err) => {
+                console.error('Geolocation error:', err);
+                setError('Không thể lấy vị trí của bạn. Đang hiển thị thời tiết tại Hà Nội.');
+                setGettingLocation(false);
+                await searchDefaultCity();
             },
             { timeout: 5000 }
-        )
-    }
-
-    // Try to load last location first, then try geolocation
-    useEffect(() => {
-        const storedLocation = getStoredLocation()
-        
-        if (storedLocation) {
-            setSearchQuery(storedLocation.name)
-            fetchWeatherData(storedLocation.latitude, storedLocation.longitude)
-        } else {
-            getCurrentLocation()
-        }
-    }, [])
+        );
+    };
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('vi-VN', {

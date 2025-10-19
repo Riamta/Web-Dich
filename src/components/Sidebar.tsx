@@ -44,6 +44,7 @@ import {
   MdOutlineLightbulb,
   MdOutlineSettings
 } from "react-icons/md";
+import { Wifi, Gamepad2 } from 'lucide-react';
 
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -209,6 +210,16 @@ const menuGroups: MenuGroup[] = [
         name: 'Password tools',
         path: '/password-tools',
         icon: <MdOutlinePassword className="w-5 h-5" />
+      },
+      {
+        name: 'Đo tốc độ mạng',
+        path: '/network-speed',
+        icon: <Wifi className="w-5 h-5" />
+      },
+      {
+        name: 'Tải tài nguyên Steam',
+        path: '/steam-assets',
+        icon: <Gamepad2 className="w-5 h-5" />
       }
     ]
   },

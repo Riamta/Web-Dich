@@ -2,7 +2,7 @@ import { OpenAI } from 'openai'
 
 // OpenRouter models list
 export const OPENROUTER_MODELS = [
-    { id: 'google/gemini-2.5-pro-exp-03-25:free', name: 'Gemini 2.5 Pro Exp 03-25', description: 'Slow but good' }
+    { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'Fast and powerful' }
 ] as const
 
 // Default model to use first
